@@ -5,12 +5,6 @@ import { ArrowLeft, ChevronDown, HelpCircle, BookOpen, CheckCircle, Lock } from 
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
@@ -39,16 +33,26 @@ export default function Course() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5">
       <header className="bg-white/80 backdrop-blur-sm border-b">
-        <div className="container mx-auto px-4 py-4 flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/courses")}>
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Foundations of Cryptography</h1>
-            <p className="text-sm text-gray-600">
-              Learn the basic paradigm and principles of modern cryptography
-            </p>
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="icon" onClick={() => navigate("/courses")}>
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Foundations of Cryptography</h1>
+              <p className="text-sm text-gray-600">
+                Learn the basic paradigm and principles of modern cryptography
+              </p>
+            </div>
           </div>
+          
+          {/* Profile button - copied from Courses.tsx */}
+          <Button variant="ghost" size="icon" className="rounded-full">
+            <span className="sr-only">User menu</span>
+            <div className="w-8 h-8 rounded-full bg-secondary text-white grid place-items-center">
+              J
+            </div>
+          </Button>
         </div>
       </header>
 
@@ -68,17 +72,7 @@ export default function Course() {
                   </Button>
                 ))}
               </div>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="gap-2">
-                    Enrolled Courses <ChevronDown className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuItem>Cryptography</DropdownMenuItem>
-                  <DropdownMenuItem>Network Science</DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              {/* Enrolled courses dropdown removed as requested */}
             </div>
 
             <div className="aspect-square bg-gray-50 rounded-lg border relative">
