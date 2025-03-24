@@ -23,7 +23,7 @@ export default function Login() {
         <Card className="backdrop-blur-sm bg-white/90">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl text-center font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              Welcome to EduPath
+              Welcome to Gooru Labs navigated learning platform
             </CardTitle>
           </CardHeader>
           <CardContent>
