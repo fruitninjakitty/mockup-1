@@ -46,7 +46,7 @@ export default function Course() {
             </div>
           </div>
           
-          {/* Profile button - copied from Courses.tsx */}
+          {/* Profile button - same as in Courses.tsx */}
           <Button variant="ghost" size="icon" className="rounded-full">
             <span className="sr-only">User menu</span>
             <div className="w-8 h-8 rounded-full bg-secondary text-white grid place-items-center">

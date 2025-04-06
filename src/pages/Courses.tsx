@@ -37,10 +37,45 @@ const archivedCourses = [
   },
 ];
 
+// Motivational quotes based on role
+const roleBasedQuotes = {
+  Learner: [
+    "Continue your learning journey, every step forward is progress.",
+    "The best investment you can make is in your own education.",
+    "Learning is a treasure that will follow its owner everywhere.",
+  ],
+  Teacher: [
+    "Great teachers inspire minds and change lives forever.",
+    "Teaching is the profession that teaches all other professions.",
+    "The influence of a good teacher can never be erased.",
+  ],
+  "Teaching Assistant": [
+    "Supporting others in their learning journey is a noble pursuit.",
+    "Your guidance helps bridge the gap between teaching and understanding.",
+    "Behind every successful student is a dedicated teaching team.",
+  ],
+};
+
 export default function Courses() {
   const navigate = useNavigate();
   const [courseView, setCourseView] = useState("active");
   const [role, setRole] = useState("Learner");
+
+  // Get a random quote based on the selected role
+  const getRandomQuote = (roleType) => {
+    const quotes = roleBasedQuotes[roleType] || roleBasedQuotes["Learner"];
+    const randomIndex = Math.floor(Math.random() % quotes.length);
+    return quotes[randomIndex];
+  };
+
+  // Current quote based on role
+  const [currentQuote, setCurrentQuote] = useState(getRandomQuote(role));
+
+  // Update quote when role changes
+  const handleRoleChange = (newRole) => {
+    setRole(newRole);
+    setCurrentQuote(getRandomQuote(newRole));
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5">
@@ -48,19 +83,18 @@ export default function Courses() {
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Hello, {role}</h1>
-              <p className="text-sm text-gray-600">Continue your learning journey</p>
+              <h1 className="text-2xl font-bold text-gray-900">Hello, <Select value={role} onValueChange={handleRoleChange}>
+                <SelectTrigger className="w-[140px] h-9 border-none bg-transparent p-0 focus:ring-0 inline-block">
+                  <SelectValue placeholder="Select role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Learner">Learner</SelectItem>
+                  <SelectItem value="Teacher">Teacher</SelectItem>
+                  <SelectItem value="Teaching Assistant">Teaching Assistant</SelectItem>
+                </SelectContent>
+              </Select></h1>
+              <p className="text-sm text-gray-600">{currentQuote}</p>
             </div>
-            <Select value={role} onValueChange={setRole}>
-              <SelectTrigger className="w-[140px] h-9 border-gray-200">
-                <SelectValue placeholder="Select role" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Learner">Learner</SelectItem>
-                <SelectItem value="Teacher">Teacher</SelectItem>
-                <SelectItem value="Teaching Assistant">Teaching Assistant</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
           <Button variant="ghost" size="icon" className="rounded-full">
             <span className="sr-only">User menu</span>
