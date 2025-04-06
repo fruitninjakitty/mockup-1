@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChevronLeft, ChevronRight, Archive, Check } from "lucide-react";
@@ -37,7 +36,6 @@ const archivedCourses = [
   },
 ];
 
-// Motivational quotes based on role
 const roleBasedQuotes = {
   Learner: [
     "Continue your learning journey, every step forward is progress.",
@@ -61,17 +59,14 @@ export default function Courses() {
   const [courseView, setCourseView] = useState("active");
   const [role, setRole] = useState("Learner");
 
-  // Get a random quote based on the selected role
   const getRandomQuote = (roleType) => {
     const quotes = roleBasedQuotes[roleType] || roleBasedQuotes["Learner"];
     const randomIndex = Math.floor(Math.random() % quotes.length);
     return quotes[randomIndex];
   };
 
-  // Current quote based on role
   const [currentQuote, setCurrentQuote] = useState(getRandomQuote(role));
 
-  // Update quote when role changes
   const handleRoleChange = (newRole) => {
     setRole(newRole);
     setCurrentQuote(getRandomQuote(newRole));
@@ -87,7 +82,6 @@ export default function Courses() {
                 Hello, <Select value={role} onValueChange={handleRoleChange}>
                   <SelectTrigger className="inline-flex w-auto text-2xl font-bold text-gray-900 border-none bg-transparent p-0 focus:ring-0 ml-0 pl-0">
                     <SelectValue placeholder="Select role" />
-                    <span className="ml-1 text-purple-500">▼</span>
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Learner">Learner</SelectItem>
