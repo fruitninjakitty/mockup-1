@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Login from "./pages/Login";
+import Onboarding from "./pages/Onboarding";
 import Courses from "./pages/Courses";
 import Course from "./pages/Course";
 
@@ -18,6 +19,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Login />} />
+          <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/courses" element={<Courses />} />
           <Route path="/course/:id" element={<Course />} />
           <Route path="*" element={<Navigate to="/" replace />} />

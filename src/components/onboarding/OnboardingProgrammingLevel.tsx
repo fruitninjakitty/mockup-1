@@ -44,24 +44,19 @@ export default function OnboardingProgrammingLevel({
   return (
     <div className="min-h-screen flex flex-col pt-16 px-4">
       <div className="max-w-3xl w-full mx-auto pt-10 animate-fade-up">
-        <div className="flex mb-8">
-          <div className="w-16 h-16 bg-green-500 rounded-[40%] flex items-center justify-center mr-4">
-            <div className="w-6 h-6 bg-black"></div>
-          </div>
-          <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-3xl flex-1">
-            <h2 className="text-xl font-bold">What's your programming comfort level?</h2>
-          </div>
+        <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg mb-8">
+          <h2 className="text-xl font-medium">What's your programming comfort level?</h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-8">
           {levels.map((level) => (
             <button
               key={level.id}
               onClick={() => onSelect(level.id)}
-              className={`p-4 rounded-xl border flex flex-col h-64 transition-colors ${
+              className={`p-4 rounded-lg border flex flex-col h-48 transition-colors ${
                 selected === level.id 
-                  ? "border-purple-500 bg-purple-50" 
-                  : "border-gray-200 hover:border-purple-200 hover:bg-purple-50/50"
+                  ? "border-purple-500 bg-blue-50" 
+                  : "border-gray-200 hover:border-gray-300"
               }`}
             >
               <div className="h-1/2 flex items-center justify-center p-4">
@@ -70,7 +65,7 @@ export default function OnboardingProgrammingLevel({
                 </pre>
               </div>
               <div className="h-1/2 flex flex-col items-center justify-center text-center">
-                <span className="text-lg font-bold mb-2">{level.label}</span>
+                <span className="text-base font-medium mb-2">{level.label}</span>
                 <span className="text-sm text-gray-600">{level.description}</span>
               </div>
             </button>
@@ -81,7 +76,11 @@ export default function OnboardingProgrammingLevel({
           <Button 
             onClick={onContinue}
             disabled={!selected}
-            className="w-full max-w-xs bg-gray-200 hover:bg-gray-300 text-gray-800 py-6 rounded-full disabled:opacity-50"
+            className={`w-full max-w-xs py-6 rounded-full font-medium ${
+              selected 
+                ? "bg-gray-800 hover:bg-gray-700 text-white" 
+                : "bg-gray-200 text-gray-500"
+            }`}
           >
             Continue
           </Button>

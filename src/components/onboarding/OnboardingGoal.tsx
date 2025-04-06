@@ -15,11 +15,11 @@ export default function OnboardingGoal({
   selected
 }: OnboardingGoalProps) {
   const goals = [
-    { id: "professional", label: "Professional growth", icon: "📈" },
-    { id: "staying-sharp", label: "Staying sharp", icon: "🎯" },
-    { id: "excelling", label: "Excelling in school", icon: "📚" },
-    { id: "child", label: "Helping my child learn", icon: "✨" },
-    { id: "students", label: "Helping my students learn", icon: "🍎" }
+    { id: "professional", label: "Professional growth" },
+    { id: "staying-sharp", label: "Staying sharp" },
+    { id: "excelling", label: "Excelling in school" },
+    { id: "child", label: "Helping my child learn" },
+    { id: "students", label: "Helping my students learn" }
   ];
 
   const handleSelect = (goalId: string) => {
@@ -29,26 +29,22 @@ export default function OnboardingGoal({
   return (
     <div className="min-h-screen flex flex-col pt-16 px-4">
       <div className="max-w-md w-full mx-auto pt-10 animate-fade-up">
-        <div className="flex mb-8">
-          <div className="w-16 h-16 bg-green-500 rounded-[40%] mr-4"></div>
-          <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-3xl flex-1">
-            <h2 className="text-xl font-bold">What's your top goal?</h2>
-          </div>
+        <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg mb-8">
+          <h2 className="text-xl font-medium">What's your top goal?</h2>
         </div>
 
-        <div className="space-y-4 mb-8">
+        <div className="space-y-3 mb-8">
           {goals.map((goal) => (
             <button
               key={goal.id}
               onClick={() => handleSelect(goal.id)}
-              className={`w-full p-4 rounded-xl border flex items-center text-left transition-colors ${
+              className={`w-full p-4 rounded-lg border flex items-center text-left transition-colors ${
                 selected === goal.id 
-                  ? "border-purple-500 bg-purple-50" 
-                  : "border-gray-200 hover:border-purple-200 hover:bg-purple-50/50"
+                  ? "border-purple-500 bg-blue-50" 
+                  : "border-gray-200 hover:border-gray-300"
               }`}
             >
-              <span className="text-2xl mr-4">{goal.icon}</span>
-              <span className="text-lg">{goal.label}</span>
+              <span className="text-base">{goal.label}</span>
             </button>
           ))}
         </div>
@@ -57,7 +53,11 @@ export default function OnboardingGoal({
           <Button 
             onClick={onContinue}
             disabled={!selected}
-            className="w-full max-w-xs bg-gray-200 hover:bg-gray-300 text-gray-800 py-6 rounded-full disabled:opacity-50"
+            className={`w-full py-6 rounded-full font-medium ${
+              selected 
+                ? "bg-gray-800 hover:bg-gray-700 text-white" 
+                : "bg-gray-200 text-gray-500"
+            }`}
           >
             Continue
           </Button>

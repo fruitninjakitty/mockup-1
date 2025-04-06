@@ -15,10 +15,10 @@ export default function OnboardingLearningSchedule({
   selected
 }: OnboardingLearningScheduleProps) {
   const schedules = [
-    { id: "morning", label: "Morning routine", description: "during breakfast or my commute", icon: "🌞" },
-    { id: "lunch", label: "Quick break", description: "during lunch or between activities", icon: "🍕" },
-    { id: "evening", label: "Nightly ritual", description: "after dinner or while in bed", icon: "🌙" },
-    { id: "other", label: "Another time", description: "in my day", icon: "🖥️" }
+    { id: "morning", label: "Morning routine", description: "during breakfast or my commute" },
+    { id: "lunch", label: "Quick break", description: "during lunch or between activities" },
+    { id: "evening", label: "Nightly ritual", description: "after dinner or while in bed" },
+    { id: "other", label: "Another time", description: "in my day" }
   ];
 
   const handleSelect = (scheduleId: string) => {
@@ -28,29 +28,23 @@ export default function OnboardingLearningSchedule({
   return (
     <div className="min-h-screen flex flex-col pt-16 px-4">
       <div className="max-w-md w-full mx-auto pt-10 animate-fade-up">
-        <div className="flex mb-8">
-          <div className="w-16 h-16 bg-green-500 rounded-[40%] flex items-center justify-center mr-4">
-            <div className="w-6 h-6 bg-black"></div>
-          </div>
-          <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-3xl flex-1">
-            <h2 className="text-xl font-bold">How will learning fit into your day?</h2>
-          </div>
+        <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg mb-8">
+          <h2 className="text-xl font-medium">How will learning fit into your day?</h2>
         </div>
 
-        <div className="space-y-4 mb-8">
+        <div className="space-y-3 mb-8">
           {schedules.map((schedule) => (
             <button
               key={schedule.id}
               onClick={() => handleSelect(schedule.id)}
-              className={`w-full p-4 rounded-xl border flex items-center text-left transition-colors ${
+              className={`w-full p-4 rounded-lg border flex items-center text-left transition-colors ${
                 selected === schedule.id 
-                  ? "border-purple-500 bg-purple-50" 
-                  : "border-gray-200 hover:border-purple-200 hover:bg-purple-50/50"
+                  ? "border-purple-500 bg-blue-50" 
+                  : "border-gray-200 hover:border-gray-300"
               }`}
             >
-              <span className="text-2xl mr-4">{schedule.icon}</span>
               <div className="flex flex-col">
-                <span className="text-lg font-medium">{schedule.label}</span>
+                <span className="text-base font-medium">{schedule.label}</span>
                 <span className="text-sm text-gray-600">{schedule.description}</span>
               </div>
             </button>
@@ -61,7 +55,11 @@ export default function OnboardingLearningSchedule({
           <Button 
             onClick={onContinue}
             disabled={!selected}
-            className="w-full max-w-xs bg-gray-200 hover:bg-gray-300 text-gray-800 py-6 rounded-full disabled:opacity-50"
+            className={`w-full py-6 rounded-full font-medium ${
+              selected 
+                ? "bg-gray-800 hover:bg-gray-700 text-white" 
+                : "bg-gray-200 text-gray-500"
+            }`}
           >
             Continue
           </Button>

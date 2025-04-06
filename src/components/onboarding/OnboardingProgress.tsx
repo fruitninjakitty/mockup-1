@@ -29,8 +29,8 @@ export default function OnboardingProgress({
         )}
         <div className="flex-1 bg-gray-200 h-2 rounded-full">
           <div 
-            className="bg-green-500 h-2 rounded-full" 
-            style={{ width: `${progress}%` }}
+            className="h-2 rounded-full" 
+            style={{ width: `${progress}%`, backgroundColor: '#AABBCC' }}
           />
         </div>
       </div>
