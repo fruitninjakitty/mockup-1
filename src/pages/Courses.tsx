@@ -83,16 +83,19 @@ export default function Courses() {
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Hello, <Select value={role} onValueChange={handleRoleChange}>
-                <SelectTrigger className="w-[140px] h-9 border-none bg-transparent p-0 focus:ring-0 inline-block">
-                  <SelectValue placeholder="Select role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Learner">Learner</SelectItem>
-                  <SelectItem value="Teacher">Teacher</SelectItem>
-                  <SelectItem value="Teaching Assistant">Teaching Assistant</SelectItem>
-                </SelectContent>
-              </Select></h1>
+              <h1 className="text-2xl font-bold text-gray-900">
+                Hello, <Select value={role} onValueChange={handleRoleChange}>
+                  <SelectTrigger className="inline-flex w-auto text-2xl font-bold text-gray-900 border-none bg-transparent p-0 focus:ring-0 ml-0 pl-0">
+                    <SelectValue placeholder="Select role" />
+                    <span className="ml-1 text-purple-500">▼</span>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Learner">Learner</SelectItem>
+                    <SelectItem value="Teacher">Teacher</SelectItem>
+                    <SelectItem value="Teaching Assistant">Teaching Assistant</SelectItem>
+                  </SelectContent>
+                </Select>
+              </h1>
               <p className="text-sm text-gray-600">{currentQuote}</p>
             </div>
           </div>
