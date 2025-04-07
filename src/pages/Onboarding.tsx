@@ -117,7 +117,7 @@ export default function Onboarding() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-topography">
       <OnboardingProgress 
         currentStep={onboardingStep} 
         totalSteps={10} 
