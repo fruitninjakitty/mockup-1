@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChevronLeft, ChevronRight, Archive, Check } from "lucide-react";
@@ -5,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ProfileDashboard, UserProfile } from "@/components/profile/ProfileDashboard";
 
 const activeCourses = [
   {
@@ -58,6 +60,17 @@ export default function Courses() {
   const navigate = useNavigate();
   const [courseView, setCourseView] = useState("active");
   const [role, setRole] = useState("Learner");
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  
+  // Sample initial profile - in a real app, this would come from a database
+  const [userProfile, setUserProfile] = useState<UserProfile>({
+    fullName: "John Doe",
+    email: "john.doe@example.com",
+    learningGoal: "professional",
+    focusArea: "skills", 
+    learningSchedule: "morning",
+    bio: ""
+  });
 
   const getRandomQuote = (roleType) => {
     const quotes = roleBasedQuotes[roleType] || roleBasedQuotes["Learner"];
@@ -70,6 +83,11 @@ export default function Courses() {
   const handleRoleChange = (newRole) => {
     setRole(newRole);
     setCurrentQuote(getRandomQuote(newRole));
+  };
+
+  const handleProfileSave = (updatedProfile: UserProfile) => {
+    setUserProfile(updatedProfile);
+    // In a real app, you would also save this to a database
   };
 
   return (
@@ -93,14 +111,26 @@ export default function Courses() {
               <p className="text-sm text-gray-600">{currentQuote}</p>
             </div>
           </div>
-          <Button variant="ghost" size="icon" className="rounded-full">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="rounded-full"
+            onClick={() => setIsProfileOpen(true)}
+          >
             <span className="sr-only">User menu</span>
             <div className="w-8 h-8 rounded-full bg-secondary text-white grid place-items-center">
-              J
+              {userProfile.fullName ? userProfile.fullName.charAt(0) : "J"}
             </div>
           </Button>
         </div>
       </header>
+
+      <ProfileDashboard 
+        isOpen={isProfileOpen} 
+        onClose={() => setIsProfileOpen(false)}
+        initialProfile={userProfile}
+        onSave={handleProfileSave}
+      />
 
       <main className="container mx-auto px-4 py-8">
         <section className="mb-12 animate-fade-up">
