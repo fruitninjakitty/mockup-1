@@ -8,7 +8,6 @@ import Login from "./pages/Login";
 import Onboarding from "./pages/Onboarding";
 import Courses from "./pages/Courses";
 import Course from "./pages/Course";
-import "@/components/ui/background_topography.css";
 
 const queryClient = new QueryClient();
 
