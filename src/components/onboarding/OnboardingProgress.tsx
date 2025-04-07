@@ -17,12 +17,12 @@ export default function OnboardingProgress({
   const progress = (currentStep / totalSteps) * 100;
   
   return (
-    <div className="fixed top-0 left-0 right-0 z-10">
+    <div className="fixed top-0 left-0 right-0 z-10 bg-white shadow-sm">
       <div className="flex items-center px-4 py-2">
         {showBackButton && (
           <button 
             onClick={onBack}
-            className="p-2 mr-2 rounded-full hover:bg-gray-200 transition-colors"
+            className="p-2 mr-2 rounded-full hover:bg-gray-100 transition-colors"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>

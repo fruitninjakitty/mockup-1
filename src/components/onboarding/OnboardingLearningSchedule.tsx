@@ -26,10 +26,10 @@ export default function OnboardingLearningSchedule({
   };
 
   return (
-    <div className="min-h-screen flex flex-col pt-16 px-4">
-      <div className="max-w-md w-full mx-auto pt-10 animate-fade-up">
-        <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg mb-8">
-          <h2 className="text-xl font-medium">How will learning fit into your day?</h2>
+    <div className="min-h-screen flex flex-col pt-16 px-4 bg-[#f5f8f7]">
+      <div className="max-w-md w-full mx-auto pt-10 animate-fade-up bg-white p-8 rounded-xl shadow-sm mt-10">
+        <div className="mb-8">
+          <h2 className="text-2xl font-medium text-[#43bc88]">How will learning fit into your day?</h2>
         </div>
 
         <div className="space-y-3 mb-8">
@@ -37,9 +37,9 @@ export default function OnboardingLearningSchedule({
             <button
               key={schedule.id}
               onClick={() => handleSelect(schedule.id)}
-              className={`w-full p-4 rounded-lg border flex items-center text-left transition-colors ${
+              className={`w-full p-4 rounded-md border flex items-center text-left transition-colors ${
                 selected === schedule.id 
-                  ? "border-purple-500 bg-blue-50" 
+                  ? "border-[#43bc88] bg-[#f0f9f5]" 
                   : "border-gray-200 hover:border-gray-300"
               }`}
             >
@@ -55,9 +55,9 @@ export default function OnboardingLearningSchedule({
           <Button 
             onClick={onContinue}
             disabled={!selected}
-            className={`w-full py-6 rounded-full font-medium ${
+            className={`w-full py-4 rounded-md font-medium ${
               selected 
-                ? "bg-gray-800 hover:bg-gray-700 text-white" 
+                ? "bg-[#43bc88] hover:bg-[#3ba677] text-white" 
                 : "bg-gray-200 text-gray-500"
             }`}
           >
