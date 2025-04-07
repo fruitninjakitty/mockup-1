@@ -8,7 +8,7 @@ interface OnboardingCompleteProps {
 
 export default function OnboardingComplete({ onContinue, onBack }: OnboardingCompleteProps) {
   return (
-    <div className="min-h-screen flex flex-col pt-16 px-4 bg-topography">
+    <div className="min-h-screen flex flex-col pt-16 px-4 bg-[#f5f8f7]">
       <div className="max-w-lg w-full mx-auto pt-12 animate-fade-up bg-white p-8 rounded-xl shadow-sm mt-10">
         <div className="text-center">
           <h1 className="text-3xl font-bold mb-6 text-[#43bc88]">You're on your way now!</h1>

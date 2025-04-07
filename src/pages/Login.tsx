@@ -24,7 +24,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-topography">
+    <div className="min-h-screen flex items-center justify-center bg-[#f5f8f7]">
       <div className="w-full max-w-md p-4 animate-fade-up">
         <div className="bg-white shadow-sm rounded-xl p-8">
           <div className="text-center mb-8">
