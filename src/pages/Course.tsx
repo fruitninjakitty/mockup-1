@@ -15,10 +15,27 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
+import { ProfileDashboard, UserProfile } from "@/components/profile/ProfileDashboard";
 
 export default function Course() {
   const navigate = useNavigate();
   const [selectedView, setSelectedView] = useState("Regions");
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  
+  // Sample initial profile - in a real app, this would come from a database
+  const [userProfile, setUserProfile] = useState<UserProfile>({
+    fullName: "John Doe",
+    email: "john.doe@example.com",
+    learningGoal: "professional",
+    focusArea: "skills", 
+    learningSchedule: "morning",
+    bio: ""
+  });
+
+  const handleProfileSave = (updatedProfile: UserProfile) => {
+    setUserProfile(updatedProfile);
+    // In a real app, you would also save this to a database
+  };
 
   // Mock data for learning journey
   const learningNodes = [
@@ -46,15 +63,27 @@ export default function Course() {
             </div>
           </div>
           
-          {/* Profile button - same as in Courses.tsx */}
-          <Button variant="ghost" size="icon" className="rounded-full">
+          {/* Profile button - now same as in Courses.tsx */}
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="rounded-full"
+            onClick={() => setIsProfileOpen(true)}
+          >
             <span className="sr-only">User menu</span>
             <div className="w-8 h-8 rounded-full bg-secondary text-white grid place-items-center">
-              J
+              {userProfile.fullName ? userProfile.fullName.charAt(0) : "J"}
             </div>
           </Button>
         </div>
       </header>
+
+      <ProfileDashboard 
+        isOpen={isProfileOpen} 
+        onClose={() => setIsProfileOpen(false)}
+        initialProfile={userProfile}
+        onSave={handleProfileSave}
+      />
 
       <main className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
