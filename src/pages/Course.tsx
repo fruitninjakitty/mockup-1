@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, ChevronDown, HelpCircle, BookOpen, CheckCircle, Lock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Tooltip,
   TooltipContent,
@@ -22,19 +22,31 @@ export default function Course() {
   const [selectedView, setSelectedView] = useState("Regions");
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   
-  // Sample initial profile - in a real app, this would come from a database
+  // Default profile - we'll check localStorage for saved values
   const [userProfile, setUserProfile] = useState<UserProfile>({
+    firstName: "",
+    lastName: "",
     fullName: "John Doe",
     email: "john.doe@example.com",
+    userType: "student",
+    schoolCode: "",
     learningGoal: "professional",
     focusArea: "skills", 
     learningSchedule: "morning",
     bio: ""
   });
 
+  // Check for stored profile data on component mount
+  useEffect(() => {
+    const storedProfile = localStorage.getItem("userProfile");
+    if (storedProfile) {
+      setUserProfile(prev => ({ ...prev, ...JSON.parse(storedProfile) }));
+    }
+  }, []);
+
   const handleProfileSave = (updatedProfile: UserProfile) => {
     setUserProfile(updatedProfile);
-    // In a real app, you would also save this to a database
+    localStorage.setItem("userProfile", JSON.stringify(updatedProfile));
   };
 
   // Mock data for learning journey
@@ -72,7 +84,8 @@ export default function Course() {
           >
             <span className="sr-only">User menu</span>
             <div className="w-8 h-8 rounded-full bg-secondary text-white grid place-items-center">
-              {userProfile.fullName ? userProfile.fullName.charAt(0) : "J"}
+              {userProfile.firstName ? userProfile.firstName.charAt(0) : 
+               (userProfile.fullName ? userProfile.fullName.charAt(0) : "J")}
             </div>
           </Button>
         </div>
