@@ -128,10 +128,13 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#F8F7FA] via-[#FFFFFF] to-[#E2F0FA]">
-      <div className="w-full max-w-md p-4 animate-fade-in">
-        <div className="card-gradient minimal-card">
+      <div className="w-full max-w-md p-6 animate-fade-in">
+        <div className="card-gradient minimal-card border border-border">
           <div className="text-center mb-8">
-            <h1 className="text-2xl font-bold" style={{ color: "#518CCA" }}>
+            <h1
+              className="text-2xl font-bold"
+              style={{ color: "#43BC88" }}
+            >
               Welcome to Gooru Labs navigated learning platform
             </h1>
           </div>
@@ -140,20 +143,24 @@ export default function Login() {
               <button
                 onClick={() => setActiveTab("login")}
                 className={`py-2 rounded-lg text-sm font-medium transition-colors ${
-                  activeTab === "login" 
-                    ? "bg-card shadow text-primary" 
-                    : "text-gray-500 hover:text-gray-900"
+                  activeTab === "login"
+                    ? "bg-card shadow text-primary"
+                    : "text-gray-500 hover:text-[#518CCA]"
                 }`}
+                style={{ color: activeTab === "login" ? "#43BC88" : undefined }}
+                aria-label="Switch to Login tab"
               >
                 Login
               </button>
               <button
                 onClick={() => setActiveTab("register")}
                 className={`py-2 rounded-lg text-sm font-medium transition-colors ${
-                  activeTab === "register" 
-                    ? "bg-card shadow text-primary" 
-                    : "text-gray-500 hover:text-gray-900"
+                  activeTab === "register"
+                    ? "bg-card shadow text-primary"
+                    : "text-gray-500 hover:text-[#518CCA]"
                 }`}
+                style={{ color: activeTab === "register" ? "#43BC88" : undefined }}
+                aria-label="Switch to Register tab"
               >
                 Register
               </button>
@@ -169,6 +176,7 @@ export default function Login() {
                   onChange={e => setEmail(e.target.value)}
                   className="w-full border-border"
                   required
+                  style={{ color: "#43BC88" }}
                 />
                 <Input
                   type="password"
@@ -177,86 +185,111 @@ export default function Login() {
                   onChange={e => setPassword(e.target.value)}
                   className="w-full border-border"
                   required
+                  style={{ color: "#43BC88" }}
                 />
               </div>
-              <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-white font-medium mt-2 rounded-md">
+              <Button
+                type="submit"
+                className="w-full bg-[#43BC88] hover:bg-[#3ba574] text-white font-semibold mt-2 rounded-md"
+                aria-label="Sign In"
+              >
                 Sign In
               </Button>
             </form>
           ) : (
             <form onSubmit={handleRegister} className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
-                <Input 
-                  type="text" 
-                  placeholder="First Name" 
-                  className="w-full border-border" 
+                <Input
+                  type="text"
+                  placeholder="First Name"
+                  className="w-full border-border"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                   required
+                  style={{ color: "#43BC88" }}
                 />
-                <Input 
-                  type="text" 
-                  placeholder="Last Name" 
-                  className="w-full border-border" 
+                <Input
+                  type="text"
+                  placeholder="Last Name"
+                  className="w-full border-border"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
                   required
+                  style={{ color: "#43BC88" }}
                 />
               </div>
-              <Input 
-                type="email" 
-                placeholder="Email ID" 
+              <Input
+                type="email"
+                placeholder="Email ID"
                 className="w-full border-border"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                style={{ color: "#43BC88" }}
               />
               <div className="space-y-2">
-                <Label className="text-sm text-foreground/80">Are you a:</Label>
-                <RadioGroup 
-                  value={userType} 
-                  onValueChange={(value) => setUserType(value as "student" | "teacher" | "assistant")}
+                <Label className="text-sm" style={{ color: "#43BC88" }}>
+                  Are you a:
+                </Label>
+                <RadioGroup
+                  value={userType}
+                  onValueChange={(value) =>
+                    setUserType(value as "student" | "teacher" | "assistant")
+                  }
                   className="flex gap-4"
                 >
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="student" id="student" />
-                    <Label htmlFor="student">Student</Label>
+                    <Label htmlFor="student" style={{ color: "#43BC88" }}>
+                      Student
+                    </Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="teacher" id="teacher" />
-                    <Label htmlFor="teacher">Teacher</Label>
+                    <Label htmlFor="teacher" style={{ color: "#43BC88" }}>
+                      Teacher
+                    </Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="assistant" id="assistant" />
-                    <Label htmlFor="assistant">Teaching Assistant</Label>
+                    <Label htmlFor="assistant" style={{ color: "#43BC88" }}>
+                      Teaching Assistant
+                    </Label>
                   </div>
                 </RadioGroup>
               </div>
-              <Input 
-                type="text" 
-                placeholder="School Code" 
+              <Input
+                type="text"
+                placeholder="School Code"
                 className="w-full border-border"
                 value={schoolCode}
                 onChange={(e) => setSchoolCode(e.target.value)}
                 required
+                style={{ color: "#43BC88" }}
               />
-              <Input 
-                type="password" 
-                placeholder="Password" 
+              <Input
+                type="password"
+                placeholder="Password"
                 className="w-full border-border"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                style={{ color: "#43BC88" }}
               />
-              <Input 
-                type="password" 
-                placeholder="Re-enter Password" 
+              <Input
+                type="password"
+                placeholder="Re-enter Password"
                 className="w-full border-border"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
+                style={{ color: "#43BC88" }}
               />
-              <Button type="submit" className="w-full bg-secondary hover:bg-primary text-white font-medium mt-1 rounded-md">
+              <Button
+                type="submit"
+                className="w-full bg-[#518CCA] hover:bg-[#3f6eaa] text-white font-semibold mt-1 rounded-md"
+                aria-label="Create Account"
+              >
                 Create Account
               </Button>
             </form>
@@ -266,3 +299,4 @@ export default function Login() {
     </div>
   );
 }
+
