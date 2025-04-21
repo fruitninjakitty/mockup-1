@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -139,27 +138,25 @@ export default function Login() {
             </h1>
           </div>
           <div className="mb-6">
-            <div className="grid grid-cols-2 gap-2 bg-muted p-1 rounded-lg">
+            <div className="grid grid-cols-2 gap-2 bg-[#E6FAF0] p-1 rounded-lg">
               <button
                 onClick={() => setActiveTab("login")}
-                className={`py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`py-2 rounded-full text-sm font-medium transition-colors ${
                   activeTab === "login"
-                    ? "bg-card shadow text-primary"
+                    ? "bg-white shadow text-[#43BC88]"
                     : "text-gray-500 hover:text-[#518CCA]"
                 }`}
-                style={{ color: activeTab === "login" ? "#43BC88" : undefined }}
                 aria-label="Switch to Login tab"
               >
                 Login
               </button>
               <button
                 onClick={() => setActiveTab("register")}
-                className={`py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`py-2 rounded-full text-sm font-medium transition-colors ${
                   activeTab === "register"
-                    ? "bg-card shadow text-primary"
+                    ? "bg-white shadow text-[#43BC88]"
                     : "text-gray-500 hover:text-[#518CCA]"
                 }`}
-                style={{ color: activeTab === "register" ? "#43BC88" : undefined }}
                 aria-label="Switch to Register tab"
               >
                 Register
@@ -176,7 +173,6 @@ export default function Login() {
                   onChange={e => setEmail(e.target.value)}
                   className="w-full border-border"
                   required
-                  style={{ color: "#43BC88" }}
                 />
                 <Input
                   type="password"
@@ -185,7 +181,6 @@ export default function Login() {
                   onChange={e => setPassword(e.target.value)}
                   className="w-full border-border"
                   required
-                  style={{ color: "#43BC88" }}
                 />
               </div>
               <Button
@@ -206,7 +201,6 @@ export default function Login() {
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                   required
-                  style={{ color: "#43BC88" }}
                 />
                 <Input
                   type="text"
@@ -215,7 +209,6 @@ export default function Login() {
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
                   required
-                  style={{ color: "#43BC88" }}
                 />
               </div>
               <Input
@@ -225,10 +218,9 @@ export default function Login() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                style={{ color: "#43BC88" }}
               />
               <div className="space-y-2">
-                <Label className="text-sm" style={{ color: "#43BC88" }}>
+                <Label className="text-sm text-[#43BC88]">
                   Are you a:
                 </Label>
                 <RadioGroup
@@ -240,19 +232,19 @@ export default function Login() {
                 >
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="student" id="student" />
-                    <Label htmlFor="student" style={{ color: "#43BC88" }}>
+                    <Label htmlFor="student" className="text-[#43BC88]">
                       Student
                     </Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="teacher" id="teacher" />
-                    <Label htmlFor="teacher" style={{ color: "#43BC88" }}>
+                    <Label htmlFor="teacher" className="text-[#43BC88]">
                       Teacher
                     </Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="assistant" id="assistant" />
-                    <Label htmlFor="assistant" style={{ color: "#43BC88" }}>
+                    <Label htmlFor="assistant" className="text-[#43BC88]">
                       Teaching Assistant
                     </Label>
                   </div>
@@ -265,7 +257,6 @@ export default function Login() {
                 value={schoolCode}
                 onChange={(e) => setSchoolCode(e.target.value)}
                 required
-                style={{ color: "#43BC88" }}
               />
               <Input
                 type="password"
@@ -274,7 +265,6 @@ export default function Login() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                style={{ color: "#43BC88" }}
               />
               <Input
                 type="password"
@@ -283,7 +273,6 @@ export default function Login() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
-                style={{ color: "#43BC88" }}
               />
               <Button
                 type="submit"
@@ -299,4 +288,3 @@ export default function Login() {
     </div>
   );
 }
-
