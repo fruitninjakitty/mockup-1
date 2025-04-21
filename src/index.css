@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -8,15 +7,15 @@
     --background: #F8F7FA;
     --foreground: #403E43;
     --card: #fff;
-    --primary: #9b87f5;
+    --primary: #518CCA;
     --primary-foreground: #fff;
     --secondary: #43BC88;
     --secondary-foreground: #fff;
-    --accent: #E5DEFF;
+    --accent: #E2F0FA;
     --muted: #F1F0FB;
     --border: #E7E6EB;
     --radius: 1.25rem;
-    --card-accent: #eeeeff;
+    --card-accent: #EEEEF7;
   }
   body {
     @apply bg-background text-foreground antialiased;

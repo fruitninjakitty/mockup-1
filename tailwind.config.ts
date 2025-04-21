@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -19,25 +18,25 @@ export default {
     },
     extend: {
       colors: {
-        // Minimalist/classy grays and accents
+        // Minimalist/classy grays and accents with consistent color scheme
         background: "#F8F7FA",
         card: "#FFFFFF",
         cardAccent: "#EEEEF7",
         foreground: "#403E43",
         primary: {
-          DEFAULT: "#9b87f5", // purple
-          light: "#E5DEFF",
-          dark: "#6E59A5",
+          DEFAULT: "#518CCA", // blue
+          light: "#E2F0FA",
+          dark: "#396078",
           foreground: "#FFFFFF",
         },
         secondary: {
           DEFAULT: "#43BC88", // green accent
-          light: "#F2FCE2",
-          dark: "#307A5B",
+          light: "#E6FAF0",
+          dark: "#328A64",
           foreground: "#FFFFFF",
         },
         muted: { DEFAULT: "#F1F0FB", foreground: "#8E9196" },
-        accent: { DEFAULT: "#E5DEFF", foreground: "#6E59A5" },
+        accent: { DEFAULT: "#E2F0FA", foreground: "#396078" },
         softgray: "#F4F4F6",
         border: "#E7E6EB",
         destructive: {
@@ -67,4 +66,3 @@ export default {
   },
   plugins: [require("tailwindcss-animate")],
 } satisfies Config;
-

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -5,6 +6,31 @@ import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+
+// Helper to get all users from localStorage
+function getStoredUsers() {
+  const users = localStorage.getItem("userList");
+  return users ? JSON.parse(users) : [];
+}
+
+function storeUser(userData: any) {
+  const users = getStoredUsers();
+  users.push(userData);
+  localStorage.setItem("userList", JSON.stringify(users));
+}
+
+function findUser(email: string, password: string) {
+  // Special admin check first
+  if (email === "admin" && password === "admin") {
+    return { isAdmin: true, fullName: "Admin" };
+  }
+  const users = getStoredUsers();
+  const user = users.find((u: any) => u.email === email && u.password === password);
+  if (user) {
+    return { ...user, isAdmin: false };
+  }
+  return null;
+}
 
 export default function Login() {
   const navigate = useNavigate();
@@ -18,16 +44,40 @@ export default function Login() {
   const [userType, setUserType] = useState<"student" | "teacher" | "assistant">("student");
   const [schoolCode, setSchoolCode] = useState("");
 
+  const resetFields = () => {
+    setEmail("");
+    setPassword("");
+    setConfirmPassword("");
+    setFirstName("");
+    setLastName("");
+    setUserType("student");
+    setSchoolCode("");
+  };
+
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, this would validate credentials
-    navigate("/courses");
+    const user = findUser(email, password);
+
+    if (user) {
+      localStorage.setItem("userProfile", JSON.stringify(user));
+      toast({
+        title: "Login successful",
+        variant: "default",
+        duration: 1800,
+      });
+      navigate("/courses");
+    } else {
+      toast({
+        title: "Invalid credentials",
+        description: "Incorrect email or password.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Validate passwords match
+
     if (password !== confirmPassword) {
       toast({
         title: "Passwords don't match",
@@ -37,13 +87,23 @@ export default function Login() {
       return;
     }
 
-    // In a real app, we would store this user data in a database
-    // For now, let's store it in localStorage to access it in the profile dashboard
+    // Ensure email not taken
+    const users = getStoredUsers();
+    if (users.some((u: any) => u.email === email)) {
+      toast({
+        title: "Email taken",
+        description: "This email address is already registered.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const userData = {
       firstName,
       lastName,
-      fullName: `${firstName} ${lastName}`,
+      fullName: `${firstName} ${lastName}`.trim(),
       email,
+      password,
       userType,
       schoolCode,
       learningGoal: "professional", // default values
@@ -51,23 +111,30 @@ export default function Login() {
       learningSchedule: "morning",
       bio: ""
     };
-    
+
+    // Save to local storage user list and set as current profile
+    storeUser(userData);
     localStorage.setItem("userProfile", JSON.stringify(userData));
     
-    // Start the onboarding process
+    toast({
+      title: "Account created!",
+      description: "Registration successful. Welcome!",
+      duration: 1800,
+    });
+
+    resetFields();
     navigate("/onboarding");
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#F4F4F6] via-[#F8F7FA] to-[#E5DEFF]">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#F8F7FA] via-[#FFFFFF] to-[#E2F0FA]">
       <div className="w-full max-w-md p-4 animate-fade-in">
         <div className="card-gradient minimal-card">
           <div className="text-center mb-8">
-            <h1 className="text-2xl font-bold text-primary">
+            <h1 className="text-2xl font-bold" style={{ color: "#518CCA" }}>
               Welcome to Gooru Labs navigated learning platform
             </h1>
           </div>
-          
           <div className="mb-6">
             <div className="grid grid-cols-2 gap-2 bg-muted p-1 rounded-lg">
               <button
@@ -75,7 +142,7 @@ export default function Login() {
                 className={`py-2 rounded-lg text-sm font-medium transition-colors ${
                   activeTab === "login" 
                     ? "bg-card shadow text-primary" 
-                    : "text-gray-500 hover:text-gray-800"
+                    : "text-gray-500 hover:text-gray-900"
                 }`}
               >
                 Login
@@ -85,22 +152,21 @@ export default function Login() {
                 className={`py-2 rounded-lg text-sm font-medium transition-colors ${
                   activeTab === "register" 
                     ? "bg-card shadow text-primary" 
-                    : "text-gray-500 hover:text-gray-800"
+                    : "text-gray-500 hover:text-gray-900"
                 }`}
               >
                 Register
               </button>
             </div>
           </div>
-          
           {activeTab === "login" ? (
             <form onSubmit={handleLogin} className="space-y-4">
               <div className="space-y-2">
                 <Input
-                  type="email"
-                  placeholder="Email"
+                  type="text"
+                  placeholder="Email or username"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={e => setEmail(e.target.value)}
                   className="w-full border-border"
                   required
                 />
@@ -108,40 +174,35 @@ export default function Login() {
                   type="password"
                   placeholder="Password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={e => setPassword(e.target.value)}
                   className="w-full border-border"
                   required
                 />
               </div>
-              <Button type="submit" className="w-full bg-primary hover:bg-primary/80 text-white font-medium mt-2">
+              <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-white font-medium mt-2 rounded-md">
                 Sign In
               </Button>
             </form>
           ) : (
             <form onSubmit={handleRegister} className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Input 
-                    type="text" 
-                    placeholder="First Name" 
-                    className="w-full border-border" 
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    required
-                  />
-                </div>
-                <div>
-                  <Input 
-                    type="text" 
-                    placeholder="Last Name" 
-                    className="w-full border-border" 
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    required
-                  />
-                </div>
+                <Input 
+                  type="text" 
+                  placeholder="First Name" 
+                  className="w-full border-border" 
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  required
+                />
+                <Input 
+                  type="text" 
+                  placeholder="Last Name" 
+                  className="w-full border-border" 
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  required
+                />
               </div>
-              
               <Input 
                 type="email" 
                 placeholder="Email ID" 
@@ -150,9 +211,8 @@ export default function Login() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
               />
-              
               <div className="space-y-2">
-                <Label className="text-sm text-gray-700">Are you a:</Label>
+                <Label className="text-sm text-foreground/80">Are you a:</Label>
                 <RadioGroup 
                   value={userType} 
                   onValueChange={(value) => setUserType(value as "student" | "teacher" | "assistant")}
@@ -172,7 +232,6 @@ export default function Login() {
                   </div>
                 </RadioGroup>
               </div>
-              
               <Input 
                 type="text" 
                 placeholder="School Code" 
@@ -181,7 +240,6 @@ export default function Login() {
                 onChange={(e) => setSchoolCode(e.target.value)}
                 required
               />
-              
               <Input 
                 type="password" 
                 placeholder="Password" 
@@ -190,7 +248,6 @@ export default function Login() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
-              
               <Input 
                 type="password" 
                 placeholder="Re-enter Password" 
@@ -199,8 +256,7 @@ export default function Login() {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
               />
-              
-              <Button type="submit" className="w-full bg-primary hover:bg-primary/80 text-white font-medium mt-1">
+              <Button type="submit" className="w-full bg-secondary hover:bg-primary text-white font-medium mt-1 rounded-md">
                 Create Account
               </Button>
             </form>
