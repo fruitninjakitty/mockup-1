@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChevronLeft, ChevronRight, Archive, Check } from "lucide-react";
@@ -62,7 +61,6 @@ export default function Courses() {
   const [role, setRole] = useState("Learner");
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   
-  // Sample initial profile - in a real app, this would come from a database
   const [userProfile, setUserProfile] = useState<UserProfile>({
     fullName: "John Doe",
     email: "john.doe@example.com",
@@ -87,38 +85,38 @@ export default function Courses() {
 
   const handleProfileSave = (updatedProfile: UserProfile) => {
     setUserProfile(updatedProfile);
-    // In a real app, you would also save this to a database
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5">
-      <header className="bg-white/80 backdrop-blur-sm border-b">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+    <div className="min-h-screen bg-gradient-to-br from-[#F4F4F6] via-[#F8F7FA] to-[#E5DEFF]">
+      <header className="header-glass sticky top-0 z-30">
+        <div className="container mx-auto px-4 py-3 flex justify-between items-center">
           <div className="flex items-center gap-3">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">
+              <h1 className="text-2xl font-bold text-primary flex items-center">
                 Hello, <Select value={role} onValueChange={handleRoleChange}>
-                  <SelectTrigger className="inline-flex w-auto text-2xl font-bold text-gray-900 border-none bg-transparent p-0 focus:ring-0 ml-0 pl-0">
+                  <SelectTrigger className="inline-flex w-auto text-2xl font-bold text-primary border-none bg-transparent p-0 focus:ring-0 ml-1">
                     <SelectValue placeholder="Select role" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-card z-40 shadow-lg border border-border rounded-lg">
                     <SelectItem value="Learner">Learner</SelectItem>
                     <SelectItem value="Teacher">Teacher</SelectItem>
                     <SelectItem value="Teaching Assistant">Teaching Assistant</SelectItem>
                   </SelectContent>
                 </Select>
               </h1>
-              <p className="text-sm text-gray-600">{currentQuote}</p>
+              <p className="text-sm text-gray-500">{currentQuote}</p>
             </div>
           </div>
           <Button 
             variant="ghost" 
             size="icon" 
-            className="rounded-full"
+            className="rounded-full transition-all hover:bg-primary/20"
             onClick={() => setIsProfileOpen(true)}
+            title="Your Profile"
           >
             <span className="sr-only">User menu</span>
-            <div className="w-8 h-8 rounded-full bg-secondary text-white grid place-items-center">
+            <div className="w-9 h-9 rounded-full bg-primary text-white grid place-items-center font-semibold border-2 border-white shadow-inner">
               {userProfile.fullName ? userProfile.fullName.charAt(0) : "J"}
             </div>
           </Button>
@@ -132,19 +130,18 @@ export default function Courses() {
         onSave={handleProfileSave}
       />
 
-      <main className="container mx-auto px-4 py-8">
-        <section className="mb-12 animate-fade-up">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">Your Courses</h2>
+      <main className="container section-padding">
+        <section className="mb-12 fade-in">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-semibold tracking-tight">Your Courses</h2>
           </div>
           
           <Tabs value={courseView} onValueChange={setCourseView} className="w-full">
-            <div className="flex items-center justify-between mb-4">
-              <TabsList className="grid w-[200px] grid-cols-2">
+            <div className="flex items-center justify-between mb-5">
+              <TabsList className="grid w-[200px] grid-cols-2 bg-muted rounded-lg">
                 <TabsTrigger value="active">Active</TabsTrigger>
                 <TabsTrigger value="archived">Archived</TabsTrigger>
               </TabsList>
-
               <div className="flex gap-2">
                 <Button variant="outline" size="icon">
                   <ChevronLeft className="h-4 w-4" />
@@ -154,24 +151,23 @@ export default function Courses() {
                 </Button>
               </div>
             </div>
-            
             <TabsContent value="active">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {activeCourses.map((course) => (
-                  <Card key={course.id} className="hover:shadow-lg transition-shadow">
+                  <Card key={course.id} className="minimal-card card-gradient transition-transform hover:scale-105">
                     <CardHeader>
                       <img
                         src={course.image}
                         alt={course.title}
-                        className="w-full h-48 object-cover rounded-t-lg"
+                        className="w-full h-44 object-cover rounded-xl mb-2"
                       />
                     </CardHeader>
                     <CardContent>
                       <CardTitle className="text-lg">{course.title}</CardTitle>
                       <CardDescription>{course.description}</CardDescription>
-                      <div className="flex justify-between mt-4">
+                      <div className="flex justify-between mt-3">
                         <Button
-                          className="w-5/6 bg-secondary hover:bg-secondary/90"
+                          className="w-5/6 bg-secondary text-white font-semibold shadow hover:bg-secondary/90"
                           onClick={() => navigate(`/course/${course.id}`)}
                         >
                           Continue Learning
@@ -182,7 +178,7 @@ export default function Courses() {
                           title="Archive Course"
                           className="border-gray-200"
                         >
-                          <Archive className="h-4 w-4 text-gray-500" />
+                          <Archive className="h-4 w-4 text-gray-400" />
                         </Button>
                       </div>
                     </CardContent>
@@ -192,20 +188,20 @@ export default function Courses() {
             </TabsContent>
             
             <TabsContent value="archived">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {archivedCourses.map((course) => (
-                  <Card key={course.id} className="hover:shadow-lg transition-shadow bg-gray-50/50">
+                  <Card key={course.id} className="minimal-card bg-muted card-gradient opacity-80 transition-transform hover:scale-102">
                     <CardHeader>
                       <img
                         src={course.image}
                         alt={course.title}
-                        className="w-full h-48 object-cover rounded-t-lg opacity-80"
+                        className="w-full h-44 object-cover rounded-xl mb-2 opacity-80"
                       />
                     </CardHeader>
                     <CardContent>
-                      <CardTitle className="text-lg text-gray-700">{course.title}</CardTitle>
-                      <CardDescription className="text-gray-600">{course.description}</CardDescription>
-                      <div className="flex justify-between mt-4">
+                      <CardTitle className="text-lg text-gray-600">{course.title}</CardTitle>
+                      <CardDescription className="text-gray-500">{course.description}</CardDescription>
+                      <div className="flex justify-between mt-3">
                         <Button
                           variant="outline"
                           className="w-5/6"
@@ -230,18 +226,18 @@ export default function Courses() {
           </Tabs>
         </section>
 
-        <section className="animate-fade-up animation-delay-100">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">Recommended Courses</h2>
+        <section className="fade-in">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-semibold tracking-tight">Recommended Courses</h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {activeCourses.map((course) => (
-              <Card key={course.id} className="hover:shadow-lg transition-shadow">
+              <Card key={course.id} className="minimal-card card-gradient transition-transform hover:scale-105">
                 <CardHeader>
                   <img
                     src={course.image}
                     alt={course.title}
-                    className="w-full h-48 object-cover rounded-t-lg"
+                    className="w-full h-44 object-cover rounded-xl mb-2"
                   />
                 </CardHeader>
                 <CardContent>

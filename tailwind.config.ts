@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -8,7 +9,6 @@ export default {
     "./app/**/*.{ts,tsx}",
     "./src/**/*.{ts,tsx}",
   ],
-  prefix: "",
   theme: {
     container: {
       center: true,
@@ -19,94 +19,52 @@ export default {
     },
     extend: {
       colors: {
-        border: 'hsl(var(--border))',
-        input: 'hsl(var(--input))',
-        ring: 'hsl(var(--ring))',
-        background: 'hsl(var(--background))',
-        foreground: 'hsl(var(--foreground))',
+        // Minimalist/classy grays and accents
+        background: "#F8F7FA",
+        card: "#FFFFFF",
+        cardAccent: "#EEEEF7",
+        foreground: "#403E43",
         primary: {
-          DEFAULT: "#43bc88",
-          foreground: "hsl(var(--primary-foreground))",
+          DEFAULT: "#9b87f5", // purple
+          light: "#E5DEFF",
+          dark: "#6E59A5",
+          foreground: "#FFFFFF",
         },
         secondary: {
-          DEFAULT: "#518cca",
-          foreground: "hsl(var(--secondary-foreground))",
+          DEFAULT: "#43BC88", // green accent
+          light: "#F2FCE2",
+          dark: "#307A5B",
+          foreground: "#FFFFFF",
         },
+        muted: { DEFAULT: "#F1F0FB", foreground: "#8E9196" },
+        accent: { DEFAULT: "#E5DEFF", foreground: "#6E59A5" },
+        softgray: "#F4F4F6",
+        border: "#E7E6EB",
         destructive: {
-          DEFAULT: 'hsl(var(--destructive))',
-          foreground: 'hsl(var(--destructive-foreground))'
+          DEFAULT: "#ff6363",
+          foreground: "#fff",
         },
-        muted: {
-          DEFAULT: 'hsl(var(--muted))',
-          foreground: 'hsl(var(--muted-foreground))'
-        },
-        accent: {
-          DEFAULT: 'hsl(var(--accent))',
-          foreground: 'hsl(var(--accent-foreground))'
-        },
-        popover: {
-          DEFAULT: 'hsl(var(--popover))',
-          foreground: 'hsl(var(--popover-foreground))'
-        },
-        card: {
-          DEFAULT: 'hsl(var(--card))',
-          foreground: 'hsl(var(--card-foreground))'
-        },
-        sidebar: {
-          DEFAULT: 'hsl(var(--sidebar-background))',
-          foreground: 'hsl(var(--sidebar-foreground))',
-          primary: 'hsl(var(--sidebar-primary))',
-          'primary-foreground': 'hsl(var(--sidebar-primary-foreground))',
-          accent: 'hsl(var(--sidebar-accent))',
-          'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
-          border: 'hsl(var(--sidebar-border))',
-          ring: 'hsl(var(--sidebar-ring))'
-        }
+        popover: "#fff",
       },
       borderRadius: {
-        lg: 'var(--radius)',
-        md: 'calc(var(--radius) - 2px)',
-        sm: 'calc(var(--radius) - 4px)'
+        lg: "1.25rem",
+        md: "1rem",
+        sm: "0.5rem"
+      },
+      boxShadow: {
+        'classy': '0 4px 24px 0 rgba(38, 50, 56, 0.08)',
       },
       keyframes: {
-        'accordion-down': {
-          from: {
-            height: '0'
-          },
-          to: {
-            height: 'var(--radix-accordion-content-height)'
-          }
-        },
-        'accordion-up': {
-          from: {
-            height: 'var(--radix-accordion-content-height)'
-          },
-          to: {
-            height: '0'
-          }
-        },
-        'fade-up': {
-          '0%': {
-            opacity: "0",
-            transform: "translateY(10px)",
-          },
-          '100%': {
-            opacity: "1",
-            transform: "translateY(0)",
-          },
-        },
         'fade-in': {
-          '0%': { opacity: "0" },
-          '100%': { opacity: "1" },
+          '0%': { opacity: "0", transform: "translateY(16px)" },
+          '100%': { opacity: "1", transform: "translateY(0)" }
         }
       },
       animation: {
-        'accordion-down': 'accordion-down 0.2s ease-out',
-        'accordion-up': 'accordion-up 0.2s ease-out',
-        'fade-up': 'fade-up 0.5s ease-out',
-        'fade-in': 'fade-in 0.3s ease-out'
+        'fade-in': 'fade-in 0.6s cubic-bezier(0.23, 1, 0.32, 1) both'
       }
     }
   },
   plugins: [require("tailwindcss-animate")],
 } satisfies Config;
+

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -60,33 +59,33 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#f5f8f7]">
-      <div className="w-full max-w-md p-4 animate-fade-up">
-        <div className="bg-white shadow-sm rounded-xl p-8">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#F4F4F6] via-[#F8F7FA] to-[#E5DEFF]">
+      <div className="w-full max-w-md p-4 animate-fade-in">
+        <div className="card-gradient minimal-card">
           <div className="text-center mb-8">
-            <h1 className="text-2xl font-bold text-[#43bc88]">
+            <h1 className="text-2xl font-bold text-primary">
               Welcome to Gooru Labs navigated learning platform
             </h1>
           </div>
           
           <div className="mb-6">
-            <div className="grid grid-cols-2 gap-2 bg-gray-100 p-1 rounded-md">
+            <div className="grid grid-cols-2 gap-2 bg-muted p-1 rounded-lg">
               <button
                 onClick={() => setActiveTab("login")}
-                className={`py-2 rounded-md text-sm font-medium transition-colors ${
+                className={`py-2 rounded-lg text-sm font-medium transition-colors ${
                   activeTab === "login" 
-                    ? "bg-white shadow-sm text-[#43bc88]" 
-                    : "text-gray-600 hover:text-gray-800"
+                    ? "bg-card shadow text-primary" 
+                    : "text-gray-500 hover:text-gray-800"
                 }`}
               >
                 Login
               </button>
               <button
                 onClick={() => setActiveTab("register")}
-                className={`py-2 rounded-md text-sm font-medium transition-colors ${
+                className={`py-2 rounded-lg text-sm font-medium transition-colors ${
                   activeTab === "register" 
-                    ? "bg-white shadow-sm text-[#43bc88]" 
-                    : "text-gray-600 hover:text-gray-800"
+                    ? "bg-card shadow text-primary" 
+                    : "text-gray-500 hover:text-gray-800"
                 }`}
               >
                 Register
@@ -102,17 +101,19 @@ export default function Login() {
                   placeholder="Email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full border-gray-200"
+                  className="w-full border-border"
+                  required
                 />
                 <Input
                   type="password"
                   placeholder="Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full border-gray-200"
+                  className="w-full border-border"
+                  required
                 />
               </div>
-              <Button type="submit" className="w-full bg-[#43bc88] hover:bg-[#3ba677]">
+              <Button type="submit" className="w-full bg-primary hover:bg-primary/80 text-white font-medium mt-2">
                 Sign In
               </Button>
             </form>
@@ -123,7 +124,7 @@ export default function Login() {
                   <Input 
                     type="text" 
                     placeholder="First Name" 
-                    className="w-full border-gray-200" 
+                    className="w-full border-border" 
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
                     required
@@ -133,7 +134,7 @@ export default function Login() {
                   <Input 
                     type="text" 
                     placeholder="Last Name" 
-                    className="w-full border-gray-200" 
+                    className="w-full border-border" 
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
                     required
@@ -144,7 +145,7 @@ export default function Login() {
               <Input 
                 type="email" 
                 placeholder="Email ID" 
-                className="w-full border-gray-200"
+                className="w-full border-border"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -175,7 +176,7 @@ export default function Login() {
               <Input 
                 type="text" 
                 placeholder="School Code" 
-                className="w-full border-gray-200"
+                className="w-full border-border"
                 value={schoolCode}
                 onChange={(e) => setSchoolCode(e.target.value)}
                 required
@@ -184,7 +185,7 @@ export default function Login() {
               <Input 
                 type="password" 
                 placeholder="Password" 
-                className="w-full border-gray-200"
+                className="w-full border-border"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -193,13 +194,13 @@ export default function Login() {
               <Input 
                 type="password" 
                 placeholder="Re-enter Password" 
-                className="w-full border-gray-200"
+                className="w-full border-border"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
               />
               
-              <Button type="submit" className="w-full bg-[#43bc88] hover:bg-[#3ba677]">
+              <Button type="submit" className="w-full bg-primary hover:bg-primary/80 text-white font-medium mt-1">
                 Create Account
               </Button>
             </form>
