@@ -3,6 +3,9 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
+type DisplayRole = "Learner" | "Teacher" | "Teaching Assistant";
+type DatabaseRole = "learner" | "teacher" | "teaching_assistant";
+
 const roleBasedQuotes = {
   Learner: [
     "Continue your learning journey, every step forward is progress.",
@@ -19,10 +22,32 @@ const roleBasedQuotes = {
     "Your guidance helps bridge the gap between teaching and understanding.",
     "Behind every successful student is a dedicated teaching team.",
   ],
+} as const;
+
+const dbRoleToDisplayRole = (dbRole: DatabaseRole): DisplayRole => {
+  switch (dbRole) {
+    case "teaching_assistant":
+      return "Teaching Assistant";
+    case "teacher":
+      return "Teacher";
+    case "learner":
+      return "Learner";
+  }
+};
+
+const displayRoleToDbRole = (displayRole: DisplayRole): DatabaseRole => {
+  switch (displayRole) {
+    case "Teaching Assistant":
+      return "teaching_assistant";
+    case "Teacher":
+      return "teacher";
+    case "Learner":
+      return "learner";
+  }
 };
 
 export function useRoleManagement() {
-  const [role, setRole] = useState("Learner");
+  const [role, setRole] = useState<DisplayRole>("Learner");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -45,28 +70,23 @@ export function useRoleManagement() {
         }
 
         if (profile) {
-          // Convert database role to display role
-          const displayRole = profile.role === 'teaching_assistant' ? 'Teaching Assistant' : 
-                            profile.role.charAt(0).toUpperCase() + profile.role.slice(1);
-          setRole(displayRole);
+          setRole(dbRoleToDisplayRole(profile.role));
         }
       }
     };
 
     getUserRole();
-  }, []);
+  }, [toast]);
 
-  const getRandomQuote = (roleType: string) => {
-    const quotes = roleBasedQuotes[roleType as keyof typeof roleBasedQuotes] || roleBasedQuotes.Learner;
+  const getRandomQuote = (roleType: DisplayRole) => {
+    const quotes = roleBasedQuotes[roleType];
     return quotes[Math.floor(Math.random() * quotes.length)];
   };
 
   const [currentQuote, setCurrentQuote] = useState(getRandomQuote(role));
 
-  const handleRoleChange = async (newRole: string) => {
-    // Convert display role to database role
-    const dbRole = newRole === 'Teaching Assistant' ? 'teaching_assistant' : 
-                  newRole.toLowerCase();
+  const handleRoleChange = async (newRole: DisplayRole) => {
+    const dbRole = displayRoleToDbRole(newRole);
 
     const { data: { session } } = await supabase.auth.getSession();
     if (session?.user) {
