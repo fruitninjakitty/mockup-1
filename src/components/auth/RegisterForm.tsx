@@ -7,18 +7,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { UserPlus, Mail, Lock, KeyRound } from "lucide-react";
-
-// Helper to get all users from localStorage
-function getStoredUsers() {
-  const users = localStorage.getItem("userList");
-  return users ? JSON.parse(users) : [];
-}
-
-function storeUser(userData: any) {
-  const users = getStoredUsers();
-  users.push(userData);
-  localStorage.setItem("userList", JSON.stringify(users));
-}
+import { supabase } from "@/integrations/supabase/client";
 
 export function RegisterForm() {
   const navigate = useNavigate();
@@ -30,18 +19,9 @@ export function RegisterForm() {
   const [lastName, setLastName] = useState("");
   const [userType, setUserType] = useState<"student" | "teacher" | "assistant">("student");
   const [schoolCode, setSchoolCode] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const resetFields = () => {
-    setEmail("");
-    setPassword("");
-    setConfirmPassword("");
-    setFirstName("");
-    setLastName("");
-    setUserType("student");
-    setSchoolCode("");
-  };
-
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (password !== confirmPassword) {
@@ -53,41 +33,105 @@ export function RegisterForm() {
       return;
     }
 
-    const users = getStoredUsers();
-    if (users.some((u: any) => u.email === email)) {
+    if (!schoolCode.trim()) {
       toast({
-        title: "Email taken",
-        description: "This email address is already registered.",
+        title: "School code required",
+        description: "Please enter your school/organization code",
         variant: "destructive",
       });
       return;
     }
 
-    const userData = {
-      firstName,
-      lastName,
-      fullName: `${firstName} ${lastName}`.trim(),
-      email,
-      password,
-      userType,
-      schoolCode,
-      learningGoal: "professional",
-      focusArea: "skills",
-      learningSchedule: "morning",
-      bio: ""
-    };
+    setIsLoading(true);
 
-    storeUser(userData);
-    localStorage.setItem("userProfile", JSON.stringify(userData));
-    
-    toast({
-      title: "Account created!",
-      description: "Registration successful. Welcome!",
-      duration: 1800,
-    });
+    try {
+      // 1. Verify the school code exists
+      const { data: orgData, error: orgError } = await supabase
+        .from('organizations')
+        .select('id')
+        .eq('code', schoolCode)
+        .single();
 
-    resetFields();
-    navigate("/onboarding");
+      if (orgError) {
+        toast({
+          title: "Invalid school code",
+          description: "The school/organization code you entered is not valid",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      // 2. Create the user account
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: `${firstName} ${lastName}`.trim()
+          }
+        }
+      });
+
+      if (authError) {
+        toast({
+          title: "Registration failed",
+          description: authError.message,
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      if (!authData.user) {
+        toast({
+          title: "Registration error",
+          description: "Failed to create user account",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      // 3. Update the profile with organization_id and role
+      let role = 'learner';
+      if (userType === 'teacher') role = 'teacher';
+      if (userType === 'assistant') role = 'teaching_assistant';
+
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ 
+          organization_id: orgData.id,
+          role: role as any
+        })
+        .eq('id', authData.user.id);
+
+      if (profileError) {
+        toast({
+          title: "Failed to update profile",
+          description: profileError.message,
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      toast({
+        title: "Account created!",
+        description: "Registration successful. Welcome!",
+        duration: 1800,
+      });
+
+      navigate("/onboarding");
+    } catch (error) {
+      toast({
+        title: "An error occurred",
+        description: "Please try again later",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -208,10 +252,15 @@ export function RegisterForm() {
       <Button
         type="submit"
         className="w-full bg-[#43BC88] hover:bg-[#3ba574] text-white font-semibold mt-2 rounded-md flex items-center justify-center gap-2"
+        disabled={isLoading}
         aria-label="Create Account"
       >
-        <UserPlus size={18} />
-        <span>Create Account</span>
+        {isLoading ? "Creating Account..." : (
+          <>
+            <UserPlus size={18} />
+            <span>Create Account</span>
+          </>
+        )}
       </Button>
     </form>
   );

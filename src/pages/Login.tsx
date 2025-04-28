@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { RegisterForm } from "@/components/auth/RegisterForm";
 
@@ -48,6 +49,15 @@ export default function Login() {
             </div>
           </div>
           {activeTab === "login" ? <LoginForm /> : <RegisterForm />}
+          
+          <div className="text-center mt-6">
+            <Link 
+              to="/admin-register" 
+              className="text-sm text-[#518CCA] hover:text-[#43BC88] hover:underline"
+            >
+              Want to sign up your institute with us? Register here
+            </Link>
+          </div>
         </div>
       </div>
     </div>
