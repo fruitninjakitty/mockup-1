@@ -13,6 +13,11 @@ export interface Course {
   };
   totalStudents?: number;
   learningNodes?: LearningNode[];
+  learningObjectives?: string[];
+  prerequisites?: string[];
+  skillLevel?: string;
+  duration?: string;
+  certification?: boolean;
 }
 
 export interface CourseViewState {
