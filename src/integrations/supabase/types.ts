@@ -9,16 +9,304 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      assignments: {
+        Row: {
+          course_id: number
+          created_at: string
+          created_by: string | null
+          description: string
+          due_date: string | null
+          id: number
+          title: string
+        }
+        Insert: {
+          course_id: number
+          created_at?: string
+          created_by?: string | null
+          description: string
+          due_date?: string | null
+          id?: number
+          title: string
+        }
+        Update: {
+          course_id?: number
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          due_date?: string | null
+          id?: number
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assignments_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      courses: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string
+          id: number
+          image: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description: string
+          id?: number
+          image: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          id?: number
+          image?: string
+          title?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          bio: string | null
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          role: Database["public"]["Enums"]["user_role"]
+        }
+        Insert: {
+          bio?: string | null
+          created_at?: string
+          email: string
+          full_name: string
+          id: string
+          role?: Database["public"]["Enums"]["user_role"]
+        }
+        Update: {
+          bio?: string | null
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+        }
+        Relationships: []
+      }
+      student_progress: {
+        Row: {
+          course_id: number
+          id: number
+          last_activity: string
+          progress_percentage: number
+          user_id: string
+        }
+        Insert: {
+          course_id: number
+          id?: number
+          last_activity?: string
+          progress_percentage?: number
+          user_id: string
+        }
+        Update: {
+          course_id?: number
+          id?: number
+          last_activity?: string
+          progress_percentage?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_progress_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      submissions: {
+        Row: {
+          assignment_id: number
+          content: string
+          feedback: string | null
+          grade: number | null
+          graded_at: string | null
+          graded_by: string | null
+          id: number
+          student_id: string
+          submitted_at: string
+        }
+        Insert: {
+          assignment_id: number
+          content: string
+          feedback?: string | null
+          grade?: number | null
+          graded_at?: string | null
+          graded_by?: string | null
+          id?: number
+          student_id: string
+          submitted_at?: string
+        }
+        Update: {
+          assignment_id?: number
+          content?: string
+          feedback?: string | null
+          grade?: number | null
+          graded_at?: string | null
+          graded_by?: string | null
+          id?: number
+          student_id?: string
+          submitted_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "submissions_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "assignments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ta_requests: {
+        Row: {
+          course_id: number
+          created_at: string
+          id: number
+          status: Database["public"]["Enums"]["request_status"]
+          ta_id: string
+          teacher_id: string
+          updated_at: string
+        }
+        Insert: {
+          course_id: number
+          created_at?: string
+          id?: number
+          status?: Database["public"]["Enums"]["request_status"]
+          ta_id: string
+          teacher_id: string
+          updated_at?: string
+        }
+        Update: {
+          course_id?: number
+          created_at?: string
+          id?: number
+          status?: Database["public"]["Enums"]["request_status"]
+          ta_id?: string
+          teacher_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ta_requests_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      teaching_requests: {
+        Row: {
+          course_id: number
+          created_at: string
+          id: number
+          receiver_id: string
+          requester_id: string
+          status: Database["public"]["Enums"]["request_status"]
+          updated_at: string
+        }
+        Insert: {
+          course_id: number
+          created_at?: string
+          id?: number
+          receiver_id: string
+          requester_id: string
+          status?: Database["public"]["Enums"]["request_status"]
+          updated_at?: string
+        }
+        Update: {
+          course_id?: number
+          created_at?: string
+          id?: number
+          receiver_id?: string
+          requester_id?: string
+          status?: Database["public"]["Enums"]["request_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "teaching_requests_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      users_courses: {
+        Row: {
+          course_id: number
+          enrolled_at: string
+          id: number
+          is_archived: boolean
+          role: Database["public"]["Enums"]["user_role"]
+          user_id: string
+        }
+        Insert: {
+          course_id: number
+          enrolled_at?: string
+          id?: number
+          is_archived?: boolean
+          role: Database["public"]["Enums"]["user_role"]
+          user_id: string
+        }
+        Update: {
+          course_id?: number
+          enrolled_at?: string
+          id?: number
+          is_archived?: boolean
+          role?: Database["public"]["Enums"]["user_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "users_courses_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      search_users: {
+        Args: { search_query: string }
+        Returns: {
+          id: string
+          full_name: string
+          email: string
+          role: Database["public"]["Enums"]["user_role"]
+          bio: string
+        }[]
+      }
     }
     Enums: {
-      [_ in never]: never
+      request_status: "pending" | "accepted" | "rejected"
+      user_role: "teacher" | "teaching_assistant" | "learner"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -133,6 +421,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      request_status: ["pending", "accepted", "rejected"],
+      user_role: ["teacher", "teaching_assistant", "learner"],
+    },
   },
 } as const

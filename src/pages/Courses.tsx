@@ -1,11 +1,12 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ProfileDashboard, UserProfile } from "@/components/profile/ProfileDashboard";
 import { CoursesHeader } from "@/components/courses/CoursesHeader";
 import { CourseList } from "@/components/courses/CourseList";
+import { UserSearch } from "@/components/search/UserSearch";
 import { useCourseManagement } from "@/hooks/useCourseManagement";
 import { useRoleManagement } from "@/hooks/useRoleManagement";
 
@@ -32,6 +33,8 @@ export default function Courses() {
     course.roles && course.roles.includes(role)
   );
 
+  const showRecommendedCourses = role === 'Learner';
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F4F4F6] via-[#F8F7FA] to-[#E5DEFF]">
       <CoursesHeader
@@ -50,6 +53,12 @@ export default function Courses() {
       />
 
       <main className="container section-padding">
+        {role === 'Teacher' && (
+          <section className="mb-8">
+            <UserSearch />
+          </section>
+        )}
+
         <section className="mb-12 fade-in">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-semibold tracking-tight">Your Courses</h2>
@@ -88,15 +97,17 @@ export default function Courses() {
           </Tabs>
         </section>
 
-        <section className="fade-in">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-semibold tracking-tight">Recommended Courses</h2>
-          </div>
-          <CourseList 
-            courses={filteredActiveCourses.slice(0, 2)}
-            onArchiveToggle={handleArchiveToggle}
-          />
-        </section>
+        {showRecommendedCourses && (
+          <section className="fade-in">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-semibold tracking-tight">Recommended Courses</h2>
+            </div>
+            <CourseList 
+              courses={activeCourses}
+              onArchiveToggle={handleArchiveToggle}
+            />
+          </section>
+        )}
       </main>
     </div>
   );
