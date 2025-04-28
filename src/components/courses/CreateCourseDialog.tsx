@@ -25,13 +25,25 @@ export function CreateCourseDialog() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to create a course.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const { error } = await supabase.from("courses").insert({
       title,
       description,
-      image: "/placeholder.svg", // Using default placeholder for now
+      image: "/placeholder.svg",
+      created_by: user.id
     });
 
     if (error) {
+      console.error("Error creating course:", error);
       toast({
         title: "Error",
         description: "Could not create course. Please try again.",
