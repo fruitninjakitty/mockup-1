@@ -13,6 +13,7 @@ export type Database = {
         Row: {
           id: string
           notes: string | null
+          organization_id: string | null
           requested_at: string
           reviewed_at: string | null
           reviewed_by: string | null
@@ -22,6 +23,7 @@ export type Database = {
         Insert: {
           id?: string
           notes?: string | null
+          organization_id?: string | null
           requested_at?: string
           reviewed_at?: string | null
           reviewed_by?: string | null
@@ -31,13 +33,22 @@ export type Database = {
         Update: {
           id?: string
           notes?: string | null
+          organization_id?: string | null
           requested_at?: string
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "approval_requests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       assignments: {
         Row: {
@@ -104,6 +115,30 @@ export type Database = {
         }
         Relationships: []
       }
+      organizations: {
+        Row: {
+          code: string
+          created_at: string
+          created_by: string
+          id: string
+          name: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          created_by: string
+          id?: string
+          name: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           bio: string | null
@@ -112,6 +147,7 @@ export type Database = {
           full_name: string
           id: string
           is_approved: boolean
+          organization_id: string | null
           role: Database["public"]["Enums"]["user_role"]
         }
         Insert: {
@@ -121,6 +157,7 @@ export type Database = {
           full_name: string
           id: string
           is_approved?: boolean
+          organization_id?: string | null
           role?: Database["public"]["Enums"]["user_role"]
         }
         Update: {
@@ -130,9 +167,18 @@ export type Database = {
           full_name?: string
           id?: string
           is_approved?: boolean
+          organization_id?: string | null
           role?: Database["public"]["Enums"]["user_role"]
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       student_progress: {
         Row: {
@@ -339,7 +385,7 @@ export type Database = {
     }
     Enums: {
       request_status: "pending" | "accepted" | "rejected"
-      user_role: "teacher" | "teaching_assistant" | "learner"
+      user_role: "teacher" | "teaching_assistant" | "learner" | "administrator"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -456,7 +502,7 @@ export const Constants = {
   public: {
     Enums: {
       request_status: ["pending", "accepted", "rejected"],
-      user_role: ["teacher", "teaching_assistant", "learner"],
+      user_role: ["teacher", "teaching_assistant", "learner", "administrator"],
     },
   },
 } as const

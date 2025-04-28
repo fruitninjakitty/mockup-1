@@ -31,7 +31,7 @@ export function ApprovalRequest() {
         <CardHeader>
           <CardTitle>Approval Pending</CardTitle>
           <CardDescription>
-            Your request for teacher approval is being reviewed. You'll be notified once it's processed.
+            Your request for teacher approval is being reviewed by an administrator. You'll be notified once it's processed.
           </CardDescription>
         </CardHeader>
       </Card>
@@ -43,7 +43,7 @@ export function ApprovalRequest() {
       <CardHeader>
         <CardTitle>Request Teacher Approval</CardTitle>
         <CardDescription>
-          To create and manage courses, you need to be an approved teacher.
+          To create and manage courses, you need to be an approved teacher. Your request will be reviewed by an administrator.
         </CardDescription>
       </CardHeader>
       <CardContent>

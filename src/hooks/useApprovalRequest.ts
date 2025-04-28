@@ -21,11 +21,29 @@ export function useApprovalRequest() {
         return false;
       }
 
+      // First get the user's organization
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('organization_id')
+        .eq('id', user.id)
+        .single();
+
+      if (!profile?.organization_id) {
+        toast({
+          title: "Organization Required",
+          description: "You need to be part of an organization to request teacher approval.",
+          variant: "destructive",
+        });
+        setHasRequest(false);
+        return false;
+      }
+
       const { data: request, error } = await supabase
         .from('approval_requests')
         .select('id')
         .eq('user_id', user.id)
         .eq('status', 'pending')
+        .eq('organization_id', profile.organization_id)
         .maybeSingle();
 
       if (error) throw error;
@@ -64,12 +82,29 @@ export function useApprovalRequest() {
         throw new Error("User must be logged in to submit an approval request");
       }
 
-      // Now insert the approval request with the user's ID
+      // Get the user's organization
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('organization_id')
+        .eq('id', user.id)
+        .single();
+
+      if (!profile?.organization_id) {
+        toast({
+          title: "Organization Required",
+          description: "You need to be part of an organization to request teacher approval.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Now insert the approval request with the user's ID and organization ID
       const { error } = await supabase
         .from('approval_requests')
         .insert({ 
           user_id: user.id,
-          status: 'pending' 
+          status: 'pending',
+          organization_id: profile.organization_id
         });
 
       if (error) throw error;
