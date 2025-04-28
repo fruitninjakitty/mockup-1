@@ -13,8 +13,8 @@ interface Course {
   image: string;
 }
 
-// This would typically come from an API
-const coursesData = [
+// Fallback data in case localStorage is empty
+const fallbackCoursesData = [
   {
     id: 1,
     title: "Foundations of Cryptography",
@@ -61,8 +61,26 @@ export default function Course() {
   });
 
   useEffect(() => {
+    // Get courses from localStorage or use fallback
+    let allCourses: Course[] = [];
+    const activeCourses = localStorage.getItem('activeCourses');
+    const archivedCourses = localStorage.getItem('archivedCourses');
+    
+    if (activeCourses) {
+      allCourses = [...allCourses, ...JSON.parse(activeCourses)];
+    }
+    
+    if (archivedCourses) {
+      allCourses = [...allCourses, ...JSON.parse(archivedCourses)];
+    }
+    
+    // If no courses in localStorage, use fallback
+    if (allCourses.length === 0) {
+      allCourses = fallbackCoursesData;
+    }
+
     // Find the course that matches the ID
-    const foundCourse = coursesData.find(course => course.id === Number(id));
+    const foundCourse = allCourses.find(course => course.id === Number(id));
     if (foundCourse) {
       setCourseData(foundCourse);
       document.title = `Course: ${foundCourse.title}`;

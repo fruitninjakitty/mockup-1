@@ -3,7 +3,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Archive } from "lucide-react";
+import { Archive, ArchiveRestore } from "lucide-react";
 
 interface Course {
   id: number;
@@ -15,10 +15,15 @@ interface Course {
 interface CourseCardProps {
   course: Course;
   isArchived?: boolean;
+  onArchiveToggle: (courseId: number, archive: boolean) => void;
 }
 
-export function CourseCard({ course, isArchived = false }: CourseCardProps) {
+export function CourseCard({ course, isArchived = false, onArchiveToggle }: CourseCardProps) {
   const navigate = useNavigate();
+
+  const handleArchiveToggle = () => {
+    onArchiveToggle(course.id, !isArchived);
+  };
 
   return (
     <Card className={`minimal-card card-gradient transition-transform hover:scale-105 ${isArchived ? 'bg-muted opacity-80' : ''}`}>
@@ -49,8 +54,12 @@ export function CourseCard({ course, isArchived = false }: CourseCardProps) {
             size="icon"
             title={isArchived ? 'Unarchive Course' : 'Archive Course'}
             className="border-gray-200"
+            onClick={handleArchiveToggle}
           >
-            <Archive className={`h-4 w-4 ${isArchived ? 'text-secondary' : 'text-gray-400'}`} />
+            {isArchived ? 
+              <ArchiveRestore className="h-4 w-4 text-secondary" /> : 
+              <Archive className="h-4 w-4 text-gray-400" />
+            }
           </Button>
         </div>
       </CardContent>

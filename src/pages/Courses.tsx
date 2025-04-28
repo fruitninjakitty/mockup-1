@@ -1,12 +1,21 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ProfileDashboard, UserProfile } from "@/components/profile/ProfileDashboard";
 import { CourseCard } from "@/components/courses/CourseCard";
 import { CoursesHeader } from "@/components/courses/CoursesHeader";
+import { useToast } from "@/hooks/use-toast";
 
-const activeCourses = [
+interface Course {
+  id: number;
+  title: string;
+  description: string;
+  image: string;
+}
+
+const initialCourses = [
   {
     id: 1,
     title: "Foundations of Cryptography",
@@ -19,9 +28,6 @@ const activeCourses = [
     description: "Network science is a multidisciplinary field",
     image: "/placeholder.svg",
   },
-];
-
-const archivedCourses = [
   {
     id: 3,
     title: "Machine Learning Basics",
@@ -55,6 +61,7 @@ const roleBasedQuotes = {
 };
 
 export default function Courses() {
+  const { toast } = useToast();
   const [courseView, setCourseView] = useState("active");
   const [role, setRole] = useState("Learner");
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -67,6 +74,34 @@ export default function Courses() {
     learningSchedule: "morning",
     bio: ""
   });
+
+  // Track active and archived courses
+  const [activeCourses, setActiveCourses] = useState<Course[]>([]);
+  const [archivedCourses, setArchivedCourses] = useState<Course[]>([]);
+
+  useEffect(() => {
+    // Initialize courses from localStorage or use defaults
+    const storedActiveCourses = localStorage.getItem('activeCourses');
+    const storedArchivedCourses = localStorage.getItem('archivedCourses');
+    
+    if (storedActiveCourses) {
+      setActiveCourses(JSON.parse(storedActiveCourses));
+    } else {
+      setActiveCourses(initialCourses);
+    }
+    
+    if (storedArchivedCourses) {
+      setArchivedCourses(JSON.parse(storedArchivedCourses));
+    } else {
+      setArchivedCourses([]);
+    }
+  }, []);
+
+  // Save courses to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('activeCourses', JSON.stringify(activeCourses));
+    localStorage.setItem('archivedCourses', JSON.stringify(archivedCourses));
+  }, [activeCourses, archivedCourses]);
 
   const getRandomQuote = (roleType: string) => {
     const quotes = roleBasedQuotes[roleType as keyof typeof roleBasedQuotes] || roleBasedQuotes["Learner"];
@@ -82,6 +117,35 @@ export default function Courses() {
 
   const handleProfileSave = (updatedProfile: UserProfile) => {
     setUserProfile(updatedProfile);
+  };
+
+  // Handle archive/unarchive functionality
+  const handleArchiveToggle = (courseId: number, archive: boolean) => {
+    if (archive) {
+      // Move course from active to archived
+      const courseToArchive = activeCourses.find(course => course.id === courseId);
+      if (courseToArchive) {
+        setActiveCourses(activeCourses.filter(course => course.id !== courseId));
+        setArchivedCourses([...archivedCourses, courseToArchive]);
+        toast({
+          title: "Course Archived",
+          description: `${courseToArchive.title} has been archived.`,
+          duration: 3000,
+        });
+      }
+    } else {
+      // Move course from archived to active
+      const courseToUnarchive = archivedCourses.find(course => course.id === courseId);
+      if (courseToUnarchive) {
+        setArchivedCourses(archivedCourses.filter(course => course.id !== courseId));
+        setActiveCourses([...activeCourses, courseToUnarchive]);
+        toast({
+          title: "Course Unarchived",
+          description: `${courseToUnarchive.title} has been moved back to active courses.`,
+          duration: 3000,
+        });
+      }
+    }
   };
 
   return (
@@ -125,17 +189,38 @@ export default function Courses() {
             
             <TabsContent value="active">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {activeCourses.map((course) => (
-                  <CourseCard key={course.id} course={course} />
-                ))}
+                {activeCourses.length > 0 ? (
+                  activeCourses.map((course) => (
+                    <CourseCard 
+                      key={course.id} 
+                      course={course} 
+                      onArchiveToggle={handleArchiveToggle}
+                    />
+                  ))
+                ) : (
+                  <div className="col-span-3 text-center py-8">
+                    <p className="text-gray-500">No active courses found.</p>
+                  </div>
+                )}
               </div>
             </TabsContent>
             
             <TabsContent value="archived">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {archivedCourses.map((course) => (
-                  <CourseCard key={course.id} course={course} isArchived />
-                ))}
+                {archivedCourses.length > 0 ? (
+                  archivedCourses.map((course) => (
+                    <CourseCard 
+                      key={course.id} 
+                      course={course} 
+                      isArchived={true}
+                      onArchiveToggle={handleArchiveToggle} 
+                    />
+                  ))
+                ) : (
+                  <div className="col-span-3 text-center py-8">
+                    <p className="text-gray-500">No archived courses found.</p>
+                  </div>
+                )}
               </div>
             </TabsContent>
           </Tabs>
@@ -146,8 +231,12 @@ export default function Courses() {
             <h2 className="text-xl font-semibold tracking-tight">Recommended Courses</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {activeCourses.map((course) => (
-              <CourseCard key={course.id} course={course} />
+            {activeCourses.slice(0, 2).map((course) => (
+              <CourseCard 
+                key={course.id} 
+                course={course} 
+                onArchiveToggle={handleArchiveToggle}
+              />
             ))}
           </div>
         </section>
