@@ -1,4 +1,3 @@
-
 import { UserProfile } from "./course";
 
 export interface Course {
@@ -16,4 +15,25 @@ export interface CourseViewState {
 export interface CoursePlaceholderProps {
   message: string;
   description?: string;
+}
+
+export interface LearningNode {
+  id: number;
+  title: string;
+  completed: boolean;
+  date: string | null;
+  locked?: boolean;
+}
+
+export interface LearningNodeItemProps {
+  node: LearningNode;
+  isLast: boolean;
+}
+
+export interface LearningNodeActionsProps {
+  node: LearningNode;
+}
+
+export interface LearningNodeListProps {
+  nodes: LearningNode[];
 }
