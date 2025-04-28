@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -7,6 +6,7 @@ import { ProfileDashboard, UserProfile } from "@/components/profile/ProfileDashb
 import { CoursesHeader } from "@/components/courses/CoursesHeader";
 import { CourseList } from "@/components/courses/CourseList";
 import { UserSearch } from "@/components/search/UserSearch";
+import { CreateCourseDialog } from "@/components/courses/CreateCourseDialog";
 import { useCourseManagement } from "@/hooks/useCourseManagement";
 import { useRoleManagement } from "@/hooks/useRoleManagement";
 
@@ -33,7 +33,8 @@ export default function Courses() {
     course.roles && course.roles.includes(role)
   );
 
-  const showRecommendedCourses = role === 'Learner';
+  const showCreateCourse = role === "Teacher";
+  const showRecommendedCourses = role === "Learner";
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F4F4F6] via-[#F8F7FA] to-[#E5DEFF]">
@@ -53,7 +54,7 @@ export default function Courses() {
       />
 
       <main className="container section-padding">
-        {role === 'Teacher' && (
+        {role === "Teacher" && (
           <section className="mb-8">
             <UserSearch />
           </section>
@@ -62,6 +63,7 @@ export default function Courses() {
         <section className="mb-12 fade-in">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-semibold tracking-tight">Your Courses</h2>
+            {showCreateCourse && <CreateCourseDialog />}
           </div>
           
           <Tabs value={courseView} onValueChange={setCourseView} className="w-full">
