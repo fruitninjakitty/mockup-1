@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -26,15 +27,16 @@ export default function Courses() {
   const { role, currentQuote, handleRoleChange } = useRoleManagement();
 
   const filteredActiveCourses = activeCourses.filter(course => 
-    course.roles && course.roles.includes(role)
+    course.roles ? course.roles.includes(role) : true
   );
 
   const filteredArchivedCourses = archivedCourses.filter(course => 
-    course.roles && course.roles.includes(role)
+    course.roles ? course.roles.includes(role) : true
   );
 
-  const showCreateCourse = role === "Teacher";
+  const showCreateCourse = role === "Teacher" || role === "Administrator";
   const showRecommendedCourses = role === "Learner";
+  const showUserSearch = role === "Teacher" || role === "Administrator";
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F4F4F6] via-[#F8F7FA] to-[#E5DEFF]">
@@ -54,7 +56,7 @@ export default function Courses() {
       />
 
       <main className="container section-padding">
-        {role === "Teacher" && (
+        {showUserSearch && (
           <section className="mb-8">
             <UserSearch />
           </section>

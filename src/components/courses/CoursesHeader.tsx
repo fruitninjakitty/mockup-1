@@ -27,6 +27,7 @@ export function CoursesHeader({ role, quote, onRoleChange, onProfileClick, userI
                   <SelectItem value="Learner">Learner</SelectItem>
                   <SelectItem value="Teacher">Teacher</SelectItem>
                   <SelectItem value="Teaching Assistant">Teaching Assistant</SelectItem>
+                  <SelectItem value="Administrator">Administrator</SelectItem>
                 </SelectContent>
               </Select>
             </h1>
