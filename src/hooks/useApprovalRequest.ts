@@ -11,9 +11,20 @@ export function useApprovalRequest() {
     setIsPending(true);
     
     try {
+      // First, get the current user
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError || !user) {
+        throw new Error("User must be logged in to submit an approval request");
+      }
+
+      // Now insert the approval request with the user's ID
       const { error } = await supabase
         .from('approval_requests')
-        .insert({ status: 'pending' });
+        .insert({ 
+          user_id: user.id,
+          status: 'pending' 
+        });
 
       if (error) throw error;
 
