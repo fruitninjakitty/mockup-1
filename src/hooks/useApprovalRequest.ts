@@ -5,13 +5,59 @@ import { useToast } from "@/hooks/use-toast";
 
 export function useApprovalRequest() {
   const [isPending, setIsPending] = useState(false);
+  const [hasRequest, setHasRequest] = useState<boolean | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+
+  // Check if user already has a pending request
+  const checkExistingRequest = async () => {
+    setIsLoading(true);
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        setHasRequest(false);
+        return false;
+      }
+
+      const { data: request, error } = await supabase
+        .from('approval_requests')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('status', 'pending')
+        .maybeSingle();
+
+      if (error) throw error;
+      
+      const hasExistingRequest = !!request;
+      setHasRequest(hasExistingRequest);
+      return hasExistingRequest;
+    } catch (error) {
+      console.error('Error checking request:', error);
+      setHasRequest(false);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const submitRequest = async () => {
     setIsPending(true);
     
     try {
-      // First, get the current user
+      // Check if request already exists before submitting
+      const alreadyHasRequest = await checkExistingRequest();
+      if (alreadyHasRequest) {
+        toast({
+          title: "Request Already Exists",
+          description: "You already have a pending approval request.",
+          variant: "default",
+        });
+        return;
+      }
+      
+      // Get the current user
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       
       if (userError || !user) {
@@ -28,6 +74,9 @@ export function useApprovalRequest() {
 
       if (error) throw error;
 
+      // Update local state to reflect the new request
+      setHasRequest(true);
+      
       toast({
         title: "Request Submitted",
         description: "Your teacher approval request has been submitted for review.",
@@ -44,5 +93,5 @@ export function useApprovalRequest() {
     }
   };
 
-  return { submitRequest, isPending };
+  return { submitRequest, isPending, hasRequest, isLoading, checkExistingRequest };
 }

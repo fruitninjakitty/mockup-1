@@ -1,27 +1,29 @@
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useApprovalRequest } from "@/hooks/useApprovalRequest";
-import { supabase } from "@/integrations/supabase/client";
+import { Loader2 } from "lucide-react";
 
 export function ApprovalRequest() {
-  const { submitRequest, isPending } = useApprovalRequest();
-  const [hasRequest, setHasRequest] = useState(false);
+  const { submitRequest, isPending, hasRequest, isLoading, checkExistingRequest } = useApprovalRequest();
 
   useEffect(() => {
-    const checkExistingRequest = async () => {
-      const { data: requests } = await supabase
-        .from('approval_requests')
-        .select('status')
-        .eq('status', 'pending')
-        .maybeSingle();
-
-      setHasRequest(!!requests);
-    };
-
     checkExistingRequest();
   }, []);
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <span>Checking request status...</span>
+          </CardTitle>
+        </CardHeader>
+      </Card>
+    );
+  }
 
   if (hasRequest) {
     return (
@@ -50,7 +52,14 @@ export function ApprovalRequest() {
           disabled={isPending}
           className="w-full"
         >
-          {isPending ? "Submitting..." : "Request Approval"}
+          {isPending ? (
+            <>
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              Submitting...
+            </>
+          ) : (
+            "Request Approval"
+          )}
         </Button>
       </CardContent>
     </Card>
