@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, ChevronDown, HelpCircle, BookOpen, CheckCircle, Lock } from "lucide-react";
@@ -22,7 +21,6 @@ export default function Course() {
   const [selectedView, setSelectedView] = useState("Regions");
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   
-  // Default profile - we'll check localStorage for saved values
   const [userProfile, setUserProfile] = useState<UserProfile>({
     firstName: "",
     lastName: "",
@@ -36,7 +34,6 @@ export default function Course() {
     bio: ""
   });
 
-  // Check for stored profile data on component mount
   useEffect(() => {
     const storedProfile = localStorage.getItem("userProfile");
     if (storedProfile) {
@@ -49,7 +46,6 @@ export default function Course() {
     localStorage.setItem("userProfile", JSON.stringify(updatedProfile));
   };
 
-  // Mock data for learning journey
   const learningNodes = [
     { id: 1, title: "Introduction", completed: true, date: "Mar 1, 2024" },
     { id: 2, title: "Perfect Security", completed: true, date: "Mar 3, 2024" },
@@ -68,14 +64,14 @@ export default function Course() {
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Foundations of Cryptography</h1>
-              <p className="text-sm text-gray-600">
-                Learn the basic paradigm and principles of modern cryptography
+              <h1 className="text-2xl font-bold text-primary">Foundations of Cryptography</h1>
+              <p className="text-sm">
+                <span className="text-gray-600">Learn the basic paradigm and principles of modern cryptography - </span>
+                <span className="text-[#43BC88]">Learner</span>
               </p>
             </div>
           </div>
           
-          {/* Profile button - now same as in Courses.tsx */}
           <Button 
             variant="ghost" 
             size="icon" 
@@ -114,11 +110,9 @@ export default function Course() {
                   </Button>
                 ))}
               </div>
-              {/* Enrolled courses dropdown removed as requested */}
             </div>
 
             <div className="aspect-square bg-gray-50 rounded-lg border relative">
-              {/* This is where you'd implement the actual graph visualization */}
               <div className="absolute inset-0 grid place-items-center text-gray-400">
                 Learning Map Visualization
               </div>
@@ -160,13 +154,12 @@ export default function Course() {
                 <div className="space-y-6">
                   {learningNodes.map((node, index) => (
                     <div key={node.id} className="relative pl-12">
-                      {/* Node icon */}
                       <div 
                         className={`absolute left-2 top-1 w-5 h-5 rounded-full flex items-center justify-center z-10 
                           ${node.locked 
                             ? "bg-gray-100 border border-gray-300" 
                             : node.completed 
-                              ? "bg-primary text-white" 
+                              ? "bg-[#43BC88] text-white" 
                               : "bg-white border-2 border-secondary"}`}
                       >
                         {node.locked ? (
@@ -178,7 +171,6 @@ export default function Course() {
                         )}
                       </div>
                       
-                      {/* Content */}
                       <div className={`p-3 rounded-lg ${node.locked ? "bg-gray-50" : "bg-white border shadow-sm"}`}>
                         <div className="flex justify-between items-start">
                           <div>
@@ -214,7 +206,6 @@ export default function Course() {
                         </div>
                       </div>
                       
-                      {/* Connector line to next node */}
                       {index < learningNodes.length - 1 && (
                         <div className="absolute left-4 top-7 bottom-0 w-0.5 bg-gray-200 z-0"></div>
                       )}
