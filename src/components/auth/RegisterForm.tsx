@@ -20,6 +20,32 @@ export function RegisterForm() {
   const [userType, setUserType] = useState<"student" | "teacher" | "assistant">("student");
   const [schoolCode, setSchoolCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isCheckingCode, setIsCheckingCode] = useState(false);
+
+  // Check if school code exists
+  const validateSchoolCode = async (code: string) => {
+    if (!code.trim()) return false;
+    
+    setIsCheckingCode(true);
+    try {
+      const { data, error } = await supabase
+        .from('organizations')
+        .select('id')
+        .eq('code', code)
+        .single();
+        
+      if (error || !data) {
+        return false;
+      }
+      
+      return true;
+    } catch (error) {
+      console.error("Error validating school code:", error);
+      return false;
+    } finally {
+      setIsCheckingCode(false);
+    }
+  };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,6 +71,19 @@ export function RegisterForm() {
     setIsLoading(true);
 
     try {
+      // Validate school code exists before proceeding
+      const isValidCode = await validateSchoolCode(schoolCode);
+      
+      if (!isValidCode) {
+        toast({
+          title: "Invalid school code",
+          description: "The school/organization code you entered does not exist",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+
       // 1. Verify the school code exists
       const { data: orgData, error: orgError } = await supabase
         .from('organizations')
@@ -252,7 +291,7 @@ export function RegisterForm() {
       <Button
         type="submit"
         className="w-full bg-[#43BC88] hover:bg-[#3ba574] text-white font-semibold mt-2 rounded-md flex items-center justify-center gap-2"
-        disabled={isLoading}
+        disabled={isLoading || isCheckingCode}
         aria-label="Create Account"
       >
         {isLoading ? "Creating Account..." : (
