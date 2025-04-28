@@ -5,6 +5,14 @@ export interface Course {
   title: string;
   description: string;
   image: string;
+  schoolCode?: string;
+  createdAt?: string;
+  createdBy?: {
+    fullName: string;
+    email: string;
+  };
+  totalStudents?: number;
+  learningNodes?: LearningNode[];
 }
 
 export interface CourseViewState {

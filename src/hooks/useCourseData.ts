@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Course } from "@/types/course-types";
 
@@ -8,6 +7,13 @@ const fallbackCoursesData = [
     title: "Foundations of Cryptography",
     description: "Learn the basic paradigm and principles of modern cryptography",
     image: "/placeholder.svg",
+    schoolCode: "TECH101",
+    createdAt: "2024-03-28T10:00:00Z",
+    createdBy: {
+      fullName: "Dr. Alice Smith",
+      email: "alice.smith@school.edu"
+    },
+    totalStudents: 45,
   },
   {
     id: 2,
