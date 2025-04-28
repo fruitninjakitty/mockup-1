@@ -22,9 +22,15 @@ interface LearningNode {
   locked?: boolean;
 }
 
-export function CourseLearningJourney() {
+interface CourseLearningJourneyProps {
+  courseId: number;
+}
+
+export function CourseLearningJourney({ courseId }: CourseLearningJourneyProps) {
+  // This would typically come from an API based on courseId
+  // For now, we'll use static data but we're accepting the courseId prop for future enhancement
   const learningNodes: LearningNode[] = [
-    { id: 1, title: "Introduction", completed: true, date: "Mar 1, 2024" },
+    { id: 1, title: `Introduction to Course ${courseId}`, completed: true, date: "Mar 1, 2024" },
     { id: 2, title: "Perfect Security", completed: true, date: "Mar 3, 2024" },
     { id: 3, title: "One-Time Pad", completed: true, date: "Mar 5, 2024" },
     { id: 4, title: "Computational Security", completed: false, date: null, locked: false },
@@ -95,7 +101,7 @@ export function CourseLearningJourney() {
                     {node.completed && (
                       <HoverCard>
                         <HoverCardTrigger asChild>
-                          <Button variant="ghost" size="sm" className="text-secondary h-7 px-2">
+                          <Button variant="ghost" size="sm" className="text-[#43BC88] h-7 px-2">
                             <BookOpen className="h-3.5 w-3.5 mr-1" />
                             View
                           </Button>
@@ -110,7 +116,7 @@ export function CourseLearningJourney() {
                               <BookOpen className="h-3 w-3" />
                               <span>Resource: Lecture Notes</span>
                             </div>
-                            <Button size="sm" className="w-full mt-2 bg-secondary">
+                            <Button size="sm" className="w-full mt-2 bg-[#43BC88]">
                               View Resource
                             </Button>
                           </div>

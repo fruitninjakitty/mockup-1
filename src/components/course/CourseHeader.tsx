@@ -4,12 +4,20 @@ import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { UserProfile } from "@/components/profile/ProfileDashboard";
 
+interface Course {
+  id: number;
+  title: string;
+  description: string;
+  image: string;
+}
+
 interface CourseHeaderProps {
+  course: Course;
   userProfile: UserProfile;
   onProfileClick: () => void;
 }
 
-export function CourseHeader({ userProfile, onProfileClick }: CourseHeaderProps) {
+export function CourseHeader({ course, userProfile, onProfileClick }: CourseHeaderProps) {
   const navigate = useNavigate();
 
   return (
@@ -20,9 +28,9 @@ export function CourseHeader({ userProfile, onProfileClick }: CourseHeaderProps)
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-2xl font-bold text-primary">Foundations of Cryptography</h1>
+            <h1 className="text-2xl font-bold text-primary">{course.title}</h1>
             <p className="text-sm">
-              <span className="text-gray-600">Learn the basic paradigm and principles of modern cryptography - </span>
+              <span className="text-gray-600">{course.description} - </span>
               <span className="text-[#43BC88]">Learner</span>
             </p>
           </div>
