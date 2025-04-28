@@ -20,6 +20,7 @@ export function AdminRegisterForm() {
   const [lastName, setLastName] = useState("");
   const [organizationCode, setOrganizationCode] = useState("");
   const [showOrganizationCode, setShowOrganizationCode] = useState(false);
+  const [emailConfirmRequired, setEmailConfirmRequired] = useState(false);
 
   const generateOrganizationCode = () => {
     // Generate a random 6-character alphanumeric code
@@ -66,7 +67,8 @@ export function AdminRegisterForm() {
         options: {
           data: {
             full_name: `${firstName} ${lastName}`.trim(),
-          }
+          },
+          emailRedirectTo: window.location.origin
         }
       });
 
@@ -90,21 +92,55 @@ export function AdminRegisterForm() {
         return;
       }
 
+      // Check if email confirmation is required
+      if (authData.session === null) {
+        setEmailConfirmRequired(true);
+        toast({
+          title: "Email verification required",
+          description: "Please check your email to verify your account before continuing",
+          duration: 5000,
+        });
+        setIsLoading(false);
+        return;
+      }
+
       // Wait for the auth to complete and profiles trigger to run
       // This small delay helps ensure the profile is created
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       // 2. Now sign in to get authenticated session
-      const { error: signInError } = await supabase.auth.signInWithPassword({
+      const { error: signInError, data: signInData } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (signInError) {
+        if (signInError.message.includes("Email not confirmed")) {
+          setEmailConfirmRequired(true);
+          toast({
+            title: "Email verification required",
+            description: "Please check your email to verify your account before continuing",
+            duration: 5000,
+          });
+          setIsLoading(false);
+          return;
+        }
+        
         toast({
           title: "Sign in failed",
           description: signInError.message,
           variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      if (!signInData.session) {
+        setEmailConfirmRequired(true);
+        toast({
+          title: "Email verification required",
+          description: "Please check your email to verify your account before continuing",
+          duration: 5000,
         });
         setIsLoading(false);
         return;
@@ -172,6 +208,31 @@ export function AdminRegisterForm() {
   const handleContinue = () => {
     navigate("/courses");
   };
+
+  if (emailConfirmRequired) {
+    return (
+      <div className="text-center space-y-6">
+        <div className="p-6 bg-amber-50 rounded-lg border-2 border-amber-400">
+          <h2 className="text-xl font-bold text-amber-600 mb-2">Email Verification Required</h2>
+          <p className="text-sm text-gray-600 mb-4">
+            We've sent a verification link to <span className="font-medium">{email}</span>
+          </p>
+          <p className="mt-4 text-sm text-gray-600">
+            Please check your email inbox and click the verification link to complete your registration.
+          </p>
+          <p className="mt-6 text-xs text-gray-500">
+            Note: For development purposes, you may want to disable email verification in the Supabase dashboard.
+          </p>
+        </div>
+        <Button
+          onClick={() => window.location.reload()}
+          className="w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-md"
+        >
+          I've Verified My Email
+        </Button>
+      </div>
+    );
+  }
 
   if (showOrganizationCode) {
     return (
