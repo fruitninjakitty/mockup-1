@@ -1,74 +1,17 @@
-import { useState, useEffect } from "react";
+
+import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ProfileDashboard, UserProfile } from "@/components/profile/ProfileDashboard";
-import { CourseCard } from "@/components/courses/CourseCard";
 import { CoursesHeader } from "@/components/courses/CoursesHeader";
-import { useToast } from "@/hooks/use-toast";
-
-interface Course {
-  id: number;
-  title: string;
-  description: string;
-  image: string;
-  roles: string[];
-}
-
-const initialCourses = [
-  {
-    id: 1,
-    title: "Foundations of Cryptography",
-    description: "Learn the basic paradigm and principles of modern cryptography",
-    image: "/placeholder.svg",
-    roles: ["Learner", "Teaching Assistant"]
-  },
-  {
-    id: 2,
-    title: "Network Science for Web",
-    description: "Network science is a multidisciplinary field",
-    image: "/placeholder.svg",
-    roles: ["Learner", "Teacher"]
-  },
-  {
-    id: 3,
-    title: "Machine Learning Basics",
-    description: "Introduction to machine learning algorithms and applications",
-    image: "/placeholder.svg",
-    roles: ["Learner", "Teaching Assistant", "Teacher"]
-  },
-  {
-    id: 4,
-    title: "Web Development Fundamentals",
-    description: "Learn HTML, CSS, and JavaScript for modern web development",
-    image: "/placeholder.svg",
-    roles: ["Learner"]
-  },
-];
-
-const roleBasedQuotes = {
-  Learner: [
-    "Continue your learning journey, every step forward is progress.",
-    "The best investment you can make is in your own education.",
-    "Learning is a treasure that will follow its owner everywhere.",
-  ],
-  Teacher: [
-    "Great teachers inspire minds and change lives forever.",
-    "Teaching is the profession that teaches all other professions.",
-    "The influence of a good teacher can never be erased.",
-  ],
-  "Teaching Assistant": [
-    "Supporting others in their learning journey is a noble pursuit.",
-    "Your guidance helps bridge the gap between teaching and understanding.",
-    "Behind every successful student is a dedicated teaching team.",
-  ],
-};
+import { CourseList } from "@/components/courses/CourseList";
+import { useCourseManagement } from "@/hooks/useCourseManagement";
+import { useRoleManagement } from "@/hooks/useRoleManagement";
 
 export default function Courses() {
-  const { toast } = useToast();
-  const [courseView, setCourseView] = useState("active");
-  const [role, setRole] = useState("Learner");
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [courseView, setCourseView] = useState("active");
   const [userProfile, setUserProfile] = useState<UserProfile>({
     fullName: "John Doe",
     email: "john.doe@example.com",
@@ -78,30 +21,8 @@ export default function Courses() {
     bio: ""
   });
 
-  const [activeCourses, setActiveCourses] = useState<Course[]>([]);
-  const [archivedCourses, setArchivedCourses] = useState<Course[]>([]);
-
-  useEffect(() => {
-    const storedActiveCourses = localStorage.getItem('activeCourses');
-    const storedArchivedCourses = localStorage.getItem('archivedCourses');
-    
-    if (storedActiveCourses) {
-      setActiveCourses(JSON.parse(storedActiveCourses));
-    } else {
-      setActiveCourses(initialCourses);
-    }
-    
-    if (storedArchivedCourses) {
-      setArchivedCourses(JSON.parse(storedArchivedCourses));
-    } else {
-      setArchivedCourses([]);
-    }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem('activeCourses', JSON.stringify(activeCourses));
-    localStorage.setItem('archivedCourses', JSON.stringify(archivedCourses));
-  }, [activeCourses, archivedCourses]);
+  const { activeCourses, archivedCourses, handleArchiveToggle } = useCourseManagement();
+  const { role, currentQuote, handleRoleChange } = useRoleManagement();
 
   const filteredActiveCourses = activeCourses.filter(course => 
     course.roles && course.roles.includes(role)
@@ -110,48 +31,6 @@ export default function Courses() {
   const filteredArchivedCourses = archivedCourses.filter(course => 
     course.roles && course.roles.includes(role)
   );
-
-  const getRandomQuote = (roleType: string) => {
-    const quotes = roleBasedQuotes[roleType as keyof typeof roleBasedQuotes] || roleBasedQuotes["Learner"];
-    return quotes[Math.floor(Math.random() * quotes.length)];
-  };
-
-  const [currentQuote, setCurrentQuote] = useState(getRandomQuote(role));
-
-  const handleRoleChange = (newRole: string) => {
-    setRole(newRole);
-    setCurrentQuote(getRandomQuote(newRole));
-  };
-
-  const handleProfileSave = (updatedProfile: UserProfile) => {
-    setUserProfile(updatedProfile);
-  };
-
-  const handleArchiveToggle = (courseId: number, archive: boolean) => {
-    if (archive) {
-      const courseToArchive = activeCourses.find(course => course.id === courseId);
-      if (courseToArchive) {
-        setActiveCourses(activeCourses.filter(course => course.id !== courseId));
-        setArchivedCourses([...archivedCourses, courseToArchive]);
-        toast({
-          title: "Course Archived",
-          description: `${courseToArchive.title} has been archived.`,
-          duration: 3000,
-        });
-      }
-    } else {
-      const courseToUnarchive = archivedCourses.find(course => course.id === courseId);
-      if (courseToUnarchive) {
-        setArchivedCourses(archivedCourses.filter(course => course.id !== courseId));
-        setActiveCourses([...activeCourses, courseToUnarchive]);
-        toast({
-          title: "Course Unarchived",
-          description: `${courseToUnarchive.title} has been moved back to active courses.`,
-          duration: 3000,
-        });
-      }
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F4F4F6] via-[#F8F7FA] to-[#E5DEFF]">
@@ -167,7 +46,7 @@ export default function Courses() {
         isOpen={isProfileOpen} 
         onClose={() => setIsProfileOpen(false)}
         initialProfile={userProfile}
-        onSave={handleProfileSave}
+        onSave={setUserProfile}
       />
 
       <main className="container section-padding">
@@ -193,40 +72,18 @@ export default function Courses() {
             </div>
             
             <TabsContent value="active">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {filteredActiveCourses.length > 0 ? (
-                  filteredActiveCourses.map((course) => (
-                    <CourseCard 
-                      key={course.id} 
-                      course={course} 
-                      onArchiveToggle={handleArchiveToggle}
-                    />
-                  ))
-                ) : (
-                  <div className="col-span-3 text-center py-8">
-                    <p className="text-gray-500">No active courses found for your role.</p>
-                  </div>
-                )}
-              </div>
+              <CourseList 
+                courses={filteredActiveCourses}
+                onArchiveToggle={handleArchiveToggle}
+              />
             </TabsContent>
             
             <TabsContent value="archived">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {filteredArchivedCourses.length > 0 ? (
-                  filteredArchivedCourses.map((course) => (
-                    <CourseCard 
-                      key={course.id} 
-                      course={course} 
-                      isArchived={true}
-                      onArchiveToggle={handleArchiveToggle} 
-                    />
-                  ))
-                ) : (
-                  <div className="col-span-3 text-center py-8">
-                    <p className="text-gray-500">No archived courses found for your role.</p>
-                  </div>
-                )}
-              </div>
+              <CourseList 
+                courses={filteredArchivedCourses}
+                isArchived={true}
+                onArchiveToggle={handleArchiveToggle}
+              />
             </TabsContent>
           </Tabs>
         </section>
@@ -235,15 +92,10 @@ export default function Courses() {
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-semibold tracking-tight">Recommended Courses</h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredActiveCourses.slice(0, 2).map((course) => (
-              <CourseCard 
-                key={course.id} 
-                course={course} 
-                onArchiveToggle={handleArchiveToggle}
-              />
-            ))}
-          </div>
+          <CourseList 
+            courses={filteredActiveCourses.slice(0, 2)}
+            onArchiveToggle={handleArchiveToggle}
+          />
         </section>
       </main>
     </div>
