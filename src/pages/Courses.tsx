@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -79,12 +78,10 @@ export default function Courses() {
     bio: ""
   });
 
-  // Track active and archived courses
   const [activeCourses, setActiveCourses] = useState<Course[]>([]);
   const [archivedCourses, setArchivedCourses] = useState<Course[]>([]);
 
   useEffect(() => {
-    // Initialize courses from localStorage or use defaults
     const storedActiveCourses = localStorage.getItem('activeCourses');
     const storedArchivedCourses = localStorage.getItem('archivedCourses');
     
@@ -106,13 +103,12 @@ export default function Courses() {
     localStorage.setItem('archivedCourses', JSON.stringify(archivedCourses));
   }, [activeCourses, archivedCourses]);
 
-  // Filter courses based on the current role
   const filteredActiveCourses = activeCourses.filter(course => 
-    course.roles.includes(role)
+    course.roles && course.roles.includes(role)
   );
 
   const filteredArchivedCourses = archivedCourses.filter(course => 
-    course.roles.includes(role)
+    course.roles && course.roles.includes(role)
   );
 
   const getRandomQuote = (roleType: string) => {

@@ -10,7 +10,7 @@ interface Course {
   title: string;
   description: string;
   image: string;
-  roles: string[];
+  roles?: string[]; // Making roles optional
 }
 
 interface CourseCardProps {
