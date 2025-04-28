@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
+import { useApprovalRequest } from "@/hooks/useApprovalRequest";
 import {
   Dialog,
   DialogContent,
@@ -21,6 +22,7 @@ export function CreateCourseDialog() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const { toast } = useToast();
+  const { submitRequest, isPending } = useApprovalRequest();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,6 +32,22 @@ export function CreateCourseDialog() {
       toast({
         title: "Error",
         description: "You must be logged in to create a course.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check if user is an approved teacher
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role, is_approved')
+      .eq('id', user.id)
+      .single();
+
+    if (!profile || profile.role !== 'teacher' || !profile.is_approved) {
+      toast({
+        title: "Access Denied",
+        description: "Only approved teachers can create courses. Please request approval if you haven't already.",
         variant: "destructive",
       });
       return;
@@ -60,6 +78,10 @@ export function CreateCourseDialog() {
     setIsOpen(false);
     setTitle("");
     setDescription("");
+  };
+
+  const handleTeacherRequest = async () => {
+    await submitRequest();
   };
 
   return (

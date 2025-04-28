@@ -9,6 +9,36 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      approval_requests: {
+        Row: {
+          id: string
+          notes: string | null
+          requested_at: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          notes?: string | null
+          requested_at?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          notes?: string | null
+          requested_at?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       assignments: {
         Row: {
           course_id: number
@@ -81,6 +111,7 @@ export type Database = {
           email: string
           full_name: string
           id: string
+          is_approved: boolean
           role: Database["public"]["Enums"]["user_role"]
         }
         Insert: {
@@ -89,6 +120,7 @@ export type Database = {
           email: string
           full_name: string
           id: string
+          is_approved?: boolean
           role?: Database["public"]["Enums"]["user_role"]
         }
         Update: {
@@ -97,6 +129,7 @@ export type Database = {
           email?: string
           full_name?: string
           id?: string
+          is_approved?: boolean
           role?: Database["public"]["Enums"]["user_role"]
         }
         Relationships: []
