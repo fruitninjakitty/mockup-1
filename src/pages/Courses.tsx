@@ -1,11 +1,10 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChevronLeft, ChevronRight, Archive, Check } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ProfileDashboard, UserProfile } from "@/components/profile/ProfileDashboard";
+import { CourseCard } from "@/components/courses/CourseCard";
+import { CoursesHeader } from "@/components/courses/CoursesHeader";
 
 const activeCourses = [
   {
@@ -56,7 +55,6 @@ const roleBasedQuotes = {
 };
 
 export default function Courses() {
-  const navigate = useNavigate();
   const [courseView, setCourseView] = useState("active");
   const [role, setRole] = useState("Learner");
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -70,15 +68,14 @@ export default function Courses() {
     bio: ""
   });
 
-  const getRandomQuote = (roleType) => {
-    const quotes = roleBasedQuotes[roleType] || roleBasedQuotes["Learner"];
-    const randomIndex = Math.floor(Math.random() % quotes.length);
-    return quotes[randomIndex];
+  const getRandomQuote = (roleType: string) => {
+    const quotes = roleBasedQuotes[roleType as keyof typeof roleBasedQuotes] || roleBasedQuotes["Learner"];
+    return quotes[Math.floor(Math.random() * quotes.length)];
   };
 
   const [currentQuote, setCurrentQuote] = useState(getRandomQuote(role));
 
-  const handleRoleChange = (newRole) => {
+  const handleRoleChange = (newRole: string) => {
     setRole(newRole);
     setCurrentQuote(getRandomQuote(newRole));
   };
@@ -89,39 +86,13 @@ export default function Courses() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F4F4F6] via-[#F8F7FA] to-[#E5DEFF]">
-      <header className="header-glass sticky top-0 z-30">
-        <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <div>
-              <h1 className="text-2xl font-bold text-primary flex items-center">
-                Hello, <Select value={role} onValueChange={handleRoleChange}>
-                  <SelectTrigger className="inline-flex w-auto text-2xl font-bold text-primary border-none bg-transparent p-0 focus:ring-0 ml-1">
-                    <SelectValue placeholder="Select role" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-card z-40 shadow-lg border border-border rounded-lg">
-                    <SelectItem value="Learner">Learner</SelectItem>
-                    <SelectItem value="Teacher">Teacher</SelectItem>
-                    <SelectItem value="Teaching Assistant">Teaching Assistant</SelectItem>
-                  </SelectContent>
-                </Select>
-              </h1>
-              <p className="text-sm text-gray-500">{currentQuote}</p>
-            </div>
-          </div>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="rounded-full transition-all hover:bg-primary/20"
-            onClick={() => setIsProfileOpen(true)}
-            title="Your Profile"
-          >
-            <span className="sr-only">User menu</span>
-            <div className="w-9 h-9 rounded-full bg-primary text-white grid place-items-center font-semibold border-2 border-white shadow-inner">
-              {userProfile.fullName ? userProfile.fullName.charAt(0) : "J"}
-            </div>
-          </Button>
-        </div>
-      </header>
+      <CoursesHeader
+        role={role}
+        quote={currentQuote}
+        onRoleChange={handleRoleChange}
+        onProfileClick={() => setIsProfileOpen(true)}
+        userInitial={userProfile.fullName ? userProfile.fullName.charAt(0) : "J"}
+      />
 
       <ProfileDashboard 
         isOpen={isProfileOpen} 
@@ -151,38 +122,11 @@ export default function Courses() {
                 </Button>
               </div>
             </div>
+            
             <TabsContent value="active">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {activeCourses.map((course) => (
-                  <Card key={course.id} className="minimal-card card-gradient transition-transform hover:scale-105">
-                    <CardHeader>
-                      <img
-                        src={course.image}
-                        alt={course.title}
-                        className="w-full h-44 object-cover rounded-xl mb-2"
-                      />
-                    </CardHeader>
-                    <CardContent>
-                      <CardTitle className="text-lg">{course.title}</CardTitle>
-                      <CardDescription>{course.description}</CardDescription>
-                      <div className="flex justify-between mt-3">
-                        <Button
-                          className="w-5/6 bg-secondary text-white font-semibold shadow hover:bg-secondary/90"
-                          onClick={() => navigate(`/course/${course.id}`)}
-                        >
-                          Continue Learning
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          title="Archive Course"
-                          className="border-gray-200"
-                        >
-                          <Archive className="h-4 w-4 text-gray-400" />
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <CourseCard key={course.id} course={course} />
                 ))}
               </div>
             </TabsContent>
@@ -190,36 +134,7 @@ export default function Courses() {
             <TabsContent value="archived">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {archivedCourses.map((course) => (
-                  <Card key={course.id} className="minimal-card bg-muted card-gradient opacity-80 transition-transform hover:scale-102">
-                    <CardHeader>
-                      <img
-                        src={course.image}
-                        alt={course.title}
-                        className="w-full h-44 object-cover rounded-xl mb-2 opacity-80"
-                      />
-                    </CardHeader>
-                    <CardContent>
-                      <CardTitle className="text-lg text-gray-600">{course.title}</CardTitle>
-                      <CardDescription className="text-gray-500">{course.description}</CardDescription>
-                      <div className="flex justify-between mt-3">
-                        <Button
-                          variant="outline"
-                          className="w-5/6"
-                          onClick={() => navigate(`/course/${course.id}`)}
-                        >
-                          View Course
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          title="Unarchive Course"
-                          className="border-gray-200"
-                        >
-                          <Archive className="h-4 w-4 text-secondary" />
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <CourseCard key={course.id} course={course} isArchived />
                 ))}
               </div>
             </TabsContent>
@@ -232,26 +147,7 @@ export default function Courses() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {activeCourses.map((course) => (
-              <Card key={course.id} className="minimal-card card-gradient transition-transform hover:scale-105">
-                <CardHeader>
-                  <img
-                    src={course.image}
-                    alt={course.title}
-                    className="w-full h-44 object-cover rounded-xl mb-2"
-                  />
-                </CardHeader>
-                <CardContent>
-                  <CardTitle className="text-lg">{course.title}</CardTitle>
-                  <CardDescription>{course.description}</CardDescription>
-                  <Button
-                    variant="outline"
-                    className="mt-4 w-full"
-                    onClick={() => navigate(`/course/${course.id}`)}
-                  >
-                    View Course
-                  </Button>
-                </CardContent>
-              </Card>
+              <CourseCard key={course.id} course={course} />
             ))}
           </div>
         </section>
