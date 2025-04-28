@@ -13,6 +13,7 @@ interface Course {
   title: string;
   description: string;
   image: string;
+  roles: string[];
 }
 
 const initialCourses = [
@@ -21,24 +22,28 @@ const initialCourses = [
     title: "Foundations of Cryptography",
     description: "Learn the basic paradigm and principles of modern cryptography",
     image: "/placeholder.svg",
+    roles: ["Learner", "Teaching Assistant"]
   },
   {
     id: 2,
     title: "Network Science for Web",
     description: "Network science is a multidisciplinary field",
     image: "/placeholder.svg",
+    roles: ["Learner", "Teacher"]
   },
   {
     id: 3,
     title: "Machine Learning Basics",
     description: "Introduction to machine learning algorithms and applications",
     image: "/placeholder.svg",
+    roles: ["Learner", "Teaching Assistant", "Teacher"]
   },
   {
     id: 4,
     title: "Web Development Fundamentals",
     description: "Learn HTML, CSS, and JavaScript for modern web development",
     image: "/placeholder.svg",
+    roles: ["Learner"]
   },
 ];
 
@@ -65,7 +70,6 @@ export default function Courses() {
   const [courseView, setCourseView] = useState("active");
   const [role, setRole] = useState("Learner");
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  
   const [userProfile, setUserProfile] = useState<UserProfile>({
     fullName: "John Doe",
     email: "john.doe@example.com",
@@ -97,11 +101,19 @@ export default function Courses() {
     }
   }, []);
 
-  // Save courses to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem('activeCourses', JSON.stringify(activeCourses));
     localStorage.setItem('archivedCourses', JSON.stringify(archivedCourses));
   }, [activeCourses, archivedCourses]);
+
+  // Filter courses based on the current role
+  const filteredActiveCourses = activeCourses.filter(course => 
+    course.roles.includes(role)
+  );
+
+  const filteredArchivedCourses = archivedCourses.filter(course => 
+    course.roles.includes(role)
+  );
 
   const getRandomQuote = (roleType: string) => {
     const quotes = roleBasedQuotes[roleType as keyof typeof roleBasedQuotes] || roleBasedQuotes["Learner"];
@@ -119,10 +131,8 @@ export default function Courses() {
     setUserProfile(updatedProfile);
   };
 
-  // Handle archive/unarchive functionality
   const handleArchiveToggle = (courseId: number, archive: boolean) => {
     if (archive) {
-      // Move course from active to archived
       const courseToArchive = activeCourses.find(course => course.id === courseId);
       if (courseToArchive) {
         setActiveCourses(activeCourses.filter(course => course.id !== courseId));
@@ -134,7 +144,6 @@ export default function Courses() {
         });
       }
     } else {
-      // Move course from archived to active
       const courseToUnarchive = archivedCourses.find(course => course.id === courseId);
       if (courseToUnarchive) {
         setArchivedCourses(archivedCourses.filter(course => course.id !== courseId));
@@ -189,8 +198,8 @@ export default function Courses() {
             
             <TabsContent value="active">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {activeCourses.length > 0 ? (
-                  activeCourses.map((course) => (
+                {filteredActiveCourses.length > 0 ? (
+                  filteredActiveCourses.map((course) => (
                     <CourseCard 
                       key={course.id} 
                       course={course} 
@@ -199,7 +208,7 @@ export default function Courses() {
                   ))
                 ) : (
                   <div className="col-span-3 text-center py-8">
-                    <p className="text-gray-500">No active courses found.</p>
+                    <p className="text-gray-500">No active courses found for your role.</p>
                   </div>
                 )}
               </div>
@@ -207,8 +216,8 @@ export default function Courses() {
             
             <TabsContent value="archived">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {archivedCourses.length > 0 ? (
-                  archivedCourses.map((course) => (
+                {filteredArchivedCourses.length > 0 ? (
+                  filteredArchivedCourses.map((course) => (
                     <CourseCard 
                       key={course.id} 
                       course={course} 
@@ -218,7 +227,7 @@ export default function Courses() {
                   ))
                 ) : (
                   <div className="col-span-3 text-center py-8">
-                    <p className="text-gray-500">No archived courses found.</p>
+                    <p className="text-gray-500">No archived courses found for your role.</p>
                   </div>
                 )}
               </div>
@@ -231,7 +240,7 @@ export default function Courses() {
             <h2 className="text-xl font-semibold tracking-tight">Recommended Courses</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {activeCourses.slice(0, 2).map((course) => (
+            {filteredActiveCourses.slice(0, 2).map((course) => (
               <CourseCard 
                 key={course.id} 
                 course={course} 

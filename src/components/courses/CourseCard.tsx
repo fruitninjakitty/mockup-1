@@ -10,6 +10,7 @@ interface Course {
   title: string;
   description: string;
   image: string;
+  roles: string[];
 }
 
 interface CourseCardProps {
