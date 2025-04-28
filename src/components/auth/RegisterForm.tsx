@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,7 @@ export function RegisterForm() {
   const [schoolCode, setSchoolCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isCheckingCode, setIsCheckingCode] = useState(false);
+  const [formError, setFormError] = useState("");
 
   const validateSchoolCode = async (code: string) => {
     if (!code.trim()) return false;
@@ -34,6 +36,7 @@ export function RegisterForm() {
         .single();
         
       if (error || !data) {
+        console.error("School code validation error:", error);
         return false;
       }
       
@@ -48,6 +51,7 @@ export function RegisterForm() {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError("");
 
     if (password !== confirmPassword) {
       toast({
@@ -89,6 +93,7 @@ export function RegisterForm() {
         .single();
 
       if (orgError) {
+        console.error("Organization lookup error:", orgError);
         toast({
           title: "Invalid school code",
           description: "The school/organization code you entered is not valid",
@@ -109,6 +114,12 @@ export function RegisterForm() {
       });
 
       if (authError) {
+        console.error("Auth error:", authError);
+        if (authError.message.includes("Email signups are disabled")) {
+          setFormError("Email signups are currently disabled. Please contact the administrator to enable email signups.");
+        } else {
+          setFormError(authError.message);
+        }
         toast({
           title: "Registration failed",
           description: authError.message,
@@ -141,6 +152,7 @@ export function RegisterForm() {
         .eq('id', authData.user.id);
 
       if (profileError) {
+        console.error("Profile update error:", profileError);
         toast({
           title: "Failed to update profile",
           description: profileError.message,
@@ -158,6 +170,7 @@ export function RegisterForm() {
 
       navigate("/onboarding");
     } catch (error) {
+      console.error("Unexpected error:", error);
       toast({
         title: "An error occurred",
         description: "Please try again later",
@@ -170,6 +183,16 @@ export function RegisterForm() {
 
   return (
     <form onSubmit={handleRegister} className="space-y-5">
+      {formError && (
+        <div className="p-3 bg-red-50 border border-red-200 rounded-md text-red-600 text-sm mb-4">
+          <p className="font-medium">Registration Error:</p>
+          <p>{formError}</p>
+          <p className="text-xs mt-2">
+            If email signups are disabled, please check your Supabase authentication settings.
+          </p>
+        </div>
+      )}
+      
       <PersonalInfoFields
         firstName={firstName}
         lastName={lastName}

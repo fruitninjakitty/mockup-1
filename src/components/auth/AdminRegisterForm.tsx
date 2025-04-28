@@ -21,6 +21,7 @@ export function AdminRegisterForm() {
   const [organizationCode, setOrganizationCode] = useState("");
   const [showOrganizationCode, setShowOrganizationCode] = useState(false);
   const [emailConfirmRequired, setEmailConfirmRequired] = useState(false);
+  const [formError, setFormError] = useState("");
 
   const generateOrganizationCode = () => {
     // Generate a random 6-character alphanumeric code
@@ -34,6 +35,7 @@ export function AdminRegisterForm() {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError("");
 
     if (password !== confirmPassword) {
       toast({
@@ -73,6 +75,12 @@ export function AdminRegisterForm() {
       });
 
       if (authError) {
+        console.error("Auth error:", authError);
+        if (authError.message.includes("Email signups are disabled")) {
+          setFormError("Email signups are currently disabled. Please contact the administrator to enable email signups.");
+        } else {
+          setFormError(authError.message);
+        }
         toast({
           title: "Registration failed",
           description: authError.message,
@@ -115,6 +123,7 @@ export function AdminRegisterForm() {
       });
 
       if (signInError) {
+        console.error("Sign in error:", signInError);
         if (signInError.message.includes("Email not confirmed")) {
           setEmailConfirmRequired(true);
           toast({
@@ -158,6 +167,7 @@ export function AdminRegisterForm() {
         .single();
 
       if (orgError) {
+        console.error("Organization creation error:", orgError);
         toast({
           title: "Failed to create organization",
           description: orgError.message,
@@ -177,6 +187,7 @@ export function AdminRegisterForm() {
         .eq('id', authData.user.id);
 
       if (profileError) {
+        console.error("Profile update error:", profileError);
         toast({
           title: "Failed to update profile",
           description: profileError.message,
@@ -195,6 +206,7 @@ export function AdminRegisterForm() {
       });
 
     } catch (error) {
+      console.error("Unexpected error:", error);
       toast({
         title: "An error occurred",
         description: "Please try again later",
@@ -261,6 +273,16 @@ export function AdminRegisterForm() {
 
   return (
     <form onSubmit={handleRegister} className="space-y-5">
+      {formError && (
+        <div className="p-3 bg-red-50 border border-red-200 rounded-md text-red-600 text-sm mb-4">
+          <p className="font-medium">Registration Error:</p>
+          <p>{formError}</p>
+          <p className="text-xs mt-2">
+            If email signups are disabled, please check your Supabase authentication settings.
+          </p>
+        </div>
+      )}
+      
       <div className="space-y-1">
         <Label htmlFor="org-name" className="text-[#43BC88] text-sm font-semibold flex items-center gap-1">
           <Building size={16} className="text-[#43BC88]" /> Organization Name

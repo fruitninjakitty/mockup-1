@@ -1,3 +1,4 @@
+
 import { UserProfile } from "./course";
 
 export interface Course {
@@ -18,6 +19,7 @@ export interface Course {
   skillLevel?: string;
   duration?: string;
   certification?: boolean;
+  organizationId?: string; // Added to store the organization ID
 }
 
 export interface CourseViewState {

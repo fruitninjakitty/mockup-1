@@ -372,6 +372,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_user_organization_id: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       search_users: {
         Args: { search_query: string }
         Returns: {
