@@ -59,7 +59,7 @@ export function AdminRegisterForm() {
     setIsLoading(true);
 
     try {
-      // 1. Create the user account
+      // 1. Create the user account first
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
@@ -90,7 +90,27 @@ export function AdminRegisterForm() {
         return;
       }
 
-      // 2. Create the organization
+      // Wait for the auth to complete and profiles trigger to run
+      // This small delay helps ensure the profile is created
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // 2. Now sign in to get authenticated session
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (signInError) {
+        toast({
+          title: "Sign in failed",
+          description: signInError.message,
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      // 3. Create the organization (now authenticated as the new user)
       const { data: orgData, error: orgError } = await supabase
         .from('organizations')
         .insert({
@@ -111,7 +131,7 @@ export function AdminRegisterForm() {
         return;
       }
 
-      // 3. Update the profile with organization_id and role
+      // 4. Update the user's profile with organization_id and admin role
       const { error: profileError } = await supabase
         .from('profiles')
         .update({ 
