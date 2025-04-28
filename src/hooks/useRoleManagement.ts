@@ -3,8 +3,8 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
-type DisplayRole = "Learner" | "Teacher" | "Teaching Assistant";
-type DatabaseRole = "learner" | "teacher" | "teaching_assistant";
+type DisplayRole = "Learner" | "Teacher" | "Teaching Assistant" | "Administrator";
+type DatabaseRole = "learner" | "teacher" | "teaching_assistant" | "administrator";
 
 const roleBasedQuotes = {
   Learner: [
@@ -22,6 +22,11 @@ const roleBasedQuotes = {
     "Your guidance helps bridge the gap between teaching and understanding.",
     "Behind every successful student is a dedicated teaching team.",
   ],
+  "Administrator": [
+    "Effective administration creates the foundation for educational excellence.",
+    "Good leadership empowers both teachers and students to reach their potential.",
+    "Managing education systems requires vision, wisdom, and dedication.",
+  ],
 } as const;
 
 const dbRoleToDisplayRole = (dbRole: DatabaseRole): DisplayRole => {
@@ -32,6 +37,8 @@ const dbRoleToDisplayRole = (dbRole: DatabaseRole): DisplayRole => {
       return "Teacher";
     case "learner":
       return "Learner";
+    case "administrator":
+      return "Administrator";
   }
 };
 
@@ -43,6 +50,8 @@ const displayRoleToDbRole = (displayRole: DisplayRole): DatabaseRole => {
       return "teacher";
     case "Learner":
       return "learner";
+    case "Administrator":
+      return "administrator";
   }
 };
 
