@@ -1,14 +1,15 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { UserPlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { PersonalInfoFields } from "./FormFields/PersonalInfoFields";
+import { 
+  PersonalInfoFields, 
+  PasswordFields, 
+  SchoolCodeField 
+} from "@/components/common/FormFields";
 import { UserTypeFields } from "./FormFields/UserTypeFields";
-import { SchoolCodeField } from "./FormFields/SchoolCodeField";
-import { PasswordFields } from "./FormFields/PasswordFields";
 
 export function RegisterForm() {
   const navigate = useNavigate();

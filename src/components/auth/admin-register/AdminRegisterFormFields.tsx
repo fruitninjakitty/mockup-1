@@ -1,9 +1,10 @@
 
+import { Building, Briefcase } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Building, Mail, User, Lock, KeyRound, Briefcase } from "lucide-react";
+import { PersonalInfoFields, PasswordFields } from "@/components/common/FormFields";
 
-interface AdminRegisterFormFieldsProps {
+export interface AdminRegisterFormFieldsProps {
   organizationName: string;
   firstName: string;
   lastName: string;
@@ -49,51 +50,16 @@ export function AdminRegisterFormFields({
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-1">
-          <Label htmlFor="admin-firstname" className="text-[#43BC88] text-sm font-semibold flex items-center gap-1">
-            <User size={16} className="text-[#43BC88]" /> First Name
-          </Label>
-          <Input
-            id="admin-firstname"
-            type="text"
-            placeholder="First Name"
-            className="w-full border-border"
-            value={firstName}
-            onChange={(e) => onFirstNameChange(e.target.value)}
-            required
-          />
-        </div>
-        <div className="space-y-1">
-          <Label htmlFor="admin-lastname" className="text-[#43BC88] text-sm font-semibold flex items-center gap-1">
-            <User size={16} className="text-[#43BC88]" /> Last Name
-          </Label>
-          <Input
-            id="admin-lastname"
-            type="text"
-            placeholder="Last Name"
-            className="w-full border-border"
-            value={lastName}
-            onChange={(e) => onLastNameChange(e.target.value)}
-            required
-          />
-        </div>
-      </div>
-
-      <div className="space-y-1">
-        <Label htmlFor="admin-email" className="text-[#43BC88] text-sm font-semibold flex items-center gap-1">
-          <Mail size={16} className="text-[#43BC88]" /> Email Address
-        </Label>
-        <Input
-          id="admin-email"
-          type="email"
-          placeholder="Enter your email"
-          className="w-full border-border"
-          value={email}
-          onChange={(e) => onEmailChange(e.target.value)}
-          required
-        />
-      </div>
+      <PersonalInfoFields
+        firstName={firstName}
+        lastName={lastName}
+        email={email}
+        onFirstNameChange={onFirstNameChange}
+        onLastNameChange={onLastNameChange}
+        onEmailChange={onEmailChange}
+        emailLabel="Email Address"
+        emailPlaceholder="Enter your email"
+      />
 
       <div className="space-y-1">
         <Label htmlFor="admin-role" className="text-[#43BC88] text-sm font-semibold flex items-center gap-1">
@@ -108,36 +74,16 @@ export function AdminRegisterFormFields({
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-1">
-          <Label htmlFor="admin-password" className="text-[#43BC88] text-sm font-semibold flex items-center gap-1">
-            <Lock size={16} className="text-[#43BC88]" /> Password
-          </Label>
-          <Input
-            id="admin-password"
-            type="password"
-            placeholder="Create password"
-            className="w-full border-border"
-            value={password}
-            onChange={(e) => onPasswordChange(e.target.value)}
-            required
-          />
-        </div>
-        <div className="space-y-1">
-          <Label htmlFor="admin-confirm" className="text-[#43BC88] text-sm font-semibold flex items-center gap-1">
-            <KeyRound size={16} className="text-[#43BC88]" /> Confirm Password
-          </Label>
-          <Input
-            id="admin-confirm"
-            type="password"
-            placeholder="Confirm password"
-            className="w-full border-border"
-            value={confirmPassword}
-            onChange={(e) => onConfirmPasswordChange(e.target.value)}
-            required
-          />
-        </div>
-      </div>
+      <PasswordFields
+        password={password}
+        confirmPassword={confirmPassword}
+        onPasswordChange={onPasswordChange}
+        onConfirmPasswordChange={onConfirmPasswordChange}
+        passwordLabel="Password"
+        confirmLabel="Confirm Password"
+        passwordPlaceholder="Create password"
+        confirmPlaceholder="Confirm password"
+      />
     </>
   );
 }
