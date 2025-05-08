@@ -1,11 +1,29 @@
 
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { RegisterForm } from "@/components/auth/RegisterForm";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Login() {
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
+  const { isAuthenticated, loading } = useAuth();
+  const navigate = useNavigate();
+  
+  // Redirect to courses if already authenticated
+  useEffect(() => {
+    if (!loading && isAuthenticated) {
+      navigate('/courses');
+    }
+  }, [isAuthenticated, loading, navigate]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p>Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#F8F7FA] via-[#FFFFFF] to-[#E2F0FA]">

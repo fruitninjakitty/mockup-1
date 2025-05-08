@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,17 +10,21 @@ import { supabase } from "@/integrations/supabase/client";
 
 export function LoginForm() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  // Get the redirect path from location state, or default to /courses
+  const from = location.state?.from || "/courses";
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
@@ -34,12 +38,16 @@ export function LoginForm() {
         return;
       }
 
-      toast({
-        title: "Login successful",
-        variant: "default",
-        duration: 1800,
-      });
-      navigate("/courses");
+      if (data.user) {
+        toast({
+          title: "Login successful",
+          variant: "default",
+          duration: 1800,
+        });
+        
+        // Redirect to the page user was trying to access, or courses page
+        navigate(from);
+      }
     } catch (error) {
       toast({
         title: "An error occurred",

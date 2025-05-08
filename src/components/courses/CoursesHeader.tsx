@@ -2,6 +2,8 @@
 import React from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { useAuth } from '@/context/AuthContext';
+import { LogOut } from 'lucide-react';
 
 interface CoursesHeaderProps {
   role: string;
@@ -12,6 +14,8 @@ interface CoursesHeaderProps {
 }
 
 export function CoursesHeader({ role, quote, onRoleChange, onProfileClick, userInitial }: CoursesHeaderProps) {
+  const { signOut } = useAuth();
+  
   return (
     <header className="header-glass sticky top-0 z-30">
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
@@ -34,18 +38,30 @@ export function CoursesHeader({ role, quote, onRoleChange, onProfileClick, userI
             <p className="text-sm text-gray-500">{quote}</p>
           </div>
         </div>
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          className="rounded-full transition-all hover:bg-primary/20"
-          onClick={onProfileClick}
-          title="Your Profile"
-        >
-          <span className="sr-only">User menu</span>
-          <div className="w-9 h-9 rounded-full bg-primary text-white grid place-items-center font-semibold border-2 border-white shadow-inner">
-            {userInitial}
-          </div>
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={signOut} 
+            className="rounded-full"
+            title="Sign out"
+          >
+            <LogOut size={18} className="text-gray-600" />
+            <span className="sr-only">Sign out</span>
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="rounded-full transition-all hover:bg-primary/20"
+            onClick={onProfileClick}
+            title="Your Profile"
+          >
+            <span className="sr-only">User menu</span>
+            <div className="w-9 h-9 rounded-full bg-primary text-white grid place-items-center font-semibold border-2 border-white shadow-inner">
+              {userInitial}
+            </div>
+          </Button>
+        </div>
       </div>
     </header>
   );
