@@ -37,6 +37,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             description: "You have been signed out successfully",
             duration: 3000,
           });
+        } else if (event === 'SIGNED_IN') {
+          // Redirect to appropriate page after sign in
+          const redirectPath = window.location.pathname === '/' ? '/courses' : window.location.pathname;
+          navigate(redirectPath);
         }
       }
     );
