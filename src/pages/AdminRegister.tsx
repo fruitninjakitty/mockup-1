@@ -1,7 +1,6 @@
 
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { AdminRegisterForm } from "@/components/auth/AdminRegisterForm";
+import { AdminRegisterForm } from "@/components/auth/admin-register/AdminRegisterForm";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 

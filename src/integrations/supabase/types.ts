@@ -376,10 +376,6 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
-      is_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
       search_users: {
         Args: { search_query: string }
         Returns: {
