@@ -30,6 +30,9 @@ export default function AdminRegister() {
             </p>
           </div>
           <AdminRegisterForm />
+          <div className="mt-6 text-sm text-center text-muted-foreground">
+            <p>After registration, share your school code with students and teachers to join your institution.</p>
+          </div>
         </div>
       </div>
     </div>
