@@ -1,14 +1,12 @@
 
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
 
 interface OrganizationCodeDisplayProps {
   organizationCode: string;
+  onContinue: () => void;
 }
 
-export function OrganizationCodeDisplay({ organizationCode }: OrganizationCodeDisplayProps) {
-  const navigate = useNavigate();
-  
+export function OrganizationCodeDisplay({ organizationCode, onContinue }: OrganizationCodeDisplayProps) {
   return (
     <div className="text-center space-y-6">
       <div className="p-6 bg-[#E6FAF0] rounded-lg border-2 border-[#43BC88]">
@@ -24,7 +22,7 @@ export function OrganizationCodeDisplay({ organizationCode }: OrganizationCodeDi
         </p>
       </div>
       <Button
-        onClick={() => navigate("/courses")}
+        onClick={onContinue}
         className="w-full bg-[#43BC88] hover:bg-[#3ba574] text-white font-semibold rounded-md"
       >
         Continue to Dashboard
