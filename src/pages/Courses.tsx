@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -10,42 +10,74 @@ import { UserSearch } from "@/components/search/UserSearch";
 import { CreateCourseDialog } from "@/components/courses/CreateCourseDialog";
 import { useCourseManagement } from "@/hooks/useCourseManagement";
 import { useRoleManagement } from "@/hooks/useRoleManagement";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Courses() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [courseView, setCourseView] = useState("active");
   const [userProfile, setUserProfile] = useState<UserProfile>({
-    fullName: "John Doe",
-    email: "john.doe@example.com",
-    learningGoal: "professional",
-    focusArea: "skills", 
-    learningSchedule: "morning",
+    fullName: "",
+    email: "",
     bio: ""
   });
-
+  
   const { activeCourses, archivedCourses, handleArchiveToggle } = useCourseManagement();
-  const { role, currentQuote, handleRoleChange } = useRoleManagement();
+  const { roles, availableRoles, currentQuote, handleRoleChange } = useRoleManagement();
+  
+  // Fetch user profile data on mount
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) return;
+      
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('full_name, email, role, bio, school_code')
+        .eq('id', session.user.id)
+        .single();
+        
+      if (error) {
+        console.error("Error fetching profile:", error);
+        return;
+      }
+      
+      if (profile) {
+        setUserProfile({
+          fullName: profile.full_name || "",
+          email: profile.email || "",
+          userRoles: [profile.role],
+          schoolCode: profile.school_code || "",
+          bio: profile.bio || ""
+        });
+      }
+    };
+    
+    fetchUserProfile();
+  }, []);
 
+  // Filter courses based on user roles
   const filteredActiveCourses = activeCourses.filter(course => 
-    course.roles ? course.roles.includes(role) : true
+    !course.roles || roles.some(role => course.roles?.includes(role))
   );
 
   const filteredArchivedCourses = archivedCourses.filter(course => 
-    course.roles ? course.roles.includes(role) : true
+    !course.roles || roles.some(role => course.roles?.includes(role))
   );
 
-  const showCreateCourse = role === "Teacher" || role === "Administrator";
-  const showRecommendedCourses = role === "Learner";
-  const showUserSearch = role === "Teacher" || role === "Administrator";
+  const showCreateCourse = roles.includes("Teacher") || roles.includes("Administrator");
+  const showRecommendedCourses = roles.includes("Learner");
+  const showUserSearch = roles.includes("Teacher") || roles.includes("Administrator");
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F4F4F6] via-[#F8F7FA] to-[#E5DEFF]">
       <CoursesHeader
-        role={role}
+        roles={roles}
+        availableRoles={availableRoles}
         quote={currentQuote}
         onRoleChange={handleRoleChange}
         onProfileClick={() => setIsProfileOpen(true)}
-        userInitial={userProfile.fullName ? userProfile.fullName.charAt(0) : "J"}
+        userInitial={userProfile.fullName ? userProfile.fullName.charAt(0) : ""}
+        avatarUrl={userProfile.avatarUrl}
       />
 
       <ProfileDashboard 

@@ -4,16 +4,27 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { useAuth } from '@/context/AuthContext';
 import { LogOut } from 'lucide-react';
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 interface CoursesHeaderProps {
-  role: string;
+  roles: string[];
+  availableRoles: string[];
   quote: string;
   onRoleChange: (role: string) => void;
   onProfileClick: () => void;
   userInitial: string;
+  avatarUrl?: string;
 }
 
-export function CoursesHeader({ role, quote, onRoleChange, onProfileClick, userInitial }: CoursesHeaderProps) {
+export function CoursesHeader({ 
+  roles, 
+  availableRoles, 
+  quote, 
+  onRoleChange, 
+  onProfileClick, 
+  userInitial,
+  avatarUrl
+}: CoursesHeaderProps) {
   const { signOut } = useAuth();
   
   return (
@@ -23,22 +34,39 @@ export function CoursesHeader({ role, quote, onRoleChange, onProfileClick, userI
           <div>
             <h1 className="text-2xl font-bold flex items-center">
               <span className="text-primary">Hello,</span>{' '}
-              <Select value={role} onValueChange={onRoleChange}>
-                <SelectTrigger className="inline-flex w-auto text-2xl font-bold border-none bg-transparent p-0 focus:ring-0 ml-1 text-secondary">
-                  <SelectValue placeholder="Select role" />
-                </SelectTrigger>
-                <SelectContent className="bg-card z-40 shadow-lg border border-border rounded-lg">
-                  <SelectItem value="Learner">Learner</SelectItem>
-                  <SelectItem value="Teacher">Teacher</SelectItem>
-                  <SelectItem value="Teaching Assistant">Teaching Assistant</SelectItem>
-                  <SelectItem value="Administrator">Administrator</SelectItem>
-                </SelectContent>
-              </Select>
+              {roles.length > 0 && availableRoles.length > 0 ? (
+                <Select 
+                  value={roles[0]} 
+                  onValueChange={onRoleChange}
+                >
+                  <SelectTrigger className="inline-flex w-auto text-2xl font-bold border-none bg-transparent p-0 focus:ring-0 ml-1 text-secondary">
+                    <SelectValue placeholder="Select role" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-card z-40 shadow-lg border border-border rounded-lg">
+                    {availableRoles.map((role) => (
+                      <SelectItem key={role} value={role}>
+                        {role}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <span className="text-secondary ml-1">User</span>
+              )}
             </h1>
             <p className="text-sm text-gray-500">{quote}</p>
           </div>
         </div>
+        
         <div className="flex items-center gap-3">
+          <div className="flex flex-wrap gap-1">
+            {roles.length > 1 && roles.slice(1).map((role, index) => (
+              <div key={index} className="px-2 py-1 bg-secondary/10 rounded-full text-secondary text-xs">
+                {role}
+              </div>
+            ))}
+          </div>
+          
           <Button 
             variant="ghost" 
             size="icon"
@@ -49,6 +77,7 @@ export function CoursesHeader({ role, quote, onRoleChange, onProfileClick, userI
             <LogOut size={18} className="text-gray-600" />
             <span className="sr-only">Sign out</span>
           </Button>
+          
           <Button 
             variant="ghost" 
             size="icon" 
@@ -57,9 +86,15 @@ export function CoursesHeader({ role, quote, onRoleChange, onProfileClick, userI
             title="Your Profile"
           >
             <span className="sr-only">User menu</span>
-            <div className="w-9 h-9 rounded-full bg-primary text-white grid place-items-center font-semibold border-2 border-white shadow-inner">
-              {userInitial}
-            </div>
+            <Avatar className="h-9 w-9">
+              {avatarUrl ? (
+                <AvatarImage src={avatarUrl} alt="User" />
+              ) : (
+                <AvatarFallback className="bg-primary text-white font-semibold">
+                  {userInitial || '?'}
+                </AvatarFallback>
+              )}
+            </Avatar>
           </Button>
         </div>
       </div>

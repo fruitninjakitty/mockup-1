@@ -55,50 +55,110 @@ const displayRoleToDbRole = (displayRole: DisplayRole): DatabaseRole => {
   }
 };
 
+// Role compatibility rules
+const isRoleCompatible = (currentRoles: DisplayRole[], roleToAdd: DisplayRole): boolean => {
+  // Administrator cannot be combined with Learner or Teaching Assistant
+  if (roleToAdd === "Administrator" && 
+      (currentRoles.includes("Learner") || currentRoles.includes("Teaching Assistant"))) {
+    return false;
+  }
+  
+  // Learner or Teaching Assistant cannot be added if Administrator exists
+  if ((roleToAdd === "Learner" || roleToAdd === "Teaching Assistant") && 
+      currentRoles.includes("Administrator")) {
+    return false;
+  }
+  
+  // Teacher cannot be combined with Learner or Teaching Assistant
+  if (roleToAdd === "Teacher" && 
+      (currentRoles.includes("Learner") || currentRoles.includes("Teaching Assistant"))) {
+    return false;
+  }
+  
+  // Learner or Teaching Assistant cannot be added if Teacher exists
+  if ((roleToAdd === "Learner" || roleToAdd === "Teaching Assistant") && 
+      currentRoles.includes("Teacher")) {
+    return false;
+  }
+  
+  // Don't add if already exists
+  if (currentRoles.includes(roleToAdd)) {
+    return false;
+  }
+  
+  return true;
+};
+
 export function useRoleManagement() {
-  const [role, setRole] = useState<DisplayRole>("Learner");
+  const [roles, setRoles] = useState<DisplayRole[]>([]);
+  const [availableRoles, setAvailableRoles] = useState<DisplayRole[]>([]);
   const { toast } = useToast();
 
+  // Get user roles from database
   useEffect(() => {
-    const getUserRole = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
+    const getUserRoles = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.user) return;
+
         const { data: profile, error } = await supabase
           .from('profiles')
-          .select('role')
+          .select('role, full_name, email')
           .eq('id', session.user.id)
           .single();
 
         if (error) {
           toast({
             title: "Error",
-            description: "Could not fetch user role",
+            description: "Could not fetch user roles",
             variant: "destructive",
           });
           return;
         }
 
         if (profile) {
-          setRole(dbRoleToDisplayRole(profile.role));
+          const userRole = dbRoleToDisplayRole(profile.role as DatabaseRole);
+          setRoles([userRole]);
+          updateAvailableRoles([userRole]);
         }
+      } catch (error) {
+        console.error("Error fetching user roles:", error);
+        toast({
+          title: "Error",
+          description: "Could not fetch user roles",
+          variant: "destructive",
+        });
       }
     };
 
-    getUserRole();
+    getUserRoles();
   }, [toast]);
 
-  const getRandomQuote = (roleType: DisplayRole) => {
-    const quotes = roleBasedQuotes[roleType];
+  // Update available roles based on current roles
+  const updateAvailableRoles = (currentRoles: DisplayRole[]) => {
+    const allRoles: DisplayRole[] = ["Learner", "Teacher", "Teaching Assistant", "Administrator"];
+    const available = allRoles.filter(role => isRoleCompatible(currentRoles, role));
+    setAvailableRoles(available);
+  };
+
+  const getRandomQuote = (userRoles: DisplayRole[]) => {
+    if (userRoles.length === 0) return "Welcome to the learning platform.";
+    
+    // Prioritize quotes based on primary role
+    const primaryRole = userRoles[0];
+    const quotes = roleBasedQuotes[primaryRole];
     return quotes[Math.floor(Math.random() * quotes.length)];
   };
 
-  const [currentQuote, setCurrentQuote] = useState(getRandomQuote(role));
+  const [currentQuote, setCurrentQuote] = useState(getRandomQuote(roles));
 
   const handleRoleChange = async (newRole: DisplayRole) => {
-    const dbRole = displayRoleToDbRole(newRole);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) return;
 
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session?.user) {
+      const dbRole = displayRoleToDbRole(newRole);
+
       const { error } = await supabase
         .from('profiles')
         .update({ role: dbRole })
@@ -112,14 +172,28 @@ export function useRoleManagement() {
         });
         return;
       }
-    }
 
-    setRole(newRole);
-    setCurrentQuote(getRandomQuote(newRole));
+      setRoles([newRole]);
+      updateAvailableRoles([newRole]);
+      setCurrentQuote(getRandomQuote([newRole]));
+      
+      toast({
+        title: "Success",
+        description: `Your role has been updated to ${newRole}`,
+      });
+    } catch (error) {
+      console.error("Error updating role:", error);
+      toast({
+        title: "Error",
+        description: "Could not update user role",
+        variant: "destructive",
+      });
+    }
   };
 
   return {
-    role,
+    roles,
+    availableRoles,
     currentQuote,
     handleRoleChange,
   };
