@@ -2,9 +2,10 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { Database } from "@/integrations/supabase/types";
 
 type DisplayRole = "Learner" | "Teacher" | "Teaching Assistant" | "Administrator";
-type DatabaseRole = "learner" | "teacher" | "teaching_assistant" | "administrator";
+type DatabaseRole = Database["public"]["Enums"]["user_role"];
 
 const roleBasedQuotes = {
   Learner: [
@@ -132,7 +133,7 @@ export function useRoleManagement() {
         try {
           const { error: updateError } = await supabase
             .from('profiles')
-            .update({ role: 'learner' })
+            .update({ role: 'learner' as DatabaseRole })
             .eq('id', session.user.id);
             
           if (updateError) {

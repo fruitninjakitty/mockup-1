@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,10 @@ import { useCourseManagement } from "@/hooks/useCourseManagement";
 import { useRoleManagement } from "@/hooks/useRoleManagement";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { Database } from "@/integrations/supabase/types";
+
+// Define the database role type for better type safety
+type DatabaseRole = Database["public"]["Enums"]["user_role"];
 
 export default function Courses() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -81,7 +86,7 @@ export default function Courses() {
       try {
         const { error: updateError } = await supabase
           .from('profiles')
-          .update({ role: 'learner' })
+          .update({ role: 'learner' as DatabaseRole })
           .eq('id', userId);
           
         if (updateError) {
@@ -102,7 +107,7 @@ export default function Courses() {
           id: userId,
           full_name: user.user_metadata?.full_name || "New User",
           email: user.email || "",
-          role: "learner",
+          role: 'learner' as DatabaseRole,
           bio: "",
           avatar_url: null,
           is_approved: false
