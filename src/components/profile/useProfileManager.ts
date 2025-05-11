@@ -47,7 +47,7 @@ export function useProfileManager(initialProfile: UserProfile, onSave: (profile:
           email: userProfile.email || "",
           userRoles: [role.charAt(0).toUpperCase() + role.slice(1)], // Capitalize role
           bio: userProfile.bio || "",
-          avatarUrl: userProfile.avatar_url
+          avatarUrl: userProfile.avatar_url || undefined
         };
         
         setProfile(updatedProfile);
@@ -114,7 +114,7 @@ export function useProfileManager(initialProfile: UserProfile, onSave: (profile:
     try {
       setIsLoading(true);
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) return;
+      if (!session?.user) return false;
       
       const userId = session.user.id;
       let avatarUrl = profile.avatarUrl;

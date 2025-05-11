@@ -59,7 +59,7 @@ export default function Courses() {
             email: profile.email || "",
             userRoles: [role.charAt(0).toUpperCase() + role.slice(1)], // Capitalize the role
             bio: profile.bio || "",
-            avatarUrl: profile.avatar_url
+            avatarUrl: profile.avatar_url || undefined
           });
           
           // If no role is set, update it to the default
