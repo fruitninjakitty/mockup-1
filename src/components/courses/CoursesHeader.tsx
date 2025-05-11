@@ -5,12 +5,13 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from '@/context/AuthContext';
 import { LogOut } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { DisplayRole } from '@/types/roles';
 
 interface CoursesHeaderProps {
-  roles: string[];
-  availableRoles: string[];
+  roles: DisplayRole[];
+  availableRoles: DisplayRole[];
   quote: string;
-  onRoleChange: (role: string) => void;
+  onRoleChange: (role: DisplayRole) => void;
   onProfileClick: () => void;
   userInitial: string;
   avatarUrl?: string;

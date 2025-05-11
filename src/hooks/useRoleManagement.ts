@@ -2,102 +2,15 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Database } from "@/integrations/supabase/types";
-
-type DisplayRole = "Learner" | "Teacher" | "Teaching Assistant" | "Administrator";
-type DatabaseRole = Database["public"]["Enums"]["user_role"];
-
-const roleBasedQuotes = {
-  Learner: [
-    "Continue your learning journey, every step forward is progress.",
-    "The best investment you can make is in your own education.",
-    "Learning is a treasure that will follow its owner everywhere.",
-  ],
-  Teacher: [
-    "Great teachers inspire minds and change lives forever.",
-    "Teaching is the profession that teaches all other professions.",
-    "The influence of a good teacher can never be erased.",
-  ],
-  "Teaching Assistant": [
-    "Supporting others in their learning journey is a noble pursuit.",
-    "Your guidance helps bridge the gap between teaching and understanding.",
-    "Behind every successful student is a dedicated teaching team.",
-  ],
-  "Administrator": [
-    "Effective administration creates the foundation for educational excellence.",
-    "Good leadership empowers both teachers and students to reach their potential.",
-    "Managing education systems requires vision, wisdom, and dedication.",
-  ],
-} as const;
-
-const dbRoleToDisplayRole = (dbRole: DatabaseRole | null | undefined): DisplayRole => {
-  if (!dbRole) return "Learner"; // Default role
-  
-  switch (dbRole) {
-    case "teaching_assistant":
-      return "Teaching Assistant";
-    case "teacher":
-      return "Teacher";
-    case "administrator":
-      return "Administrator";
-    case "learner":
-    default:
-      return "Learner";
-  }
-};
-
-const displayRoleToDbRole = (displayRole: DisplayRole): DatabaseRole => {
-  switch (displayRole) {
-    case "Teaching Assistant":
-      return "teaching_assistant";
-    case "Teacher":
-      return "teacher";
-    case "Administrator":
-      return "administrator";
-    case "Learner":
-    default:
-      return "learner";
-  }
-};
-
-// Role compatibility rules
-const isRoleCompatible = (currentRoles: DisplayRole[], roleToAdd: DisplayRole): boolean => {
-  // Administrator cannot be combined with Learner or Teaching Assistant
-  if (roleToAdd === "Administrator" && 
-      (currentRoles.includes("Learner") || currentRoles.includes("Teaching Assistant"))) {
-    return false;
-  }
-  
-  // Learner or Teaching Assistant cannot be added if Administrator exists
-  if ((roleToAdd === "Learner" || roleToAdd === "Teaching Assistant") && 
-      currentRoles.includes("Administrator")) {
-    return false;
-  }
-  
-  // Teacher cannot be combined with Learner or Teaching Assistant
-  if (roleToAdd === "Teacher" && 
-      (currentRoles.includes("Learner") || currentRoles.includes("Teaching Assistant"))) {
-    return false;
-  }
-  
-  // Learner or Teaching Assistant cannot be added if Teacher exists
-  if ((roleToAdd === "Learner" || roleToAdd === "Teaching Assistant") && 
-      currentRoles.includes("Teacher")) {
-    return false;
-  }
-  
-  // Don't add if already exists
-  if (currentRoles.includes(roleToAdd)) {
-    return false;
-  }
-  
-  return true;
-};
+import { DisplayRole } from "@/types/roles";
+import { dbRoleToDisplayRole, displayRoleToDbRole, isRoleCompatible } from "@/utils/roleUtils";
+import { getRandomQuote } from "@/utils/roleQuotes";
 
 export function useRoleManagement() {
   const [roles, setRoles] = useState<DisplayRole[]>(["Learner"]); // Default role
   const [availableRoles, setAvailableRoles] = useState<DisplayRole[]>([]);
   const { toast } = useToast();
+  const [currentQuote, setCurrentQuote] = useState(getRandomQuote(["Learner"]));
 
   // Get user roles from database
   useEffect(() => {
@@ -118,6 +31,7 @@ export function useRoleManagement() {
             const userRole = dbRoleToDisplayRole(profile.role);
             setRoles([userRole]);
             updateAvailableRoles([userRole]);
+            setCurrentQuote(getRandomQuote([userRole]));
             return;
           }
         } catch (profileError) {
@@ -128,12 +42,13 @@ export function useRoleManagement() {
         const defaultRole: DisplayRole = "Learner";
         setRoles([defaultRole]);
         updateAvailableRoles([defaultRole]);
+        setCurrentQuote(getRandomQuote([defaultRole]));
         
         // Try to update the user's role in the database to learner
         try {
           const { error: updateError } = await supabase
             .from('profiles')
-            .update({ role: 'learner' as DatabaseRole })
+            .update({ role: 'learner' })
             .eq('id', session.user.id);
             
           if (updateError) {
@@ -148,6 +63,7 @@ export function useRoleManagement() {
         const defaultRole: DisplayRole = "Learner";
         setRoles([defaultRole]);
         updateAvailableRoles([defaultRole]);
+        setCurrentQuote(getRandomQuote([defaultRole]));
       }
     };
 
@@ -160,17 +76,6 @@ export function useRoleManagement() {
     const available = allRoles.filter(role => isRoleCompatible(currentRoles, role));
     setAvailableRoles(available);
   };
-
-  const getRandomQuote = (userRoles: DisplayRole[]) => {
-    if (userRoles.length === 0) return "Welcome to the learning platform.";
-    
-    // Prioritize quotes based on primary role
-    const primaryRole = userRoles[0];
-    const quotes = roleBasedQuotes[primaryRole];
-    return quotes[Math.floor(Math.random() * quotes.length)];
-  };
-
-  const [currentQuote, setCurrentQuote] = useState(getRandomQuote(roles));
 
   const handleRoleChange = async (newRole: DisplayRole) => {
     try {
