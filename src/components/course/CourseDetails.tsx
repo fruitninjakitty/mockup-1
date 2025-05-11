@@ -30,9 +30,9 @@ export function CourseDetails({ course }: CourseDetailsProps) {
       <Card>
         <Collapsible open={openSections.courseInfo}>
           <CardHeader className="pb-0">
-            <CollapsibleTrigger asChild onClick={() => toggleSection("courseInfo")}>
-              <div className="flex justify-between items-center w-full cursor-pointer">
-                <CardTitle className="text-lg font-semibold">Course Information</CardTitle>
+            <div className="flex justify-between items-center w-full cursor-pointer" onClick={() => toggleSection("courseInfo")}>
+              <CardTitle className="text-lg font-semibold">Course Information</CardTitle>
+              <CollapsibleTrigger asChild>
                 <Button variant="ghost" size="sm" className="p-0 h-8 w-8">
                   {openSections.courseInfo ? (
                     <ChevronUp className="h-5 w-5" />
@@ -40,8 +40,8 @@ export function CourseDetails({ course }: CourseDetailsProps) {
                     <ChevronDown className="h-5 w-5" />
                   )}
                 </Button>
-              </div>
-            </CollapsibleTrigger>
+              </CollapsibleTrigger>
+            </div>
           </CardHeader>
           <CollapsibleContent>
             <CardContent className="space-y-4 pt-4">
@@ -80,9 +80,9 @@ export function CourseDetails({ course }: CourseDetailsProps) {
       <Card>
         <Collapsible open={openSections.learningObjectives}>
           <CardHeader className="pb-0">
-            <CollapsibleTrigger asChild onClick={() => toggleSection("learningObjectives")}>
-              <div className="flex justify-between items-center w-full cursor-pointer">
-                <CardTitle className="text-lg font-semibold">Learning Objectives</CardTitle>
+            <div className="flex justify-between items-center w-full cursor-pointer" onClick={() => toggleSection("learningObjectives")}>
+              <CardTitle className="text-lg font-semibold">Learning Objectives</CardTitle>
+              <CollapsibleTrigger asChild>
                 <Button variant="ghost" size="sm" className="p-0 h-8 w-8">
                   {openSections.learningObjectives ? (
                     <ChevronUp className="h-5 w-5" />
@@ -90,8 +90,8 @@ export function CourseDetails({ course }: CourseDetailsProps) {
                     <ChevronDown className="h-5 w-5" />
                   )}
                 </Button>
-              </div>
-            </CollapsibleTrigger>
+              </CollapsibleTrigger>
+            </div>
           </CardHeader>
           <CollapsibleContent>
             <CardContent className="space-y-4 pt-4">
@@ -116,9 +116,9 @@ export function CourseDetails({ course }: CourseDetailsProps) {
       <Card className="md:col-span-2">
         <Collapsible open={openSections.prerequisites}>
           <CardHeader className="pb-0">
-            <CollapsibleTrigger asChild onClick={() => toggleSection("prerequisites")}>
-              <div className="flex justify-between items-center w-full cursor-pointer">
-                <CardTitle className="text-lg font-semibold">Prerequisites</CardTitle>
+            <div className="flex justify-between items-center w-full cursor-pointer" onClick={() => toggleSection("prerequisites")}>
+              <CardTitle className="text-lg font-semibold">Prerequisites</CardTitle>
+              <CollapsibleTrigger asChild>
                 <Button variant="ghost" size="sm" className="p-0 h-8 w-8">
                   {openSections.prerequisites ? (
                     <ChevronUp className="h-5 w-5" />
@@ -126,8 +126,8 @@ export function CourseDetails({ course }: CourseDetailsProps) {
                     <ChevronDown className="h-5 w-5" />
                   )}
                 </Button>
-              </div>
-            </CollapsibleTrigger>
+              </CollapsibleTrigger>
+            </div>
           </CardHeader>
           <CollapsibleContent>
             <CardContent className="pt-4">

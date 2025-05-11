@@ -54,7 +54,7 @@ export function ProfileDashboard({
 
         const { data: userProfile, error } = await supabase
           .from('profiles')
-          .select('full_name, email, role, bio, school_code')
+          .select('full_name, email, role, bio')
           .eq('id', session.user.id)
           .single();
 
@@ -78,7 +78,6 @@ export function ProfileDashboard({
             fullName: userProfile.full_name || "",
             email: userProfile.email || "",
             userRoles: [userProfile.role],
-            schoolCode: userProfile.school_code || "",
             bio: userProfile.bio || "",
           };
           

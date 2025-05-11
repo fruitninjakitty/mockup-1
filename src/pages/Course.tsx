@@ -22,9 +22,6 @@ export default function Course() {
     email: "john.doe@example.com",
     userRoles: ["Learner"],
     schoolCode: "",
-    learningGoal: "professional",
-    focusArea: "skills", 
-    learningSchedule: "morning",
     bio: ""
   });
 
