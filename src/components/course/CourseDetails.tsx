@@ -28,21 +28,21 @@ export function CourseDetails({ course }: CourseDetailsProps) {
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
       {/* Course Information Card */}
       <Card>
-        <CardHeader className="pb-0">
-          <CollapsibleTrigger asChild onClick={() => toggleSection("courseInfo")}>
-            <div className="flex justify-between items-center w-full cursor-pointer">
-              <CardTitle className="text-lg font-semibold">Course Information</CardTitle>
-              <Button variant="ghost" size="sm" className="p-0 h-8 w-8">
-                {openSections.courseInfo ? (
-                  <ChevronUp className="h-5 w-5" />
-                ) : (
-                  <ChevronDown className="h-5 w-5" />
-                )}
-              </Button>
-            </div>
-          </CollapsibleTrigger>
-        </CardHeader>
         <Collapsible open={openSections.courseInfo}>
+          <CardHeader className="pb-0">
+            <CollapsibleTrigger asChild onClick={() => toggleSection("courseInfo")}>
+              <div className="flex justify-between items-center w-full cursor-pointer">
+                <CardTitle className="text-lg font-semibold">Course Information</CardTitle>
+                <Button variant="ghost" size="sm" className="p-0 h-8 w-8">
+                  {openSections.courseInfo ? (
+                    <ChevronUp className="h-5 w-5" />
+                  ) : (
+                    <ChevronDown className="h-5 w-5" />
+                  )}
+                </Button>
+              </div>
+            </CollapsibleTrigger>
+          </CardHeader>
           <CollapsibleContent>
             <CardContent className="space-y-4 pt-4">
               <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -78,21 +78,21 @@ export function CourseDetails({ course }: CourseDetailsProps) {
 
       {/* Learning Objectives Card */}
       <Card>
-        <CardHeader className="pb-0">
-          <CollapsibleTrigger asChild onClick={() => toggleSection("learningObjectives")}>
-            <div className="flex justify-between items-center w-full cursor-pointer">
-              <CardTitle className="text-lg font-semibold">Learning Objectives</CardTitle>
-              <Button variant="ghost" size="sm" className="p-0 h-8 w-8">
-                {openSections.learningObjectives ? (
-                  <ChevronUp className="h-5 w-5" />
-                ) : (
-                  <ChevronDown className="h-5 w-5" />
-                )}
-              </Button>
-            </div>
-          </CollapsibleTrigger>
-        </CardHeader>
         <Collapsible open={openSections.learningObjectives}>
+          <CardHeader className="pb-0">
+            <CollapsibleTrigger asChild onClick={() => toggleSection("learningObjectives")}>
+              <div className="flex justify-between items-center w-full cursor-pointer">
+                <CardTitle className="text-lg font-semibold">Learning Objectives</CardTitle>
+                <Button variant="ghost" size="sm" className="p-0 h-8 w-8">
+                  {openSections.learningObjectives ? (
+                    <ChevronUp className="h-5 w-5" />
+                  ) : (
+                    <ChevronDown className="h-5 w-5" />
+                  )}
+                </Button>
+              </div>
+            </CollapsibleTrigger>
+          </CardHeader>
           <CollapsibleContent>
             <CardContent className="space-y-4 pt-4">
               {course.learningObjectives ? (
@@ -114,21 +114,21 @@ export function CourseDetails({ course }: CourseDetailsProps) {
 
       {/* Prerequisites Card */}
       <Card className="md:col-span-2">
-        <CardHeader className="pb-0">
-          <CollapsibleTrigger asChild onClick={() => toggleSection("prerequisites")}>
-            <div className="flex justify-between items-center w-full cursor-pointer">
-              <CardTitle className="text-lg font-semibold">Prerequisites</CardTitle>
-              <Button variant="ghost" size="sm" className="p-0 h-8 w-8">
-                {openSections.prerequisites ? (
-                  <ChevronUp className="h-5 w-5" />
-                ) : (
-                  <ChevronDown className="h-5 w-5" />
-                )}
-              </Button>
-            </div>
-          </CollapsibleTrigger>
-        </CardHeader>
         <Collapsible open={openSections.prerequisites}>
+          <CardHeader className="pb-0">
+            <CollapsibleTrigger asChild onClick={() => toggleSection("prerequisites")}>
+              <div className="flex justify-between items-center w-full cursor-pointer">
+                <CardTitle className="text-lg font-semibold">Prerequisites</CardTitle>
+                <Button variant="ghost" size="sm" className="p-0 h-8 w-8">
+                  {openSections.prerequisites ? (
+                    <ChevronUp className="h-5 w-5" />
+                  ) : (
+                    <ChevronDown className="h-5 w-5" />
+                  )}
+                </Button>
+              </div>
+            </CollapsibleTrigger>
+          </CardHeader>
           <CollapsibleContent>
             <CardContent className="pt-4">
               {course.prerequisites ? (

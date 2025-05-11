@@ -11,6 +11,7 @@ import { CreateCourseDialog } from "@/components/courses/CreateCourseDialog";
 import { useCourseManagement } from "@/hooks/useCourseManagement";
 import { useRoleManagement } from "@/hooks/useRoleManagement";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Courses() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -23,6 +24,7 @@ export default function Courses() {
   
   const { activeCourses, archivedCourses, handleArchiveToggle } = useCourseManagement();
   const { roles, availableRoles, currentQuote, handleRoleChange } = useRoleManagement();
+  const { toast } = useToast();
   
   // Fetch user profile data on mount
   useEffect(() => {
@@ -30,30 +32,38 @@ export default function Courses() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) return;
       
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('full_name, email, role, bio, school_code')
-        .eq('id', session.user.id)
-        .single();
+      try {
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('full_name, email, role, bio')
+          .eq('id', session.user.id)
+          .single();
+          
+        if (error) {
+          console.error("Error fetching profile:", error);
+          toast({
+            title: "Error",
+            description: "Could not fetch user profile",
+            variant: "destructive",
+          });
+          return;
+        }
         
-      if (error) {
-        console.error("Error fetching profile:", error);
-        return;
-      }
-      
-      if (profile) {
-        setUserProfile({
-          fullName: profile.full_name || "",
-          email: profile.email || "",
-          userRoles: [profile.role],
-          schoolCode: profile.school_code || "",
-          bio: profile.bio || ""
-        });
+        if (profile) {
+          setUserProfile({
+            fullName: profile.full_name || "",
+            email: profile.email || "",
+            userRoles: [profile.role],
+            bio: profile.bio || ""
+          });
+        }
+      } catch (error) {
+        console.error("Exception fetching profile:", error);
       }
     };
     
     fetchUserProfile();
-  }, []);
+  }, [toast]);
 
   // Filter courses based on user roles
   const filteredActiveCourses = activeCourses.filter(course => 

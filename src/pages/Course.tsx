@@ -20,7 +20,7 @@ export default function Course() {
     lastName: "",
     fullName: "John Doe",
     email: "john.doe@example.com",
-    userType: "student",
+    userRoles: ["Learner"],
     schoolCode: "",
     learningGoal: "professional",
     focusArea: "skills", 
