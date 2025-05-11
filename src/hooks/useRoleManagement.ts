@@ -115,7 +115,7 @@ export function useRoleManagement() {
             .single();
 
           if (!error && profile) {
-            const userRole = dbRoleToDisplayRole(profile.role as DatabaseRole);
+            const userRole = dbRoleToDisplayRole(profile.role);
             setRoles([userRole]);
             updateAvailableRoles([userRole]);
             return;
