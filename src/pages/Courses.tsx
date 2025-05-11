@@ -13,9 +13,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { DatabaseRole } from "@/types/roles";
 
-// Define the database role type for better type safety
-type DatabaseRole = Database["public"]["Enums"]["user_role"];
-
 export default function Courses() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [courseView, setCourseView] = useState("active");
