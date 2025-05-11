@@ -1,84 +1,14 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { UserProfile } from "./types";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { useFetchProfile } from "./hooks/useFetchProfile";
+import { useSaveProfile } from "./hooks/useSaveProfile";
 
 export function useProfileManager(initialProfile: UserProfile, onSave: (profile: UserProfile) => void) {
-  const [profile, setProfile] = useState<UserProfile>(initialProfile);
-  const [isLoading, setIsLoading] = useState(false);
+  const { profile, setProfile, isLoading, fetchUserProfile } = useFetchProfile(initialProfile);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
-  const { toast } = useToast();
+  const { isSaving, saveProfile } = useSaveProfile();
 
-  // Fetch user data from Supabase on mount
-  const fetchUserProfile = async () => {
-    try {
-      setIsLoading(true);
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) return;
-
-      try {
-        const { data: userProfile, error } = await supabase
-          .from('profiles')
-          .select('full_name, email, role, bio, avatar_url')
-          .eq('id', session.user.id)
-          .single();
-
-        if (error) {
-          console.error("Error fetching profile:", error);
-          return;
-        }
-
-        if (userProfile) {
-          // Split full name into first and last name if available
-          let firstName = "", lastName = "";
-          if (userProfile.full_name) {
-            const nameParts = userProfile.full_name.split(' ');
-            firstName = nameParts[0] || "";
-            lastName = nameParts.slice(1).join(' ') || "";
-          }
-
-          // Ensure there's always a default role
-          const role = userProfile.role || "learner";
-          
-          const updatedProfile = {
-            firstName,
-            lastName,
-            fullName: userProfile.full_name || "",
-            email: userProfile.email || "",
-            userRoles: [role.charAt(0).toUpperCase() + role.slice(1)], // Capitalize role
-            bio: userProfile.bio || "",
-            avatarUrl: userProfile.avatar_url || undefined
-          };
-          
-          setProfile(updatedProfile);
-          onSave(updatedProfile);
-        }
-      } catch (profileError) {
-        console.error("Error in profile fetch:", profileError);
-        
-        // Even if there's an error, provide default values
-        const defaultProfile = {
-          ...initialProfile,
-          firstName: initialProfile.firstName || "",
-          lastName: initialProfile.lastName || "",
-          fullName: initialProfile.fullName,
-          email: initialProfile.email,
-          userRoles: initialProfile.userRoles || ["Learner"],
-          bio: initialProfile.bio || "",
-          avatarUrl: initialProfile.avatarUrl
-        };
-        
-        setProfile(defaultProfile);
-        onSave(defaultProfile);
-      }
-    } catch (error) {
-      console.error("Error in fetchUserProfile:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  
   const handleChange = (field: keyof UserProfile, value: string) => {
     setProfile(prev => {
       // Update fullName automatically when firstName or lastName changes
@@ -103,135 +33,24 @@ export function useProfileManager(initialProfile: UserProfile, onSave: (profile:
     }
   };
 
-  const uploadAvatar = async (userId: string): Promise<string | null> => {
-    if (!avatarFile) return null;
+  const handleSaveProfile = async () => {
+    const updatedProfile = await saveProfile(profile, avatarFile);
     
-    try {
-      const fileExt = avatarFile.name.split('.').pop();
-      const filePath = `avatars/${userId}-${Date.now()}.${fileExt}`;
-      
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(filePath, avatarFile);
-      
-      if (uploadError) {
-        throw uploadError;
-      }
-      
-      const { data } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(filePath);
-      
-      return data.publicUrl;
-    } catch (error) {
-      console.error("Avatar upload error:", error);
-      return null;
-    }
-  };
-
-  const saveProfile = async () => {
-    try {
-      setIsLoading(true);
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) return false;
-      
-      const userId = session.user.id;
-      let avatarUrl = profile.avatarUrl;
-      
-      if (avatarFile) {
-        const uploadedUrl = await uploadAvatar(userId);
-        if (uploadedUrl) {
-          avatarUrl = uploadedUrl;
-        }
-      }
-      
-      // First check if the profile exists
-      try {
-        const { data: existingProfile, error: checkError } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('id', userId)
-          .single();
-        
-        if (checkError || !existingProfile) {
-          // Profile doesn't exist, insert it
-          const { error: insertError } = await supabase
-            .from('profiles')
-            .insert({ 
-              id: userId,
-              full_name: profile.fullName,
-              email: profile.email,
-              bio: profile.bio,
-              avatar_url: avatarUrl,
-              role: 'learner' // Default role
-            });
-          
-          if (insertError) {
-            throw insertError;
-          }
-        } else {
-          // Profile exists, update it
-          const { error } = await supabase
-            .from('profiles')
-            .update({ 
-              full_name: profile.fullName,
-              bio: profile.bio,
-              avatar_url: avatarUrl,
-            })
-            .eq('id', userId);
-
-          if (error) {
-            throw error;
-          }
-        }
-      } catch (error) {
-        console.error("Error checking/updating profile:", error);
-        toast({
-          title: "Error",
-          description: "Failed to update profile. Please try again.",
-          variant: "destructive",
-        });
-        return false;
-      }
-      
-      const updatedProfile = {
-        ...profile,
-        avatarUrl
-      };
-      
-      // Save to localStorage for persistence
-      localStorage.setItem("userProfile", JSON.stringify(updatedProfile));
-      
-      // Call the parent's onSave
+    if (updatedProfile) {
       onSave(updatedProfile);
-      
-      toast({
-        title: "Profile updated",
-        description: "Your profile has been successfully updated.",
-        duration: 3000,
-      });
-      
       return true;
-    } catch (error) {
-      console.error("Error updating profile:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update profile. Please try again.",
-        variant: "destructive",
-      });
-      return false;
-    } finally {
-      setIsLoading(false);
     }
+    
+    return false;
   };
 
   return {
     profile,
-    isLoading,
+    isLoading: isLoading || isSaving,
     avatarFile,
     fetchUserProfile,
     handleChange,
     handleAvatarChange,
-    saveProfile
+    saveProfile: handleSaveProfile
   };
 }
