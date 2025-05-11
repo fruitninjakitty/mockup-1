@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -42,11 +41,8 @@ export default function Courses() {
           
         if (error) {
           console.error("Error fetching profile:", error);
-          toast({
-            title: "Error",
-            description: "Could not fetch user profile",
-            variant: "destructive",
-          });
+          // If there's an error, keep the default profile but try to update the database
+          await createDefaultProfile(session.user.id);
           return;
         }
         
@@ -64,18 +60,74 @@ export default function Courses() {
           
           // If no role is set, update it to the default
           if (!profile.role) {
-            const { error: updateError } = await supabase
-              .from('profiles')
-              .update({ role: 'learner' })
-              .eq('id', session.user.id);
-              
-            if (updateError) {
-              console.error("Error setting default role:", updateError);
-            }
+            updateDefaultRole(session.user.id);
           }
+        } else {
+          // If no profile is found, create one
+          await createDefaultProfile(session.user.id);
         }
       } catch (error) {
         console.error("Exception fetching profile:", error);
+        // Even if there's an error, try to create a default profile
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          await createDefaultProfile(user.id);
+        }
+      }
+    };
+    
+    // Helper function to update default role
+    const updateDefaultRole = async (userId: string) => {
+      try {
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({ role: 'learner' })
+          .eq('id', userId);
+          
+        if (updateError) {
+          console.error("Error setting default role:", updateError);
+        }
+      } catch (error) {
+        console.error("Exception setting default role:", error);
+      }
+    };
+    
+    // Helper function to create a default profile
+    const createDefaultProfile = async (userId: string) => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        
+        const defaultProfile = {
+          id: userId,
+          full_name: user.user_metadata?.full_name || "New User",
+          email: user.email || "",
+          role: "learner",
+          bio: "",
+          avatar_url: null,
+          is_approved: false
+        };
+        
+        const { error } = await supabase
+          .from('profiles')
+          .upsert(defaultProfile)
+          .select();
+          
+        if (error) {
+          console.error("Error creating default profile:", error);
+          return;
+        }
+        
+        // Update local state with the default profile
+        setUserProfile({
+          fullName: defaultProfile.full_name,
+          email: defaultProfile.email,
+          userRoles: ["Learner"],
+          bio: defaultProfile.bio,
+          avatarUrl: defaultProfile.avatar_url || undefined
+        });
+      } catch (error) {
+        console.error("Exception creating default profile:", error);
       }
     };
     

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -104,33 +105,31 @@ export function useRoleManagement() {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session?.user) return;
 
-        const { data: profile, error } = await supabase
-          .from('profiles')
-          .select('role, full_name, email')
-          .eq('id', session.user.id)
-          .single();
+        // First try to check if the user has a role
+        try {
+          const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', session.user.id)
+            .single();
 
-        if (error) {
-          console.error("Error fetching user role:", error);
-          toast({
-            title: "Error",
-            description: "Could not fetch user roles",
-            variant: "destructive",
-          });
-          return;
+          if (!error && profile) {
+            const userRole = dbRoleToDisplayRole(profile.role as DatabaseRole);
+            setRoles([userRole]);
+            updateAvailableRoles([userRole]);
+            return;
+          }
+        } catch (profileError) {
+          console.error("Error checking user profile:", profileError);
         }
 
-        if (profile) {
-          const userRole = dbRoleToDisplayRole(profile.role as DatabaseRole);
-          setRoles([userRole]);
-          updateAvailableRoles([userRole]);
-        } else {
-          // If no profile or no role, default to Learner
-          const defaultRole: DisplayRole = "Learner";
-          setRoles([defaultRole]);
-          updateAvailableRoles([defaultRole]);
-          
-          // Update the user's role in the database to learner
+        // If we couldn't fetch the profile or there was no role, set a default role
+        const defaultRole: DisplayRole = "Learner";
+        setRoles([defaultRole]);
+        updateAvailableRoles([defaultRole]);
+        
+        // Try to update the user's role in the database to learner
+        try {
           const { error: updateError } = await supabase
             .from('profiles')
             .update({ role: 'learner' })
@@ -139,14 +138,15 @@ export function useRoleManagement() {
           if (updateError) {
             console.error("Error setting default role:", updateError);
           }
+        } catch (updateError) {
+          console.error("Exception setting default role:", updateError);
         }
       } catch (error) {
         console.error("Error fetching user roles:", error);
-        toast({
-          title: "Error",
-          description: "Could not fetch user roles",
-          variant: "destructive",
-        });
+        // Even if there's an error, make sure we have default roles
+        const defaultRole: DisplayRole = "Learner";
+        setRoles([defaultRole]);
+        updateAvailableRoles([defaultRole]);
       }
     };
 

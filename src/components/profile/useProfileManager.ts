@@ -17,41 +17,60 @@ export function useProfileManager(initialProfile: UserProfile, onSave: (profile:
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) return;
 
-      const { data: userProfile, error } = await supabase
-        .from('profiles')
-        .select('full_name, email, role, bio, avatar_url')
-        .eq('id', session.user.id)
-        .single();
+      try {
+        const { data: userProfile, error } = await supabase
+          .from('profiles')
+          .select('full_name, email, role, bio, avatar_url')
+          .eq('id', session.user.id)
+          .single();
 
-      if (error) {
-        console.error("Error fetching profile:", error);
-        return;
-      }
-
-      if (userProfile) {
-        // Split full name into first and last name if available
-        let firstName = "", lastName = "";
-        if (userProfile.full_name) {
-          const nameParts = userProfile.full_name.split(' ');
-          firstName = nameParts[0] || "";
-          lastName = nameParts.slice(1).join(' ') || "";
+        if (error) {
+          console.error("Error fetching profile:", error);
+          return;
         }
 
-        // Ensure there's always a default role
-        const role = userProfile.role || "learner";
+        if (userProfile) {
+          // Split full name into first and last name if available
+          let firstName = "", lastName = "";
+          if (userProfile.full_name) {
+            const nameParts = userProfile.full_name.split(' ');
+            firstName = nameParts[0] || "";
+            lastName = nameParts.slice(1).join(' ') || "";
+          }
+
+          // Ensure there's always a default role
+          const role = userProfile.role || "learner";
+          
+          const updatedProfile = {
+            firstName,
+            lastName,
+            fullName: userProfile.full_name || "",
+            email: userProfile.email || "",
+            userRoles: [role.charAt(0).toUpperCase() + role.slice(1)], // Capitalize role
+            bio: userProfile.bio || "",
+            avatarUrl: userProfile.avatar_url || undefined
+          };
+          
+          setProfile(updatedProfile);
+          onSave(updatedProfile);
+        }
+      } catch (profileError) {
+        console.error("Error in profile fetch:", profileError);
         
-        const updatedProfile = {
-          firstName,
-          lastName,
-          fullName: userProfile.full_name || "",
-          email: userProfile.email || "",
-          userRoles: [role.charAt(0).toUpperCase() + role.slice(1)], // Capitalize role
-          bio: userProfile.bio || "",
-          avatarUrl: userProfile.avatar_url || undefined
+        // Even if there's an error, provide default values
+        const defaultProfile = {
+          ...initialProfile,
+          firstName: initialProfile.firstName || "",
+          lastName: initialProfile.lastName || "",
+          fullName: initialProfile.fullName,
+          email: initialProfile.email,
+          userRoles: initialProfile.userRoles || ["Learner"],
+          bio: initialProfile.bio || "",
+          avatarUrl: initialProfile.avatarUrl
         };
         
-        setProfile(updatedProfile);
-        onSave(updatedProfile);
+        setProfile(defaultProfile);
+        onSave(defaultProfile);
       }
     } catch (error) {
       console.error("Error in fetchUserProfile:", error);
@@ -126,18 +145,53 @@ export function useProfileManager(initialProfile: UserProfile, onSave: (profile:
         }
       }
       
-      const { error } = await supabase
-        .from('profiles')
-        .update({ 
-          full_name: profile.fullName,
-          bio: profile.bio,
-          avatar_url: avatarUrl,
-          // Ensure role is always set (though we're not updating it here)
-        })
-        .eq('id', userId);
+      // First check if the profile exists
+      try {
+        const { data: existingProfile, error: checkError } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('id', userId)
+          .single();
+        
+        if (checkError || !existingProfile) {
+          // Profile doesn't exist, insert it
+          const { error: insertError } = await supabase
+            .from('profiles')
+            .insert({ 
+              id: userId,
+              full_name: profile.fullName,
+              email: profile.email,
+              bio: profile.bio,
+              avatar_url: avatarUrl,
+              role: 'learner' // Default role
+            });
+          
+          if (insertError) {
+            throw insertError;
+          }
+        } else {
+          // Profile exists, update it
+          const { error } = await supabase
+            .from('profiles')
+            .update({ 
+              full_name: profile.fullName,
+              bio: profile.bio,
+              avatar_url: avatarUrl,
+            })
+            .eq('id', userId);
 
-      if (error) {
-        throw error;
+          if (error) {
+            throw error;
+          }
+        }
+      } catch (error) {
+        console.error("Error checking/updating profile:", error);
+        toast({
+          title: "Error",
+          description: "Failed to update profile. Please try again.",
+          variant: "destructive",
+        });
+        return false;
       }
       
       const updatedProfile = {
