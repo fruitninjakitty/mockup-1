@@ -19,7 +19,8 @@ export default function Courses() {
   const [userProfile, setUserProfile] = useState<UserProfile>({
     fullName: "",
     email: "",
-    bio: ""
+    bio: "",
+    userRoles: ["Learner"] // Default role
   });
   
   const { activeCourses, archivedCourses, handleArchiveToggle } = useCourseManagement();
@@ -35,7 +36,7 @@ export default function Courses() {
       try {
         const { data: profile, error } = await supabase
           .from('profiles')
-          .select('full_name, email, role, bio')
+          .select('full_name, email, role, bio, avatar_url')
           .eq('id', session.user.id)
           .single();
           
@@ -50,12 +51,28 @@ export default function Courses() {
         }
         
         if (profile) {
+          // Ensure there's always a default role
+          const role = profile.role || "learner";
+          
           setUserProfile({
             fullName: profile.full_name || "",
             email: profile.email || "",
-            userRoles: [profile.role],
-            bio: profile.bio || ""
+            userRoles: [role.charAt(0).toUpperCase() + role.slice(1)], // Capitalize the role
+            bio: profile.bio || "",
+            avatarUrl: profile.avatar_url
           });
+          
+          // If no role is set, update it to the default
+          if (!profile.role) {
+            const { error: updateError } = await supabase
+              .from('profiles')
+              .update({ role: 'learner' })
+              .eq('id', session.user.id);
+              
+            if (updateError) {
+              console.error("Error setting default role:", updateError);
+            }
+          }
         }
       } catch (error) {
         console.error("Exception fetching profile:", error);
@@ -81,7 +98,7 @@ export default function Courses() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F4F4F6] via-[#F8F7FA] to-[#E5DEFF]">
       <CoursesHeader
-        roles={roles}
+        roles={roles.length > 0 ? roles : ["Learner"]} // Ensure default
         availableRoles={availableRoles}
         quote={currentQuote}
         onRoleChange={handleRoleChange}

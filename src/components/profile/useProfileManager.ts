@@ -19,7 +19,7 @@ export function useProfileManager(initialProfile: UserProfile, onSave: (profile:
 
       const { data: userProfile, error } = await supabase
         .from('profiles')
-        .select('full_name, email, role, bio')
+        .select('full_name, email, role, bio, avatar_url')
         .eq('id', session.user.id)
         .single();
 
@@ -37,13 +37,17 @@ export function useProfileManager(initialProfile: UserProfile, onSave: (profile:
           lastName = nameParts.slice(1).join(' ') || "";
         }
 
+        // Ensure there's always a default role
+        const role = userProfile.role || "learner";
+        
         const updatedProfile = {
           firstName,
           lastName,
           fullName: userProfile.full_name || "",
           email: userProfile.email || "",
-          userRoles: [userProfile.role],
+          userRoles: [role.charAt(0).toUpperCase() + role.slice(1)], // Capitalize role
           bio: userProfile.bio || "",
+          avatarUrl: userProfile.avatar_url
         };
         
         setProfile(updatedProfile);
@@ -127,7 +131,8 @@ export function useProfileManager(initialProfile: UserProfile, onSave: (profile:
         .update({ 
           full_name: profile.fullName,
           bio: profile.bio,
-          avatar_url: avatarUrl
+          avatar_url: avatarUrl,
+          // Ensure role is always set (though we're not updating it here)
         })
         .eq('id', userId);
 

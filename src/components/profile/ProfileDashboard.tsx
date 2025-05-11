@@ -29,6 +29,12 @@ export function ProfileDashboard({
   initialProfile,
   onSave 
 }: ProfileDashboardProps) {
+  // Ensure initialProfile always has userRoles with at least "Learner" as default
+  const safeInitialProfile = {
+    ...initialProfile,
+    userRoles: initialProfile.userRoles?.length ? initialProfile.userRoles : ["Learner"]
+  };
+  
   const {
     profile, 
     isLoading, 
@@ -37,7 +43,7 @@ export function ProfileDashboard({
     handleChange,
     handleAvatarChange,
     saveProfile
-  } = useProfileManager(initialProfile, onSave);
+  } = useProfileManager(safeInitialProfile, onSave);
   
   // Fetch user data when dialog opens
   useEffect(() => {

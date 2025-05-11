@@ -27,6 +27,10 @@ export function CoursesHeader({
 }: CoursesHeaderProps) {
   const { signOut } = useAuth();
   
+  // Ensure we have at least a default role
+  const displayRoles = roles.length > 0 ? roles : ["Learner"];
+  const displayAvailableRoles = availableRoles.length > 0 ? availableRoles : ["Learner"];
+  
   return (
     <header className="header-glass sticky top-0 z-30">
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
@@ -34,16 +38,16 @@ export function CoursesHeader({
           <div>
             <h1 className="text-2xl font-bold flex items-center">
               <span className="text-primary">Hello,</span>{' '}
-              {roles.length > 0 && availableRoles.length > 0 ? (
+              {displayRoles.length > 0 && displayAvailableRoles.length > 0 ? (
                 <Select 
-                  value={roles[0]} 
+                  value={displayRoles[0]} 
                   onValueChange={onRoleChange}
                 >
                   <SelectTrigger className="inline-flex w-auto text-2xl font-bold border-none bg-transparent p-0 focus:ring-0 ml-1 text-secondary">
-                    <SelectValue placeholder="Select role" />
+                    <SelectValue placeholder="Learner" />
                   </SelectTrigger>
                   <SelectContent className="bg-card z-40 shadow-lg border border-border rounded-lg">
-                    {availableRoles.map((role) => (
+                    {displayAvailableRoles.map((role) => (
                       <SelectItem key={role} value={role}>
                         {role}
                       </SelectItem>
@@ -51,7 +55,7 @@ export function CoursesHeader({
                   </SelectContent>
                 </Select>
               ) : (
-                <span className="text-secondary ml-1">User</span>
+                <span className="text-secondary ml-1">Learner</span>
               )}
             </h1>
             <p className="text-sm text-gray-500">{quote}</p>
@@ -60,7 +64,7 @@ export function CoursesHeader({
         
         <div className="flex items-center gap-3">
           <div className="flex flex-wrap gap-1">
-            {roles.length > 1 && roles.slice(1).map((role, index) => (
+            {displayRoles.length > 1 && displayRoles.slice(1).map((role, index) => (
               <div key={index} className="px-2 py-1 bg-secondary/10 rounded-full text-secondary text-xs">
                 {role}
               </div>
