@@ -8,10 +8,11 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Check, User, X } from "lucide-react";
+import { Check, User, X, Loader } from "lucide-react";
 import { UserProfile } from "./types";
 import { ProfileForm } from "./ProfileForm";
 import { useProfileManager } from "./useProfileManager";
+import { Progress } from "@/components/ui/progress";
 
 interface ProfileDashboardProps {
   isOpen: boolean;
@@ -62,6 +63,16 @@ export function ProfileDashboard({
           </DialogTitle>
         </DialogHeader>
         
+        {isLoading && (
+          <div className="py-2">
+            <div className="flex items-center text-sm text-muted-foreground mb-2">
+              <Loader className="h-3 w-3 mr-2 animate-spin" />
+              <span>Loading your profile</span>
+            </div>
+            <Progress value={75} className="h-1" />
+          </div>
+        )}
+        
         <ProfileForm 
           profile={profile}
           isLoading={isLoading}
@@ -81,7 +92,10 @@ export function ProfileDashboard({
             disabled={isLoading}
           >
             {isLoading ? (
-              <span className="animate-pulse">Saving...</span>
+              <>
+                <Loader className="h-4 w-4 animate-spin" />
+                <span>Loading...</span>
+              </>
             ) : (
               <>
                 <Check className="h-4 w-4" />
