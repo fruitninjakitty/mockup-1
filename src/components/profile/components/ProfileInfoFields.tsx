@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { UserProfile } from "../types";
+import { SchoolCodeField } from "@/components/common/FormFields/SchoolCodeField";
 
 interface ProfileInfoFieldsProps {
   profile: UserProfile;
@@ -64,22 +65,27 @@ export function ProfileInfoFields({ profile, isLoading, onProfileChange }: Profi
         </div>
       </div>
       
-      {profile.schoolCode && (
-        <div className="grid grid-cols-4 items-center gap-4">
-          <span className="text-right font-medium">School Code</span>
-          <div className="col-span-3">
-            {isLoading ? (
-              <Skeleton className="h-10 w-full" />
-            ) : (
-              <Input
-                value={profile.schoolCode}
-                className="bg-muted"
-                readOnly
-              />
-            )}
-          </div>
+      <div className="grid grid-cols-4 items-center gap-4">
+        <span className="text-right font-medium">School Code</span>
+        <div className="col-span-3">
+          {isLoading ? (
+            <Skeleton className="h-10 w-full" />
+          ) : profile.schoolCode ? (
+            <SchoolCodeField
+              schoolCode={profile.schoolCode || ""}
+              onSchoolCodeChange={(value) => onProfileChange("schoolCode", value)}
+              placeholder="Enter school code"
+              label=""
+            />
+          ) : (
+            <Input
+              value="Not specified"
+              className="bg-muted"
+              readOnly
+            />
+          )}
         </div>
-      )}
+      </div>
       
       <div className="grid grid-cols-4 items-start gap-4">
         <span className="text-right font-medium pt-2">Bio</span>

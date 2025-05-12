@@ -54,14 +54,17 @@ export function OrganizationSearch({ onSelect }: OrganizationSearchProps) {
   }, [searchTerm]);
 
   return (
-    <div className="space-y-2">
-      <Input
-        type="text"
-        placeholder="Search by institution name..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        className="w-full"
-      />
+    <div className="space-y-3">
+      <div className="relative">
+        <Input
+          type="text"
+          placeholder="Search by institution name..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full pl-10"
+        />
+        <Search className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+      </div>
       
       {isLoading && (
         <div className="flex items-center justify-center py-4">
@@ -70,28 +73,28 @@ export function OrganizationSearch({ onSelect }: OrganizationSearchProps) {
       )}
       
       {error && (
-        <div className="text-sm text-red-500 p-2">
+        <div className="text-sm text-red-500 p-2 bg-red-50 rounded-md">
           {error}
         </div>
       )}
       
       {!isLoading && searchTerm.trim().length >= 2 && organizations.length === 0 && (
-        <div className="text-sm text-muted-foreground p-2">
+        <div className="text-sm text-muted-foreground p-2 bg-gray-50 rounded-md">
           No organizations found. Try a different search term.
         </div>
       )}
       
       {organizations.length > 0 && (
-        <div className="max-h-60 overflow-y-auto border rounded-md">
+        <div className="max-h-60 overflow-y-auto border rounded-md bg-white shadow-sm">
           {organizations.map((org) => (
             <button
               key={org.id}
               type="button"
-              className="w-full text-left px-3 py-2 hover:bg-accent text-sm flex flex-col border-b last:border-b-0"
+              className="w-full text-left px-4 py-3 hover:bg-gray-50 text-sm flex flex-col border-b last:border-b-0 transition-colors"
               onClick={() => onSelect(org.code)}
             >
-              <span className="font-medium">{org.name}</span>
-              <span className="text-xs text-muted-foreground">Code: {org.code}</span>
+              <span className="font-medium text-primary">{org.name}</span>
+              <span className="text-xs text-muted-foreground mt-0.5">Code: {org.code}</span>
             </button>
           ))}
         </div>

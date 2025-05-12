@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { OrganizationSearch } from "./OrganizationSearch";
 import { Button } from "@/components/ui/button";
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 
 export interface SchoolCodeFieldProps {
   schoolCode: string;
@@ -26,7 +26,7 @@ export function SchoolCodeField({
       <Label htmlFor="register-school" className="text-[#43BC88] text-sm font-semibold">
         {label}
       </Label>
-      <div className="space-y-2">
+      <div className="space-y-4">
         <div className="flex gap-2">
           <Input
             id="register-school"
@@ -43,14 +43,23 @@ export function SchoolCodeField({
             onClick={() => setShowSearch(!showSearch)}
             className="whitespace-nowrap"
           >
-            <Search className="h-4 w-4 mr-2" />
-            {showSearch ? "Hide Search" : "Find School"}
+            {showSearch ? (
+              <>
+                <X className="h-4 w-4 mr-2" />
+                Hide Search
+              </>
+            ) : (
+              <>
+                <Search className="h-4 w-4 mr-2" />
+                Find School
+              </>
+            )}
           </Button>
         </div>
         
         {showSearch && (
-          <div className="rounded-md border p-3 bg-background">
-            <p className="text-sm text-muted-foreground mb-2">
+          <div className="rounded-md border p-4 bg-gray-50 shadow-sm">
+            <p className="text-sm text-muted-foreground mb-3">
               Search for your institution by name:
             </p>
             <OrganizationSearch onSelect={(code) => {
