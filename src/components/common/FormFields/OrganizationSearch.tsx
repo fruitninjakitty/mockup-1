@@ -41,6 +41,7 @@ export function OrganizationSearch({ onSelect }: OrganizationSearchProps) {
         if (error) throw error;
         
         setOrganizations(data || []);
+        console.log("Organizations data fetched:", data);
       } catch (err) {
         console.error('Error searching organizations:', err);
         setError('Failed to search organizations. Please try again.');

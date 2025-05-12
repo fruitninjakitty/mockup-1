@@ -70,18 +70,12 @@ export function ProfileInfoFields({ profile, isLoading, onProfileChange }: Profi
         <div className="col-span-3">
           {isLoading ? (
             <Skeleton className="h-10 w-full" />
-          ) : profile.schoolCode ? (
+          ) : (
             <SchoolCodeField
               schoolCode={profile.schoolCode || ""}
               onSchoolCodeChange={(value) => onProfileChange("schoolCode", value)}
               placeholder="Enter school code"
               label=""
-            />
-          ) : (
-            <Input
-              value="Not specified"
-              className="bg-muted"
-              readOnly
             />
           )}
         </div>

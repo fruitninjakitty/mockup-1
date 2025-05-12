@@ -23,9 +23,11 @@ export function SchoolCodeField({
   
   return (
     <div className="space-y-1">
-      <Label htmlFor="register-school" className="text-[#43BC88] text-sm font-semibold">
-        {label}
-      </Label>
+      {label && (
+        <Label htmlFor="register-school" className="text-[#43BC88] text-sm font-semibold">
+          {label}
+        </Label>
+      )}
       <div className="space-y-4">
         <div className="flex gap-2">
           <Input
@@ -35,7 +37,6 @@ export function SchoolCodeField({
             className="w-full border-border"
             value={schoolCode}
             onChange={(e) => onSchoolCodeChange(e.target.value)}
-            required
           />
           <Button 
             type="button" 
@@ -58,7 +59,7 @@ export function SchoolCodeField({
         </div>
         
         {showSearch && (
-          <div className="rounded-md border p-4 bg-gray-50 shadow-sm">
+          <div className="rounded-md border p-4 bg-gray-50/50 shadow-sm">
             <p className="text-sm text-muted-foreground mb-3">
               Search for your institution by name:
             </p>
