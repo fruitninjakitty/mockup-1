@@ -5,7 +5,6 @@ import { UserProfile } from "@/components/profile/ProfileDashboard";
 import { CourseHeader } from "@/components/course/CourseHeader";
 import { CourseContent } from "@/components/course/CourseContent";
 import { CoursePlaceholder } from "@/components/course/CoursePlaceholder";
-import { CourseDetails } from "@/components/course/CourseDetails";
 import { ProfileDashboard } from "@/components/profile/ProfileDashboard";
 import { useCourseData } from "@/hooks/useCourseData";
 
@@ -47,10 +46,6 @@ export default function Course() {
         onProfileClick={() => setIsProfileOpen(true)}
       />
 
-      <div className="container mx-auto px-4 py-8">
-        <CourseDetails course={courseData} />
-      </div>
-
       <ProfileDashboard 
         isOpen={isProfileOpen} 
         onClose={() => setIsProfileOpen(false)}
@@ -62,6 +57,7 @@ export default function Course() {
         selectedView={selectedView}
         onViewChange={setSelectedView}
         courseId={Number(id)}
+        course={courseData}
       />
     </div>
   );
