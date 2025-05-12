@@ -39,7 +39,7 @@ export function CoursesHeader({
           <div>
             <h1 className="text-2xl font-bold flex items-center">
               <span className="text-primary">Hello,</span>{' '}
-              {displayRoles.length > 0 && displayAvailableRoles.length > 0 ? (
+              {displayRoles.length > 0 && displayAvailableRoles.length > 1 ? (
                 <Select 
                   value={displayRoles[0]} 
                   onValueChange={onRoleChange}
@@ -56,7 +56,7 @@ export function CoursesHeader({
                   </SelectContent>
                 </Select>
               ) : (
-                <span className="text-secondary ml-1">Learner</span>
+                <span className="text-secondary ml-1">{displayRoles[0]}</span>
               )}
             </h1>
             <p className="text-sm text-gray-500">{quote}</p>

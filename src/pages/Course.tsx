@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { UserProfile } from "@/components/profile/ProfileDashboard";
 import { CourseHeader } from "@/components/course/CourseHeader";
@@ -7,22 +7,39 @@ import { CourseContent } from "@/components/course/CourseContent";
 import { CoursePlaceholder } from "@/components/course/CoursePlaceholder";
 import { ProfileDashboard } from "@/components/profile/ProfileDashboard";
 import { useCourseData } from "@/hooks/useCourseData";
+import { useRoleManagement } from "@/hooks/useRoleManagement";
+import { useProfileData } from "@/hooks/useProfileData";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Course() {
   const { id } = useParams<{ id: string }>();
   const [selectedView, setSelectedView] = useState("Regions");
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const courseData = useCourseData(id!);
+  const { toast } = useToast();
   
-  const [userProfile, setUserProfile] = useState<UserProfile>({
-    firstName: "",
-    lastName: "",
-    fullName: "John Doe",
-    email: "john.doe@example.com",
-    userRoles: ["Learner"],
-    schoolCode: "",
-    bio: ""
-  });
+  // Use role management hook for consistent role handling
+  const { roles, availableRoles, currentQuote, handleRoleChange } = useRoleManagement();
+  
+  // Use profile data hook for consistent profile handling
+  const { userProfile, setUserProfile, isProfileOpen, setIsProfileOpen } = useProfileData();
+
+  // Load stored profile if it exists in localStorage
+  useEffect(() => {
+    const storedProfile = localStorage.getItem("userProfile");
+    if (storedProfile) {
+      try {
+        const parsedProfile = JSON.parse(storedProfile);
+        setUserProfile(parsedProfile);
+      } catch (error) {
+        console.error("Error parsing stored profile:", error);
+        toast({
+          title: "Error",
+          description: "Could not load your profile data",
+          variant: "destructive",
+        });
+      }
+    }
+  }, []);
 
   const handleProfileSave = (updatedProfile: UserProfile) => {
     setUserProfile(updatedProfile);
@@ -44,6 +61,10 @@ export default function Course() {
         course={courseData}
         userProfile={userProfile}
         onProfileClick={() => setIsProfileOpen(true)}
+        roles={roles}
+        availableRoles={availableRoles}
+        quote={currentQuote}
+        onRoleChange={handleRoleChange}
       />
 
       <ProfileDashboard 

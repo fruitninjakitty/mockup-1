@@ -11,15 +11,21 @@ export function useRoleManagement() {
   const [availableRoles, setAvailableRoles] = useState<DisplayRole[]>([]);
   const { toast } = useToast();
   const [currentQuote, setCurrentQuote] = useState(getRandomQuote(["Learner"]));
+  const [isLoading, setIsLoading] = useState(true);
 
   // Get user roles from database
   useEffect(() => {
     const getUserRoles = async () => {
+      setIsLoading(true);
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        if (!session?.user) return;
+        if (!session?.user) {
+          console.log("No session found, using default role");
+          setDefaultRole();
+          return;
+        }
 
-        // First try to check if the user has a role
+        // First try to check if the user has a role in their profile
         try {
           const { data: profile, error } = await supabase
             .from('profiles')
@@ -27,22 +33,24 @@ export function useRoleManagement() {
             .eq('id', session.user.id)
             .single();
 
-          if (!error && profile) {
+          if (!error && profile && profile.role) {
+            console.log("Found role in profile:", profile.role);
             const userRole = dbRoleToDisplayRole(profile.role);
             setRoles([userRole]);
             updateAvailableRoles([userRole]);
             setCurrentQuote(getRandomQuote([userRole]));
+            setIsLoading(false);
             return;
+          } else {
+            console.log("No role found in profile or error occurred:", error);
           }
         } catch (profileError) {
           console.error("Error checking user profile:", profileError);
         }
 
         // If we couldn't fetch the profile or there was no role, set a default role
-        const defaultRole: DisplayRole = "Learner";
-        setRoles([defaultRole]);
-        updateAvailableRoles([defaultRole]);
-        setCurrentQuote(getRandomQuote([defaultRole]));
+        console.log("Setting default role");
+        setDefaultRole();
         
         // Try to update the user's role in the database to learner
         try {
@@ -59,16 +67,22 @@ export function useRoleManagement() {
         }
       } catch (error) {
         console.error("Error fetching user roles:", error);
-        // Even if there's an error, make sure we have default roles
-        const defaultRole: DisplayRole = "Learner";
-        setRoles([defaultRole]);
-        updateAvailableRoles([defaultRole]);
-        setCurrentQuote(getRandomQuote([defaultRole]));
+        setDefaultRole();
+      } finally {
+        setIsLoading(false);
       }
     };
 
     getUserRoles();
   }, [toast]);
+
+  // Helper function to set default role
+  const setDefaultRole = () => {
+    const defaultRole: DisplayRole = "Learner";
+    setRoles([defaultRole]);
+    updateAvailableRoles([defaultRole]);
+    setCurrentQuote(getRandomQuote([defaultRole]));
+  };
 
   // Update available roles based on current roles
   const updateAvailableRoles = (currentRoles: DisplayRole[]) => {
@@ -80,7 +94,14 @@ export function useRoleManagement() {
   const handleRoleChange = async (newRole: DisplayRole) => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) return;
+      if (!session?.user) {
+        toast({
+          title: "Error",
+          description: "You must be logged in to change roles",
+          variant: "destructive",
+        });
+        return;
+      }
 
       const dbRole = displayRoleToDbRole(newRole);
 
@@ -90,9 +111,10 @@ export function useRoleManagement() {
         .eq('id', session.user.id);
 
       if (error) {
+        console.error("Error updating role:", error);
         toast({
           title: "Error",
-          description: "Could not update user role",
+          description: "Could not update your role",
           variant: "destructive",
         });
         return;
@@ -110,7 +132,7 @@ export function useRoleManagement() {
       console.error("Error updating role:", error);
       toast({
         title: "Error",
-        description: "Could not update user role",
+        description: "Could not update your role",
         variant: "destructive",
       });
     }
@@ -121,5 +143,6 @@ export function useRoleManagement() {
     availableRoles,
     currentQuote,
     handleRoleChange,
+    isLoading,
   };
 }
