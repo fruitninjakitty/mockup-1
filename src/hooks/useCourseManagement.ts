@@ -26,12 +26,6 @@ export function useCourseManagement() {
               title,
               description,
               image,
-              skill_level,
-              duration,
-              certification,
-              learning_objectives,
-              prerequisites,
-              school_code,
               created_at
             )
           `);
@@ -44,17 +38,20 @@ export function useCourseManagement() {
         }
 
         // Get total students count for each course
-        const { data: courseCounts, error: countError } = await supabase
-          .from('users_courses')
-          .select('course_id, count')
-          .select('*', { count: 'exact', head: true })
-          .groupBy('course_id');
-          
         const courseTotalStudents = new Map();
-        if (courseCounts && !countError) {
-          courseCounts.forEach(item => {
-            courseTotalStudents.set(item.course_id, item.count);
-          });
+        
+        // Count students manually for each course
+        for (const userCourse of userCoursesData || []) {
+          if (!userCourse.course_id) continue;
+          
+          const { count, error } = await supabase
+            .from('users_courses')
+            .select('*', { count: 'exact', head: true })
+            .eq('course_id', userCourse.course_id);
+            
+          if (!error && count !== null) {
+            courseTotalStudents.set(userCourse.course_id, count);
+          }
         }
 
         // Transform data to match our Course type
@@ -70,14 +67,15 @@ export function useCourseManagement() {
                 description: userCourse.courses.description,
                 image: userCourse.courses.image,
                 roles: [userCourse.role],
-                skillLevel: userCourse.courses.skill_level || "All Levels",
-                duration: userCourse.courses.duration || "Self-paced",
-                certification: Boolean(userCourse.courses.certification),
-                learningObjectives: userCourse.courses.learning_objectives || [],
-                prerequisites: userCourse.courses.prerequisites || [],
+                // Set default values for fields not in the database
+                skillLevel: "All Levels",
+                duration: "Self-paced",
+                certification: false,
+                learningObjectives: [],
+                prerequisites: [],
                 createdAt: userCourse.courses.created_at,
-                schoolCode: userCourse.courses.school_code || "",
-                totalStudents: courseTotalStudents.get(userCourse.courses.id) || 0
+                schoolCode: "",
+                totalStudents: courseTotalStudents.get(userCourse.course_id) || 0
               };
 
               if (userCourse.is_archived) {

@@ -82,13 +82,13 @@ export function useCourseData(courseId: string) {
           image: courseFromSupabase.image,
           createdAt: courseFromSupabase.created_at,
           totalStudents: totalStudents || 0,
-          // Fetch other additional data or set defaults
-          skillLevel: courseFromSupabase.skill_level || "All Levels",
-          duration: courseFromSupabase.duration || "Self-paced",
-          certification: Boolean(courseFromSupabase.certification),
-          learningObjectives: courseFromSupabase.learning_objectives || [],
-          prerequisites: courseFromSupabase.prerequisites || [],
-          schoolCode: courseFromSupabase.school_code || "",
+          // Set default values for fields not in the database
+          skillLevel: "All Levels",
+          duration: "Self-paced",
+          certification: false,
+          learningObjectives: [],
+          prerequisites: [],
+          schoolCode: "",
         };
 
         setCourseData(transformedCourse);
