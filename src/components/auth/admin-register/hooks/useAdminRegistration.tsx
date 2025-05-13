@@ -155,6 +155,9 @@ export function useAdminRegistration() {
 
       // 3. Create the organization (now authenticated as the new user)
       try {
+        // Make sure we're using the correct generatedCode and not stale state
+        console.log("Creating organization with name:", organizationName, "and code:", generatedCode);
+        
         const { data: orgData, error: orgError } = await supabase
           .from('organizations')
           .insert({
@@ -189,6 +192,8 @@ export function useAdminRegistration() {
           return;
         }
 
+        console.log("Organization created:", orgData);
+
         if (!orgData) {
           setFormError("Organization was created but no data was returned");
           toast({
@@ -205,7 +210,8 @@ export function useAdminRegistration() {
           .from('profiles')
           .update({ 
             organization_id: orgData.id,
-            role: 'administrator'
+            role: 'administrator',
+            is_approved: true  // Auto-approve administrators
           })
           .eq('id', authData.user.id);
 
@@ -220,6 +226,8 @@ export function useAdminRegistration() {
           setIsLoading(false);
           return;
         }
+
+        console.log("Profile updated with organization_id and admin role");
 
         // Show the code to the admin
         setShowOrganizationCode(true);
