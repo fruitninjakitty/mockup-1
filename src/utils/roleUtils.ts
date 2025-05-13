@@ -42,6 +42,10 @@ export const displayRoleToDbRole = (displayRole: DisplayRole): DatabaseRole => {
  * Returns whether a role can be added to the current roles
  */
 export const isRoleCompatible = (currentRoles: DisplayRole[], roleToAdd: DisplayRole): boolean => {
+  if (currentRoles.includes(roleToAdd)) {
+    return true; // Current role is always compatible with itself
+  }
+
   // Administrator cannot be combined with Learner or Teaching Assistant
   if (roleToAdd === "Administrator" && 
       (currentRoles.includes("Learner") || currentRoles.includes("Teaching Assistant"))) {
@@ -63,11 +67,6 @@ export const isRoleCompatible = (currentRoles: DisplayRole[], roleToAdd: Display
   // Learner or Teaching Assistant cannot be added if Teacher exists
   if ((roleToAdd === "Learner" || roleToAdd === "Teaching Assistant") && 
       currentRoles.includes("Teacher")) {
-    return false;
-  }
-  
-  // Don't add if already exists
-  if (currentRoles.includes(roleToAdd)) {
     return false;
   }
   

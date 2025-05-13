@@ -31,7 +31,7 @@ export function useRoleManagement() {
             .from('profiles')
             .select('role')
             .eq('id', session.user.id)
-            .single();
+            .maybeSingle();
 
           if (!error && profile && profile.role) {
             console.log("Found role in profile:", profile.role);
@@ -87,7 +87,13 @@ export function useRoleManagement() {
   // Update available roles based on current roles
   const updateAvailableRoles = (currentRoles: DisplayRole[]) => {
     const allRoles: DisplayRole[] = ["Learner", "Teacher", "Teaching Assistant", "Administrator"];
-    const available = allRoles.filter(role => isRoleCompatible(currentRoles, role));
+    
+    // Filter roles that are compatible with current roles
+    const available = allRoles.filter(role => 
+      // Include current role and roles that are compatible
+      currentRoles.includes(role) || isRoleCompatible(currentRoles, role)
+    );
+    
     setAvailableRoles(available);
   };
 

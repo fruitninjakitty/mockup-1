@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -17,28 +18,84 @@
     --radius: 1.25rem;
     --card-accent: #EEEEF7;
   }
+  
+  html {
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply bg-background text-foreground antialiased font-sans;
+  }
+
+  h1 {
+    @apply text-2xl font-semibold leading-tight;
+  }
+  
+  h2 {
+    @apply text-xl font-semibold leading-tight;
+  }
+  
+  h3 {
+    @apply text-lg font-medium leading-normal;
+  }
+  
+  p {
+    @apply text-base leading-relaxed;
   }
 
   .minimal-card {
     @apply bg-card shadow-classy rounded-lg border border-border px-8 py-6 transition-shadow;
   }
+  
   .glass {
     @apply backdrop-blur-md bg-white/60 border border-white/40 rounded-2xl;
   }
+  
   .card-gradient {
     background: linear-gradient(118deg, var(--card) 84%, var(--card-accent) 100%);
   }
+  
   .fade-in {
     @apply animate-fade-in;
   }
+
+  .text-small {
+    @apply text-sm;
+  }
+  
+  .text-tiny {
+    @apply text-xs;
+  }
+  
+  .text-large {
+    @apply text-lg;
+  }
+}
+
+/* Typography consistency */
+.header-text {
+  @apply text-2xl font-semibold;
+}
+
+.subheader-text {
+  @apply text-xl font-medium;
+}
+
+.body-text {
+  @apply text-base font-normal;
+}
+
+.caption-text {
+  @apply text-sm text-muted-foreground;
 }
 
 /* Utility paddings */
 .section-padding {
   @apply py-12 px-2 md:px-12;
 }
+
 .header-glass {
   @apply glass shadow-md border-0;
 }

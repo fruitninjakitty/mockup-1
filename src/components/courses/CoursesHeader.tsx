@@ -37,14 +37,14 @@ export function CoursesHeader({
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
         <div className="flex items-center gap-3">
           <div>
-            <h1 className="text-2xl font-bold flex items-center">
+            <h1 className="text-xl sm:text-2xl font-semibold flex items-center">
               <span className="text-primary">Hello,</span>{' '}
               {displayRoles.length > 0 && displayAvailableRoles.length > 1 ? (
                 <Select 
                   value={displayRoles[0]} 
                   onValueChange={onRoleChange}
                 >
-                  <SelectTrigger className="inline-flex w-auto text-2xl font-bold border-none bg-transparent p-0 focus:ring-0 ml-1 text-secondary">
+                  <SelectTrigger className="inline-flex w-auto text-xl sm:text-2xl font-semibold border-none bg-transparent p-0 focus:ring-0 ml-1 text-secondary">
                     <SelectValue placeholder="Learner" />
                   </SelectTrigger>
                   <SelectContent className="bg-card z-40 shadow-lg border border-border rounded-lg">
@@ -59,7 +59,7 @@ export function CoursesHeader({
                 <span className="text-secondary ml-1">{displayRoles[0]}</span>
               )}
             </h1>
-            <p className="text-sm text-gray-500">{quote}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">{quote}</p>
           </div>
         </div>
         

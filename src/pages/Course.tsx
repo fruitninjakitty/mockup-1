@@ -18,7 +18,7 @@ export default function Course() {
   const { toast } = useToast();
   
   // Use role management hook for consistent role handling
-  const { roles, availableRoles, currentQuote, handleRoleChange } = useRoleManagement();
+  const { roles, availableRoles, currentQuote, handleRoleChange, isLoading: rolesLoading } = useRoleManagement();
   
   // Use profile data hook for consistent profile handling
   const { userProfile, setUserProfile, isProfileOpen, setIsProfileOpen } = useProfileData();
@@ -46,7 +46,7 @@ export default function Course() {
     localStorage.setItem("userProfile", JSON.stringify(updatedProfile));
   };
 
-  if (!courseData) {
+  if (rolesLoading || !courseData) {
     return (
       <CoursePlaceholder 
         message="Loading course..." 
