@@ -16,10 +16,9 @@ export function useCourseData(courseId: string) {
           .from("courses")
           .select(`
             *,
-            created_by (
-              id, 
-              full_name, 
-              email
+            users_courses!inner (
+              user_id,
+              is_archived
             )
           `)
           .eq("id", Number(courseId))
@@ -65,6 +64,16 @@ export function useCourseData(courseId: string) {
           return;
         }
 
+        // Get total students count
+        const { count: totalStudents, error: countError } = await supabase
+          .from("users_courses")
+          .select("*", { count: "exact", head: true })
+          .eq("course_id", Number(courseId));
+
+        if (countError) {
+          console.error("Error counting students:", countError);
+        }
+
         // Transform Supabase data to match our Course type
         const transformedCourse: Course = {
           id: courseFromSupabase.id,
@@ -72,18 +81,14 @@ export function useCourseData(courseId: string) {
           description: courseFromSupabase.description,
           image: courseFromSupabase.image,
           createdAt: courseFromSupabase.created_at,
-          createdBy: courseFromSupabase.created_by ? {
-            fullName: courseFromSupabase.created_by.full_name,
-            email: courseFromSupabase.created_by.email
-          } : undefined,
-          // Add other fields from Supabase as needed
-          schoolCode: courseFromSupabase.school_code,
-          totalStudents: courseFromSupabase.total_students,
-          skillLevel: courseFromSupabase.skill_level,
-          duration: courseFromSupabase.duration,
-          certification: courseFromSupabase.certification,
-          learningObjectives: courseFromSupabase.learning_objectives,
-          prerequisites: courseFromSupabase.prerequisites,
+          totalStudents: totalStudents || 0,
+          // Fetch other additional data or set defaults
+          skillLevel: courseFromSupabase.skill_level || "All Levels",
+          duration: courseFromSupabase.duration || "Self-paced",
+          certification: Boolean(courseFromSupabase.certification),
+          learningObjectives: courseFromSupabase.learning_objectives || [],
+          prerequisites: courseFromSupabase.prerequisites || [],
+          schoolCode: courseFromSupabase.school_code || "",
         };
 
         setCourseData(transformedCourse);

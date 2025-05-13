@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Course } from "@/types/course";
 import { useToast } from "@/hooks/use-toast";
@@ -22,11 +21,18 @@ export function useCourseManagement() {
             course_id,
             is_archived,
             role,
-            courses:course_id (
+            courses:courses (
               id,
               title,
               description,
-              image
+              image,
+              skill_level,
+              duration,
+              certification,
+              learning_objectives,
+              prerequisites,
+              school_code,
+              created_at
             )
           `);
 
@@ -35,6 +41,20 @@ export function useCourseManagement() {
           // Fall back to localStorage
           loadFromLocalStorage();
           return;
+        }
+
+        // Get total students count for each course
+        const { data: courseCounts, error: countError } = await supabase
+          .from('users_courses')
+          .select('course_id, count')
+          .select('*', { count: 'exact', head: true })
+          .groupBy('course_id');
+          
+        const courseTotalStudents = new Map();
+        if (courseCounts && !countError) {
+          courseCounts.forEach(item => {
+            courseTotalStudents.set(item.course_id, item.count);
+          });
         }
 
         // Transform data to match our Course type
@@ -49,7 +69,15 @@ export function useCourseManagement() {
                 title: userCourse.courses.title,
                 description: userCourse.courses.description,
                 image: userCourse.courses.image,
-                roles: [userCourse.role]
+                roles: [userCourse.role],
+                skillLevel: userCourse.courses.skill_level || "All Levels",
+                duration: userCourse.courses.duration || "Self-paced",
+                certification: Boolean(userCourse.courses.certification),
+                learningObjectives: userCourse.courses.learning_objectives || [],
+                prerequisites: userCourse.courses.prerequisites || [],
+                createdAt: userCourse.courses.created_at,
+                schoolCode: userCourse.courses.school_code || "",
+                totalStudents: courseTotalStudents.get(userCourse.courses.id) || 0
               };
 
               if (userCourse.is_archived) {
@@ -86,28 +114,83 @@ export function useCourseManagement() {
           title: "Foundations of Cryptography",
           description: "Learn the basic paradigm and principles of modern cryptography",
           image: "/placeholder.svg",
-          roles: ["Learner", "Teaching Assistant"]
+          roles: ["Learner", "Teaching Assistant"],
+          skillLevel: "Intermediate",
+          duration: "12 weeks",
+          totalStudents: 156,
+          certification: true,
+          learningObjectives: [
+            "Understand symmetric key cryptography",
+            "Learn about public key systems",
+            "Apply cryptographic protocols"
+          ],
+          prerequisites: [
+            "Basic number theory",
+            "Probability theory",
+            "Algorithms"
+          ]
         },
         {
           id: 2,
           title: "Network Science for Web",
           description: "Network science is a multidisciplinary field",
           image: "/placeholder.svg",
-          roles: ["Learner", "Teacher"]
+          roles: ["Learner", "Teacher"],
+          skillLevel: "Advanced",
+          duration: "8 weeks",
+          totalStudents: 98,
+          certification: true,
+          learningObjectives: [
+            "Analyze network structures",
+            "Model web interactions",
+            "Identify network patterns"
+          ],
+          prerequisites: [
+            "Graph theory",
+            "Statistical analysis",
+            "Programming experience"
+          ]
         },
         {
           id: 3,
           title: "Machine Learning Basics",
           description: "Introduction to machine learning algorithms and applications",
           image: "/placeholder.svg",
-          roles: ["Learner", "Teaching Assistant", "Teacher"]
+          roles: ["Learner", "Teaching Assistant", "Teacher"],
+          skillLevel: "Beginner",
+          duration: "10 weeks",
+          totalStudents: 243,
+          certification: true,
+          learningObjectives: [
+            "Understand supervised learning",
+            "Apply regression models",
+            "Build classification systems"
+          ],
+          prerequisites: [
+            "Linear algebra",
+            "Calculus",
+            "Python programming"
+          ]
         },
         {
           id: 4,
           title: "Web Development Fundamentals",
           description: "Learn HTML, CSS, and JavaScript for modern web development",
           image: "/placeholder.svg",
-          roles: ["Learner"]
+          roles: ["Learner"],
+          skillLevel: "Beginner",
+          duration: "6 weeks",
+          totalStudents: 312,
+          certification: false,
+          learningObjectives: [
+            "Build responsive websites",
+            "Implement interactive features",
+            "Understand web standards"
+          ],
+          prerequisites: [
+            "Basic computer skills",
+            "Problem-solving ability"
+          ]
         },
       ];
       

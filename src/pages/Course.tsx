@@ -1,6 +1,6 @@
 
-import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { UserProfile } from "@/components/profile/ProfileDashboard";
 import { CourseHeader } from "@/components/course/CourseHeader";
 import { CourseContent } from "@/components/course/CourseContent";
@@ -10,10 +10,13 @@ import { useCourseData } from "@/hooks/useCourseData";
 import { useRoleManagement } from "@/hooks/useRoleManagement";
 import { useProfileData } from "@/hooks/useProfileData";
 import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 
 export default function Course() {
   const { id } = useParams<{ id: string }>();
   const [selectedView, setSelectedView] = useState("Regions");
+  const navigate = useNavigate();
   const { toast } = useToast();
   
   // Use hooks for data fetching
@@ -53,6 +56,17 @@ export default function Course() {
         initialProfile={userProfile}
         onSave={handleProfileSave}
       />
+
+      <div className="container mx-auto px-4 py-4">
+        <Button 
+          variant="ghost" 
+          onClick={() => navigate('/courses')}
+          className="flex items-center gap-2 mb-4 text-secondary hover:text-secondary/80"
+        >
+          <ArrowLeft size={16} />
+          <span>Back to courses</span>
+        </Button>
+      </div>
 
       <CourseContent
         selectedView={selectedView}

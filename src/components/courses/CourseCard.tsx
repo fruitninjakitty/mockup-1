@@ -75,24 +75,17 @@ export function CourseCard({ course, isArchived = false, onArchiveToggle }: Cour
       
       <HoverCardContent className="w-80 p-4">
         <div className="space-y-4">
-          <div>
-            <h4 className="text-sm font-semibold mb-1">Course Information</h4>
-            {courseData.skillLevel && (
-              <p className="text-xs text-gray-600 flex items-center gap-1 mb-1">
-                <span className="font-medium">Level:</span> {courseData.skillLevel}
-              </p>
-            )}
-            {courseData.duration && (
-              <p className="text-xs text-gray-600 flex items-center gap-1 mb-1">
-                <span className="font-medium">Duration:</span> {courseData.duration}
-              </p>
-            )}
-            {courseData.totalStudents !== undefined && (
-              <p className="text-xs text-gray-600 flex items-center gap-1 mb-1">
-                <span className="font-medium">Students:</span> {courseData.totalStudents}
-              </p>
-            )}
-          </div>
+          {courseData.duration && (
+            <p className="text-xs text-gray-600 flex items-center gap-1 mb-1">
+              <span className="font-medium">Duration:</span> {courseData.duration}
+            </p>
+          )}
+          
+          {courseData.totalStudents !== undefined && (
+            <p className="text-xs text-gray-600 flex items-center gap-1 mb-1">
+              <span className="font-medium">Students Enrolled:</span> {courseData.totalStudents}
+            </p>
+          )}
           
           {courseData.prerequisites && courseData.prerequisites.length > 0 && (
             <div>
@@ -131,10 +124,6 @@ export function CourseCard({ course, isArchived = false, onArchiveToggle }: Cour
               </ul>
             </div>
           )}
-          
-          <div className="pt-2 text-xs text-center text-gray-500">
-            Click on the card to view full course details
-          </div>
         </div>
       </HoverCardContent>
     </HoverCard>
