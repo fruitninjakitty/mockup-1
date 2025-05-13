@@ -14,39 +14,15 @@ import { useToast } from "@/hooks/use-toast";
 export default function Course() {
   const { id } = useParams<{ id: string }>();
   const [selectedView, setSelectedView] = useState("Regions");
-  const courseData = useCourseData(id!);
   const { toast } = useToast();
   
-  // Use role management hook for consistent role handling
+  // Use hooks for data fetching
+  const courseData = useCourseData(id!);
   const { roles, availableRoles, currentQuote, handleRoleChange, isLoading: rolesLoading } = useRoleManagement();
-  
-  // Use profile data hook for consistent profile handling
-  const { userProfile, setUserProfile, isProfileOpen, setIsProfileOpen } = useProfileData();
+  const { userProfile, setUserProfile, isProfileOpen, setIsProfileOpen, isLoading: profileLoading } = useProfileData();
 
-  // Load stored profile if it exists in localStorage
-  useEffect(() => {
-    const storedProfile = localStorage.getItem("userProfile");
-    if (storedProfile) {
-      try {
-        const parsedProfile = JSON.parse(storedProfile);
-        setUserProfile(parsedProfile);
-      } catch (error) {
-        console.error("Error parsing stored profile:", error);
-        toast({
-          title: "Error",
-          description: "Could not load your profile data",
-          variant: "destructive",
-        });
-      }
-    }
-  }, []);
-
-  const handleProfileSave = (updatedProfile: UserProfile) => {
-    setUserProfile(updatedProfile);
-    localStorage.setItem("userProfile", JSON.stringify(updatedProfile));
-  };
-
-  if (rolesLoading || !courseData) {
+  // Display loading state if any of the data is still loading
+  if (rolesLoading || profileLoading || !courseData) {
     return (
       <CoursePlaceholder 
         message="Loading course..." 
@@ -54,6 +30,10 @@ export default function Course() {
       />
     );
   }
+
+  const handleProfileSave = (updatedProfile: UserProfile) => {
+    setUserProfile(updatedProfile);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5">

@@ -78,7 +78,7 @@ export function CourseHeader({
             <span className="sr-only">User menu</span>
             <Avatar className="h-8 w-8">
               {userProfile.avatarUrl ? (
-                <AvatarImage src={userProfile.avatarUrl} alt="User" />
+                <AvatarImage src={userProfile.avatarUrl} alt={userProfile.fullName || "User"} />
               ) : (
                 <AvatarFallback className="bg-primary text-white text-sm font-semibold">
                   {userInitial}

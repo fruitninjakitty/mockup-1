@@ -5,19 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Archive, ArchiveRestore, ChevronRight } from "lucide-react";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
-
-interface Course {
-  id: number;
-  title: string;
-  description: string;
-  image: string;
-  roles?: string[];
-  prerequisites?: string[];
-  learningObjectives?: string[];
-  skillLevel?: string;
-  duration?: string;
-  totalStudents?: number;
-}
+import { Course } from "@/types/course";
 
 interface CourseCardProps {
   course: Course;
@@ -30,6 +18,16 @@ export function CourseCard({ course, isArchived = false, onArchiveToggle }: Cour
 
   const handleArchiveToggle = () => {
     onArchiveToggle(course.id, !isArchived);
+  };
+
+  // Fallback values for missing data
+  const courseData = {
+    ...course,
+    skillLevel: course.skillLevel || "All Levels",
+    duration: course.duration || "Self-paced",
+    totalStudents: course.totalStudents || 0,
+    prerequisites: course.prerequisites || [],
+    learningObjectives: course.learningObjectives || []
   };
 
   return (
@@ -79,55 +77,55 @@ export function CourseCard({ course, isArchived = false, onArchiveToggle }: Cour
         <div className="space-y-4">
           <div>
             <h4 className="text-sm font-semibold mb-1">Course Information</h4>
-            {course.skillLevel && (
+            {courseData.skillLevel && (
               <p className="text-xs text-gray-600 flex items-center gap-1 mb-1">
-                <span className="font-medium">Level:</span> {course.skillLevel}
+                <span className="font-medium">Level:</span> {courseData.skillLevel}
               </p>
             )}
-            {course.duration && (
+            {courseData.duration && (
               <p className="text-xs text-gray-600 flex items-center gap-1 mb-1">
-                <span className="font-medium">Duration:</span> {course.duration}
+                <span className="font-medium">Duration:</span> {courseData.duration}
               </p>
             )}
-            {course.totalStudents !== undefined && (
+            {courseData.totalStudents !== undefined && (
               <p className="text-xs text-gray-600 flex items-center gap-1 mb-1">
-                <span className="font-medium">Students:</span> {course.totalStudents}
+                <span className="font-medium">Students:</span> {courseData.totalStudents}
               </p>
             )}
           </div>
           
-          {course.prerequisites && course.prerequisites.length > 0 && (
+          {courseData.prerequisites && courseData.prerequisites.length > 0 && (
             <div>
               <h4 className="text-sm font-semibold mb-1">Prerequisites</h4>
               <ul className="space-y-1">
-                {course.prerequisites.slice(0, 3).map((prerequisite, index) => (
+                {courseData.prerequisites.slice(0, 3).map((prerequisite, index) => (
                   <li key={index} className="flex items-start gap-1 text-xs text-gray-600">
                     <ChevronRight className="h-3 w-3 mt-0.5 flex-shrink-0 text-[#43BC88]" />
                     <span>{prerequisite}</span>
                   </li>
                 ))}
-                {course.prerequisites.length > 3 && (
+                {courseData.prerequisites.length > 3 && (
                   <li className="text-xs text-gray-500 italic">
-                    +{course.prerequisites.length - 3} more prerequisites
+                    +{courseData.prerequisites.length - 3} more prerequisites
                   </li>
                 )}
               </ul>
             </div>
           )}
           
-          {course.learningObjectives && course.learningObjectives.length > 0 && (
+          {courseData.learningObjectives && courseData.learningObjectives.length > 0 && (
             <div>
               <h4 className="text-sm font-semibold mb-1">Learning Objectives</h4>
               <ul className="space-y-1">
-                {course.learningObjectives.slice(0, 2).map((objective, index) => (
+                {courseData.learningObjectives.slice(0, 2).map((objective, index) => (
                   <li key={index} className="flex items-start gap-1 text-xs text-gray-600">
                     <ChevronRight className="h-3 w-3 mt-0.5 flex-shrink-0 text-[#43BC88]" />
                     <span>{objective}</span>
                   </li>
                 ))}
-                {course.learningObjectives.length > 2 && (
+                {courseData.learningObjectives.length > 2 && (
                   <li className="text-xs text-gray-500 italic">
-                    +{course.learningObjectives.length - 2} more objectives
+                    +{courseData.learningObjectives.length - 2} more objectives
                   </li>
                 )}
               </ul>

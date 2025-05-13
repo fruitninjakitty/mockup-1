@@ -1,66 +1,107 @@
+
 import { useState, useEffect } from "react";
 import { Course } from "@/types/course-types";
-
-const fallbackCoursesData = [
-  {
-    id: 1,
-    title: "Foundations of Cryptography",
-    description: "Learn the basic paradigm and principles of modern cryptography",
-    image: "/placeholder.svg",
-    schoolCode: "TECH101",
-    createdAt: "2024-03-28T10:00:00Z",
-    createdBy: {
-      fullName: "Dr. Alice Smith",
-      email: "alice.smith@school.edu"
-    },
-    totalStudents: 45,
-  },
-  {
-    id: 2,
-    title: "Network Science for Web",
-    description: "Network science is a multidisciplinary field",
-    image: "/placeholder.svg",
-  },
-  {
-    id: 3,
-    title: "Machine Learning Basics",
-    description: "Introduction to machine learning algorithms and applications",
-    image: "/placeholder.svg",
-  },
-  {
-    id: 4,
-    title: "Web Development Fundamentals",
-    description: "Learn HTML, CSS, and JavaScript for modern web development",
-    image: "/placeholder.svg",
-  },
-];
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 export function useCourseData(courseId: string) {
   const [courseData, setCourseData] = useState<Course | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
-    let allCourses: Course[] = [];
-    const activeCourses = localStorage.getItem('activeCourses');
-    const archivedCourses = localStorage.getItem('archivedCourses');
-    
-    if (activeCourses) {
-      allCourses = [...allCourses, ...JSON.parse(activeCourses)];
-    }
-    
-    if (archivedCourses) {
-      allCourses = [...allCourses, ...JSON.parse(archivedCourses)];
-    }
-    
-    if (allCourses.length === 0) {
-      allCourses = fallbackCoursesData;
-    }
+    const fetchCourseData = async () => {
+      try {
+        // First try to fetch from Supabase
+        const { data: courseFromSupabase, error } = await supabase
+          .from("courses")
+          .select(`
+            *,
+            created_by (
+              id, 
+              full_name, 
+              email
+            )
+          `)
+          .eq("id", Number(courseId))
+          .single();
 
-    const foundCourse = allCourses.find(course => course.id === Number(courseId));
-    if (foundCourse) {
-      setCourseData(foundCourse);
-      document.title = `Course: ${foundCourse.title}`;
+        if (error) {
+          console.error("Error fetching course from Supabase:", error);
+          
+          // Fall back to localStorage as backup
+          const fetchFromLocalStorage = () => {
+            let allCourses: Course[] = [];
+            const activeCourses = localStorage.getItem('activeCourses');
+            const archivedCourses = localStorage.getItem('archivedCourses');
+            
+            if (activeCourses) {
+              allCourses = [...allCourses, ...JSON.parse(activeCourses)];
+            }
+            
+            if (archivedCourses) {
+              allCourses = [...allCourses, ...JSON.parse(archivedCourses)];
+            }
+            
+            if (allCourses.length === 0) {
+              return null;
+            }
+
+            return allCourses.find(course => course.id === Number(courseId)) || null;
+          };
+
+          const localCourse = fetchFromLocalStorage();
+          
+          if (localCourse) {
+            setCourseData(localCourse);
+            document.title = `Course: ${localCourse.title}`;
+          } else {
+            toast({
+              title: "Error",
+              description: "Could not load course data",
+              variant: "destructive",
+            });
+          }
+          
+          return;
+        }
+
+        // Transform Supabase data to match our Course type
+        const transformedCourse: Course = {
+          id: courseFromSupabase.id,
+          title: courseFromSupabase.title,
+          description: courseFromSupabase.description,
+          image: courseFromSupabase.image,
+          createdAt: courseFromSupabase.created_at,
+          createdBy: courseFromSupabase.created_by ? {
+            fullName: courseFromSupabase.created_by.full_name,
+            email: courseFromSupabase.created_by.email
+          } : undefined,
+          // Add other fields from Supabase as needed
+          schoolCode: courseFromSupabase.school_code,
+          totalStudents: courseFromSupabase.total_students,
+          skillLevel: courseFromSupabase.skill_level,
+          duration: courseFromSupabase.duration,
+          certification: courseFromSupabase.certification,
+          learningObjectives: courseFromSupabase.learning_objectives,
+          prerequisites: courseFromSupabase.prerequisites,
+        };
+
+        setCourseData(transformedCourse);
+        document.title = `Course: ${transformedCourse.title}`;
+      } catch (err) {
+        console.error("Unexpected error fetching course data:", err);
+        toast({
+          title: "Error",
+          description: "An unexpected error occurred while loading course data",
+          variant: "destructive",
+        });
+      }
+    };
+
+    if (courseId) {
+      fetchCourseData();
     }
-  }, [courseId]);
+  }, [courseId, toast]);
 
   return courseData;
 }

@@ -19,7 +19,8 @@ export interface Course {
   skillLevel?: string;
   duration?: string;
   certification?: boolean;
-  organizationId?: string; // Added to store the organization ID
+  organizationId?: string;
+  roles?: string[]; // For role-based access control
 }
 
 export interface CourseViewState {

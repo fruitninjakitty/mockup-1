@@ -1,132 +1,166 @@
+
 import { useState, useEffect } from "react";
+import { UserProfile } from "@/types/course";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { DatabaseRole } from "@/types/roles";
-import { UserProfile } from "@/components/profile/ProfileDashboard";
 
 export function useProfileData() {
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile>({
     fullName: "",
     email: "",
+    learningGoal: "",
+    focusArea: "",
+    learningSchedule: "",
     bio: "",
-    userRoles: ["Learner"] // Default role
   });
-  
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
-  
-  // Fetch user profile data on mount
+
   useEffect(() => {
-    const fetchUserProfile = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) return;
-      
+    const fetchProfileData = async () => {
       try {
-        const { data: profile, error } = await supabase
-          .from('profiles')
-          .select('full_name, email, role, bio, avatar_url')
-          .eq('id', session.user.id)
-          .single();
-          
-        if (error) {
-          console.error("Error fetching profile:", error);
-          // If there's an error, keep the default profile but try to update the database
-          await createDefaultProfile(session.user.id);
+        setIsLoading(true);
+
+        // First check if user is authenticated
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (!user) {
+          // If not authenticated, try to get from localStorage
+          loadFromLocalStorage();
           return;
         }
-        
-        if (profile) {
-          // Ensure there's always a default role
-          const role = profile.role || "learner";
-          
-          setUserProfile({
-            fullName: profile.full_name || "",
-            email: profile.email || "",
-            userRoles: [role.charAt(0).toUpperCase() + role.slice(1)], // Capitalize the role
-            bio: profile.bio || "",
-            avatarUrl: profile.avatar_url || undefined
-          });
-          
-          // If no role is set, update it to the default
-          if (!profile.role) {
-            updateDefaultRole(session.user.id);
+
+        // Fetch user profile from Supabase
+        const { data: profileData, error } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", user.id)
+          .single();
+
+        if (error) {
+          console.error("Error fetching profile data:", error);
+          loadFromLocalStorage();
+          return;
+        }
+
+        if (profileData) {
+          // Transform data to match our UserProfile type
+          const profile: UserProfile = {
+            fullName: profileData.full_name || "",
+            email: profileData.email || "",
+            bio: profileData.bio || "",
+            // If we have additional data in profiles table for these fields,
+            // we would map them here. For now, check localStorage for additional fields.
+            learningGoal: "",
+            focusArea: "",
+            learningSchedule: "",
+            avatarUrl: profileData.avatar_url,
+          };
+
+          // Try to merge with localStorage data for fields not in database
+          const storedProfile = localStorage.getItem("userProfile");
+          if (storedProfile) {
+            try {
+              const parsedProfile = JSON.parse(storedProfile);
+              profile.learningGoal = parsedProfile.learningGoal || "";
+              profile.focusArea = parsedProfile.focusArea || "";
+              profile.learningSchedule = parsedProfile.learningSchedule || "";
+            } catch (parseError) {
+              console.error("Error parsing stored profile:", parseError);
+            }
           }
+
+          setUserProfile(profile);
+          
+          // Save merged profile back to localStorage
+          localStorage.setItem("userProfile", JSON.stringify(profile));
         } else {
-          // If no profile is found, create one
-          await createDefaultProfile(session.user.id);
+          // If no profile in database, fallback to localStorage
+          loadFromLocalStorage();
         }
-      } catch (error) {
-        console.error("Exception fetching profile:", error);
-        // Even if there's an error, try to create a default profile
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          await createDefaultProfile(user.id);
-        }
+      } catch (err) {
+        console.error("Unexpected error fetching profile:", err);
+        loadFromLocalStorage();
+      } finally {
+        setIsLoading(false);
       }
     };
-    
-    fetchUserProfile();
+
+    const loadFromLocalStorage = () => {
+      const storedProfile = localStorage.getItem("userProfile");
+      if (storedProfile) {
+        try {
+          const parsedProfile = JSON.parse(storedProfile);
+          setUserProfile(parsedProfile);
+        } catch (error) {
+          console.error("Error parsing stored profile:", error);
+          toast({
+            title: "Error",
+            description: "Could not load your profile data",
+            variant: "destructive",
+          });
+        }
+      }
+      setIsLoading(false);
+    };
+
+    fetchProfileData();
   }, [toast]);
 
-  // Helper function to update default role
-  const updateDefaultRole = async (userId: string) => {
+  const saveProfile = async (updatedProfile: UserProfile) => {
     try {
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ role: 'learner' as DatabaseRole })
-        .eq('id', userId);
-        
-      if (updateError) {
-        console.error("Error setting default role:", updateError);
-      }
-    } catch (error) {
-      console.error("Exception setting default role:", error);
-    }
-  };
-  
-  // Helper function to create a default profile
-  const createDefaultProfile = async (userId: string) => {
-    try {
+      // Save to state
+      setUserProfile(updatedProfile);
+      
+      // Save to localStorage as backup
+      localStorage.setItem("userProfile", JSON.stringify(updatedProfile));
+
+      // If authenticated, also save to Supabase
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
       
-      const defaultProfile = {
-        id: userId,
-        full_name: user.user_metadata?.full_name || "New User",
-        email: user.email || "",
-        role: 'learner' as DatabaseRole,
-        bio: "",
-        avatar_url: null,
-        is_approved: false
-      };
-      
-      const { error } = await supabase
-        .from('profiles')
-        .upsert(defaultProfile)
-        .select();
-        
-      if (error) {
-        console.error("Error creating default profile:", error);
-        return;
+      if (user) {
+        const { error } = await supabase
+          .from("profiles")
+          .update({
+            full_name: updatedProfile.fullName,
+            bio: updatedProfile.bio,
+            // Only update email if it has changed and authentication allows it
+            ...(updatedProfile.email !== user.email ? { email: updatedProfile.email } : {})
+          })
+          .eq("id", user.id);
+
+        if (error) {
+          console.error("Error updating profile in Supabase:", error);
+          toast({
+            title: "Warning",
+            description: "Profile saved locally but could not be updated in database.",
+            variant: "default",
+          });
+          return;
+        }
+
+        toast({
+          title: "Success",
+          description: "Profile updated successfully",
+          variant: "default",
+        });
       }
-      
-      // Update local state with the default profile
-      setUserProfile({
-        fullName: defaultProfile.full_name,
-        email: defaultProfile.email,
-        userRoles: ["Learner"],
-        bio: defaultProfile.bio,
-        avatarUrl: defaultProfile.avatar_url || undefined
+    } catch (err) {
+      console.error("Error saving profile:", err);
+      toast({
+        title: "Error",
+        description: "Could not save your profile",
+        variant: "destructive",
       });
-    } catch (error) {
-      console.error("Exception creating default profile:", error);
     }
   };
 
-  return {
-    userProfile,
-    setUserProfile,
-    isProfileOpen,
-    setIsProfileOpen
+  return { 
+    userProfile, 
+    setUserProfile: saveProfile, 
+    isProfileOpen, 
+    setIsProfileOpen,
+    isLoading 
   };
 }

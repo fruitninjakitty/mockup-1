@@ -5,13 +5,25 @@ import { CourseSections } from "@/components/courses/CourseSections";
 import { useCourseManagement } from "@/hooks/useCourseManagement";
 import { useRoleManagement } from "@/hooks/useRoleManagement";
 import { useProfileData } from "@/hooks/useProfileData";
+import { CoursePlaceholder } from "@/components/course/CoursePlaceholder";
 
 export default function Courses() {
   const [courseView, setCourseView] = useState("active");
   
-  const { activeCourses, archivedCourses, handleArchiveToggle } = useCourseManagement();
-  const { roles, availableRoles, currentQuote, handleRoleChange } = useRoleManagement();
-  const { userProfile, setUserProfile, isProfileOpen, setIsProfileOpen } = useProfileData();
+  // Use hooks for data fetching
+  const { activeCourses, archivedCourses, handleArchiveToggle, loading: coursesLoading } = useCourseManagement();
+  const { roles, availableRoles, currentQuote, handleRoleChange, isLoading: rolesLoading } = useRoleManagement();
+  const { userProfile, setUserProfile, isProfileOpen, setIsProfileOpen, isLoading: profileLoading } = useProfileData();
+
+  // Show loading state if any data is still loading
+  if (coursesLoading || rolesLoading || profileLoading) {
+    return (
+      <CoursePlaceholder 
+        message="Loading courses..." 
+        description="Please wait while we load your courses."
+      />
+    );
+  }
 
   // Filter courses based on user roles
   const filteredActiveCourses = activeCourses.filter(course => 
