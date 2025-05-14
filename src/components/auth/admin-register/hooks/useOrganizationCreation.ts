@@ -67,11 +67,12 @@ export function useOrganizationCreation() {
       }
 
       // Update the user's profile with organization_id and admin role
+      // Explicitly set the role as 'administrator' using the Database role type
       const { error: profileError } = await supabase
         .from('profiles')
         .update({ 
           organization_id: orgData.id,
-          role: 'administrator',
+          role: 'administrator' as const,
           is_approved: true  // Auto-approve administrators
         })
         .eq('id', userId);

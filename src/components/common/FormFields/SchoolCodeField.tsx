@@ -1,79 +1,41 @@
 
-import { useState } from "react";
+import { useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { OrganizationSearch } from "./OrganizationSearch";
-import { Button } from "@/components/ui/button";
-import { Search, X } from "lucide-react";
+import { KeyRound } from "lucide-react";
 
-export interface SchoolCodeFieldProps {
+interface SchoolCodeFieldProps {
   schoolCode: string;
   onSchoolCodeChange: (value: string) => void;
-  label?: string;
-  placeholder?: string;
+  disabled?: boolean;
 }
 
-export function SchoolCodeField({ 
-  schoolCode, 
-  onSchoolCodeChange,
-  label = "School Code",
-  placeholder = "School Code"
-}: SchoolCodeFieldProps) {
-  const [showSearch, setShowSearch] = useState(false);
-  
+export function SchoolCodeField({ schoolCode, onSchoolCodeChange, disabled = false }: SchoolCodeFieldProps) {
+  // Check if we have a stored school code
+  useEffect(() => {
+    const storedCode = localStorage.getItem('schoolCode');
+    if (storedCode && !schoolCode) {
+      onSchoolCodeChange(storedCode);
+      // Clear after using it once
+      localStorage.removeItem('schoolCode');
+    }
+  }, [schoolCode, onSchoolCodeChange]);
+
   return (
     <div className="space-y-1">
-      {label && (
-        <Label htmlFor="register-school" className="text-[#43BC88] text-sm font-semibold">
-          {label}
-        </Label>
-      )}
-      <div className="space-y-4">
-        <div className="flex gap-2">
-          <Input
-            id="register-school"
-            type="text"
-            placeholder={placeholder}
-            className="w-full border-border"
-            value={schoolCode}
-            onChange={(e) => onSchoolCodeChange(e.target.value)}
-          />
-          <Button 
-            type="button" 
-            variant="outline" 
-            onClick={() => setShowSearch(!showSearch)}
-            className="whitespace-nowrap"
-          >
-            {showSearch ? (
-              <>
-                <X className="h-4 w-4 mr-2" />
-                Hide Search
-              </>
-            ) : (
-              <>
-                <Search className="h-4 w-4 mr-2" />
-                Find School
-              </>
-            )}
-          </Button>
-        </div>
-        
-        {showSearch && (
-          <div className="rounded-md border p-4 bg-gray-50/50 shadow-sm">
-            <p className="text-sm text-muted-foreground mb-3">
-              Search for your institution by name:
-            </p>
-            <OrganizationSearch onSelect={(code) => {
-              onSchoolCodeChange(code);
-              setShowSearch(false);
-            }} />
-          </div>
-        )}
-        
-        <p className="text-xs text-muted-foreground">
-          Don't have a school code? Ask your administrator or search for your institution.
-        </p>
-      </div>
+      <Label htmlFor="school-code" className="text-[#43BC88] text-sm font-semibold flex items-center gap-1">
+        <KeyRound size={16} className="text-[#43BC88]" /> School/Organization Code
+      </Label>
+      <Input
+        id="school-code"
+        type="text"
+        placeholder="Enter your school or organization code"
+        value={schoolCode}
+        onChange={(e) => onSchoolCodeChange(e.target.value)}
+        disabled={disabled}
+        className="border-border w-full"
+        required
+      />
     </div>
   );
 }

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,7 @@ import {
   SchoolCodeField 
 } from "@/components/common/FormFields";
 import { UserTypeFields } from "./FormFields/UserTypeFields";
+import { DatabaseRole } from "@/types/roles";
 
 export function RegisterForm() {
   const navigate = useNavigate();
@@ -47,6 +49,16 @@ export function RegisterForm() {
       return false;
     } finally {
       setIsCheckingCode(false);
+    }
+  };
+
+  // Map user type to database role
+  const mapUserTypeToDatabaseRole = (type: "student" | "teacher" | "assistant"): DatabaseRole => {
+    switch (type) {
+      case "teacher": return "teacher";
+      case "assistant": return "teaching_assistant";
+      case "student": 
+      default: return "learner";
     }
   };
 
@@ -140,15 +152,14 @@ export function RegisterForm() {
         return;
       }
 
-      let role = 'learner';
-      if (userType === 'teacher') role = 'teacher';
-      if (userType === 'assistant') role = 'teaching_assistant';
+      // Get the database role from the user type
+      const role = mapUserTypeToDatabaseRole(userType);
 
       const { error: profileError } = await supabase
         .from('profiles')
         .update({ 
           organization_id: orgData.id,
-          role: role as any
+          role: role
         })
         .eq('id', authData.user.id);
 

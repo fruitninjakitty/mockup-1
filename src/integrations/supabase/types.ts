@@ -375,9 +375,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_current_user_role: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       get_user_organization_id: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
       }
       search_users: {
         Args: { search_query: string }
@@ -388,6 +396,10 @@ export type Database = {
           role: Database["public"]["Enums"]["user_role"]
           bio: string
         }[]
+      }
+      user_belongs_to_organization: {
+        Args: { org_id: string }
+        Returns: boolean
       }
     }
     Enums: {
