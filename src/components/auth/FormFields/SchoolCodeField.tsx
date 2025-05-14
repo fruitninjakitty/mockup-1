@@ -12,8 +12,6 @@ export function SchoolCodeField({ schoolCode, onSchoolCodeChange }: SchoolCodeFi
     <CommonSchoolCodeField
       schoolCode={schoolCode}
       onSchoolCodeChange={onSchoolCodeChange}
-      label="School Code"
-      placeholder="School Code"
     />
   );
 }

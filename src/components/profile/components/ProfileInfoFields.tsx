@@ -74,8 +74,8 @@ export function ProfileInfoFields({ profile, isLoading, onProfileChange }: Profi
             <SchoolCodeField
               schoolCode={profile.schoolCode || ""}
               onSchoolCodeChange={(value) => onProfileChange("schoolCode", value)}
-              placeholder="Enter school code"
               label=""
+              placeholder="Enter school code"
             />
           )}
         </div>
