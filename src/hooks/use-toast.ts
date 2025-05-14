@@ -1,3 +1,4 @@
+
 import * as React from "react";
 import {
   Toast,
@@ -203,7 +204,22 @@ export function useToast() {
   return context;
 }
 
-export const toast = (props: Toast) => {
-  const { toast } = useToast();
-  return toast(props);
+export const toast = {
+  // Create a toast object with methods
+  default: (props: Toast) => {
+    const { toast } = useToast();
+    return toast({ ...props, variant: "default" });
+  },
+  destructive: (props: Toast) => {
+    const { toast } = useToast();
+    return toast({ ...props, variant: "destructive" });
+  },
+  success: (props: Toast) => {
+    const { toast } = useToast();
+    return toast({ ...props, variant: "success" });
+  },
+  warning: (props: Toast) => {
+    const { toast } = useToast();
+    return toast({ ...props, variant: "warning" });
+  }
 };
