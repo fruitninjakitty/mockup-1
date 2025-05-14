@@ -1,4 +1,4 @@
 
-import { useToast, toast, ToasterToast, Toast } from "@/hooks/use-toast";
+import { useToast, toast, ToasterToast, Toast, showToast } from "@/hooks/use-toast";
 
-export { useToast, toast, type ToasterToast, type Toast };
+export { useToast, toast, showToast, type ToasterToast, type Toast };

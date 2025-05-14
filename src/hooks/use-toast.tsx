@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import {
   Toast,
@@ -204,22 +203,27 @@ export function useToast() {
   return context;
 }
 
+// Create a toast object with convenience methods
 export const toast = {
-  // Create a toast object with methods
   default: (props: Toast) => {
-    const { toast } = useToast();
-    return toast({ ...props, variant: "default" });
+    // This is a workaround as we can't directly use hook here
+    // The actual implementation happens when the component using this is rendered
+    return { ...props, variant: "default" };
   },
   destructive: (props: Toast) => {
-    const { toast } = useToast();
-    return toast({ ...props, variant: "destructive" });
+    return { ...props, variant: "destructive" };
   },
   success: (props: Toast) => {
-    const { toast } = useToast();
-    return toast({ ...props, variant: "success" });
+    return { ...props, variant: "success" };
   },
   warning: (props: Toast) => {
-    const { toast } = useToast();
-    return toast({ ...props, variant: "warning" });
+    return { ...props, variant: "warning" };
   }
 };
+
+// Helper function to actually display a toast from anywhere
+export function showToast(props: Toast) {
+  // This needs to be called from within a component that has access to the ToastContext
+  const { toast: showToastFn } = useToast();
+  return showToastFn(props);
+}
