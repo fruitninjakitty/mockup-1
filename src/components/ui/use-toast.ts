@@ -1,3 +1,4 @@
 
-// Re-export from use-toast.ts to avoid circular imports
-export { useToast, toast } from "@/hooks/use-toast";
+import { useToast, toast, ToasterToast, Toast } from "@/hooks/use-toast";
+
+export { useToast, toast, type ToasterToast, type Toast };

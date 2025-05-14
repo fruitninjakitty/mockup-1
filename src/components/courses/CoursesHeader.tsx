@@ -40,8 +40,8 @@ export function CoursesHeader({
   const { signOut } = useAuth();
   
   // Ensure we have at least a default role
-  const displayRoles = roles.length > 0 ? roles : ["Learner"];
-  const displayAvailableRoles = availableRoles.length > 0 ? availableRoles : ["Learner"];
+  const displayRoles = roles.length > 0 ? roles : [("Learner" as DisplayRole)];
+  const displayAvailableRoles = availableRoles.length > 0 ? availableRoles : [("Learner" as DisplayRole)];
   
   // Calculate roles that can be added (available but not current)
   const addableRoles = displayAvailableRoles.filter(
@@ -63,7 +63,7 @@ export function CoursesHeader({
               {displayRoles.length > 0 && displayAvailableRoles.length > 1 ? (
                 <Select 
                   value={primaryRole} 
-                  onValueChange={onRoleChange}
+                  onValueChange={(value) => onRoleChange(value as DisplayRole)}
                 >
                   <SelectTrigger className="inline-flex w-auto text-xl sm:text-2xl font-semibold border-none bg-transparent p-0 focus:ring-0 ml-1 text-secondary">
                     <SelectValue placeholder="Learner" />

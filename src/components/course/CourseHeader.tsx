@@ -29,8 +29,8 @@ export function CourseHeader({
   const userInitial = userProfile.fullName ? userProfile.fullName.charAt(0) : "?";
   
   // Ensure we always have a role to display
-  const displayRoles = roles.length > 0 ? roles : ["Learner"];
-  const displayAvailableRoles = availableRoles.length > 0 ? availableRoles : ["Learner"];
+  const displayRoles = roles.length > 0 ? roles : [("Learner" as DisplayRole)];
+  const displayAvailableRoles = availableRoles.length > 0 ? availableRoles : [("Learner" as DisplayRole)];
 
   return (
     <header className="sticky top-0 z-30 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
@@ -42,7 +42,7 @@ export function CourseHeader({
               {displayRoles.length > 0 && displayAvailableRoles.length > 1 ? (
                 <Select 
                   value={displayRoles[0]} 
-                  onValueChange={onRoleChange}
+                  onValueChange={(value) => onRoleChange(value as DisplayRole)}
                 >
                   <SelectTrigger className="inline-flex w-auto text-xl sm:text-2xl font-semibold border-none bg-transparent p-0 focus:ring-0 ml-1 text-secondary">
                     <SelectValue placeholder="Learner" />

@@ -96,7 +96,7 @@ export function useRoleManagement() {
     };
 
     getUserRoles();
-  }, [toast]);
+  }, []);
 
   // Helper function to set default role
   const setDefaultRole = () => {
@@ -284,7 +284,7 @@ export function useRoleManagement() {
         toast({
           title: "Cannot Remove Primary Role",
           description: "You cannot remove your primary role",
-          variant: "warning",
+          variant: "default",
         });
         return;
       }
