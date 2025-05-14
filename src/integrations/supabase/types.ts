@@ -335,6 +335,27 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["user_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["user_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       users_courses: {
         Row: {
           course_id: number
@@ -375,16 +396,38 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_role_to_user: {
+        Args: {
+          _user_id: string
+          _role: Database["public"]["Enums"]["user_role"]
+        }
+        Returns: boolean
+      }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      get_current_user_roles: {
+        Args: Record<PropertyKey, never>
+        Returns: Database["public"]["Enums"]["user_role"][]
       }
       get_user_organization_id: {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_user_roles: {
+        Args: { user_id: string }
+        Returns: Database["public"]["Enums"]["user_role"][]
+      }
       is_admin: {
         Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      remove_role_from_user: {
+        Args: {
+          _user_id: string
+          _role: Database["public"]["Enums"]["user_role"]
+        }
         Returns: boolean
       }
       search_users: {
@@ -399,6 +442,13 @@ export type Database = {
       }
       user_belongs_to_organization: {
         Args: { org_id: string }
+        Returns: boolean
+      }
+      user_has_role: {
+        Args: {
+          user_id: string
+          check_role: Database["public"]["Enums"]["user_role"]
+        }
         Returns: boolean
       }
     }

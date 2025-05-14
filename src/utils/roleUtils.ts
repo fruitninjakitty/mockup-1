@@ -72,3 +72,21 @@ export const isRoleCompatible = (currentRoles: DisplayRole[], roleToAdd: Display
   
   return true;
 };
+
+/**
+ * Check if user has any role with specific permissions
+ */
+export const hasRoleWithPermission = (roles: DisplayRole[], permissionRoles: DisplayRole[]): boolean => {
+  return roles.some(role => permissionRoles.includes(role));
+};
+
+/**
+ * Gets highest priority role from a list of roles
+ * Order: Administrator > Teacher > Teaching Assistant > Learner
+ */
+export const getPrimaryRole = (roles: DisplayRole[]): DisplayRole => {
+  if (roles.includes("Administrator")) return "Administrator";
+  if (roles.includes("Teacher")) return "Teacher";
+  if (roles.includes("Teaching Assistant")) return "Teaching Assistant";
+  return "Learner";
+};

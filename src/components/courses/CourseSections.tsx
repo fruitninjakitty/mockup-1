@@ -28,7 +28,11 @@ export function CourseSections({
   handleArchiveToggle,
   roles
 }: CourseSectionsProps) {
-  const showCreateCourse = roles.includes("Teacher") || roles.includes("Administrator");
+  // Check if any role has the required permissions
+  const hasTeacherRights = roles.some(role => 
+    role === "Teacher" || role === "Administrator"
+  );
+  
   const showRecommendedCourses = roles.includes("Learner");
 
   return (
@@ -36,7 +40,7 @@ export function CourseSections({
       <section className="mb-12 fade-in">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-semibold tracking-tight">Your Courses</h2>
-          {showCreateCourse && <CreateCourseDialog />}
+          {hasTeacherRights && <CreateCourseDialog />}
         </div>
         
         <Tabs value={courseView} onValueChange={setCourseView} className="w-full">

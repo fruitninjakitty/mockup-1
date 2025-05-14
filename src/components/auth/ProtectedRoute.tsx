@@ -14,7 +14,23 @@ export const ProtectedRoute = ({
 }: ProtectedRouteProps) => {
   const { user, loading, isAuthenticated } = useAuth();
   const location = useLocation();
-  const userRole = user?.user_metadata?.role || user?.app_metadata?.role || '';
+  
+  // Get all user roles from user metadata
+  const getUserRoles = (): string[] => {
+    if (!user) return [];
+    
+    // First try to get roles from user_metadata (for newer implementations)
+    const userRoles = user.user_metadata?.roles;
+    if (userRoles && Array.isArray(userRoles) && userRoles.length > 0) {
+      return userRoles;
+    }
+    
+    // Fallback to single role from user_metadata or app_metadata
+    const singleRole = user.user_metadata?.role || user.app_metadata?.role;
+    return singleRole ? [singleRole] : [];
+  };
+  
+  const userRoles = getUserRoles();
 
   if (loading) {
     return (
@@ -32,8 +48,8 @@ export const ProtectedRoute = ({
     return <Navigate to="/" state={{ from: location.pathname }} replace />;
   }
 
-  // If roles are specified and user doesn't have the required role
-  if (roles.length > 0 && !roles.includes(userRole)) {
+  // If roles are specified and user doesn't have any of the required roles
+  if (roles.length > 0 && !userRoles.some(role => roles.includes(role))) {
     return (
       <div className="min-h-screen w-full flex items-center justify-center">
         <div className="flex flex-col items-center gap-4 max-w-md text-center">
