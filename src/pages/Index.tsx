@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
@@ -6,6 +5,10 @@ import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { DisplayRole } from '@/types/roles';
+import { displayRoleToDbRole, dbRoleToDisplayRole } from '@/utils/roleUtils';
+import { Database } from "@/integrations/supabase/types";
+
+type DatabaseRole = Database["public"]["Enums"]["user_role"];
 
 const Index = () => {
   const navigate = useNavigate();
@@ -44,14 +47,8 @@ const Index = () => {
         if (userRoles && userRoles.length > 0) {
           // Convert database roles to display roles
           const displayRoles: DisplayRole[] = userRoles.map(role => {
-            switch(role) {
-              case 'administrator': return 'Administrator';
-              case 'teacher': return 'Teacher';
-              case 'teaching_assistant': return 'Teaching Assistant';
-              case 'learner': 
-              default: return 'Learner';
-            }
-          }) as DisplayRole[];
+            return dbRoleToDisplayRole(role);
+          });
           
           setRoles(displayRoles);
           setSelectedRole(displayRoles[0]);
@@ -88,13 +85,7 @@ const Index = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) return;
 
-      let dbRole: string;
-      switch(role) {
-        case 'Administrator': dbRole = 'administrator'; break;
-        case 'Teacher': dbRole = 'teacher'; break;
-        case 'Teaching Assistant': dbRole = 'teaching_assistant'; break;
-        default: dbRole = 'learner';
-      }
+      let dbRole: DatabaseRole = displayRoleToDbRole(role);
       
       // Update the primary role in profiles table
       const { error: profileError } = await supabase

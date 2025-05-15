@@ -5,6 +5,13 @@ import { useAuth } from '@/context/AuthContext';
 import { UserProfile } from '@/components/profile/types';
 import { useToast } from './use-toast';
 
+interface ProfileData {
+  full_name?: string;
+  email?: string;
+  bio?: string;
+  avatar_url?: string;
+}
+
 export function useProfileData() {
   const [userProfile, setUserProfile] = useState<UserProfile>({
     fullName: '',
@@ -68,7 +75,7 @@ export function useProfileData() {
       });
 
       // Get values from profile or fallback to sensible defaults
-      const profile = profileData || {};
+      const profile: ProfileData = profileData || {};
 
       setUserProfile({
         fullName: profile.full_name || user.user_metadata?.full_name || '',
