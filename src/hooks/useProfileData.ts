@@ -1,166 +1,105 @@
 
-import { useState, useEffect } from "react";
-import { UserProfile } from "@/types/course";
+import { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { useAuth } from '@/context/AuthContext';
+import { UserProfile } from '@/components/profile/types';
+import { useToast } from './use-toast';
 
 export function useProfileData() {
   const [userProfile, setUserProfile] = useState<UserProfile>({
-    fullName: "",
-    email: "",
-    learningGoal: "",
-    focusArea: "",
-    learningSchedule: "",
-    bio: "",
+    fullName: '',
+    email: '',
+    bio: '',
+    avatarUrl: '',
+    userRoles: []
   });
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const { user } = useAuth();
   const { toast } = useToast();
 
   useEffect(() => {
-    const fetchProfileData = async () => {
-      try {
-        setIsLoading(true);
+    fetchUserProfile();
+  }, [user]);
 
-        // First check if user is authenticated
-        const { data: { user } } = await supabase.auth.getUser();
-        
-        if (!user) {
-          // If not authenticated, try to get from localStorage
-          loadFromLocalStorage();
-          return;
-        }
-
-        // Fetch user profile from Supabase
-        const { data: profileData, error } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", user.id)
-          .single();
-
-        if (error) {
-          console.error("Error fetching profile data:", error);
-          loadFromLocalStorage();
-          return;
-        }
-
-        if (profileData) {
-          // Transform data to match our UserProfile type
-          const profile: UserProfile = {
-            fullName: profileData.full_name || "",
-            email: profileData.email || "",
-            bio: profileData.bio || "",
-            // If we have additional data in profiles table for these fields,
-            // we would map them here. For now, check localStorage for additional fields.
-            learningGoal: "",
-            focusArea: "",
-            learningSchedule: "",
-            avatarUrl: profileData.avatar_url,
-          };
-
-          // Try to merge with localStorage data for fields not in database
-          const storedProfile = localStorage.getItem("userProfile");
-          if (storedProfile) {
-            try {
-              const parsedProfile = JSON.parse(storedProfile);
-              profile.learningGoal = parsedProfile.learningGoal || "";
-              profile.focusArea = parsedProfile.focusArea || "";
-              profile.learningSchedule = parsedProfile.learningSchedule || "";
-            } catch (parseError) {
-              console.error("Error parsing stored profile:", parseError);
-            }
-          }
-
-          setUserProfile(profile);
-          
-          // Save merged profile back to localStorage
-          localStorage.setItem("userProfile", JSON.stringify(profile));
-        } else {
-          // If no profile in database, fallback to localStorage
-          loadFromLocalStorage();
-        }
-      } catch (err) {
-        console.error("Unexpected error fetching profile:", err);
-        loadFromLocalStorage();
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    const loadFromLocalStorage = () => {
-      const storedProfile = localStorage.getItem("userProfile");
-      if (storedProfile) {
-        try {
-          const parsedProfile = JSON.parse(storedProfile);
-          setUserProfile(parsedProfile);
-        } catch (error) {
-          console.error("Error parsing stored profile:", error);
-          toast({
-            title: "Error",
-            description: "Could not load your profile data",
-            variant: "destructive",
-          });
-        }
-      }
+  const fetchUserProfile = async () => {
+    if (!user) {
       setIsLoading(false);
-    };
+      return;
+    }
 
-    fetchProfileData();
-  }, [toast]);
-
-  const saveProfile = async (updatedProfile: UserProfile) => {
     try {
-      // Save to state
-      setUserProfile(updatedProfile);
+      setIsLoading(true);
       
-      // Save to localStorage as backup
-      localStorage.setItem("userProfile", JSON.stringify(updatedProfile));
+      // First fetch the basic profile data
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('full_name, email, bio, avatar_url')
+        .eq('id', user.id)
+        .maybeSingle();
 
-      // If authenticated, also save to Supabase
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (user) {
-        const { error } = await supabase
-          .from("profiles")
-          .update({
-            full_name: updatedProfile.fullName,
-            bio: updatedProfile.bio,
-            // Only update email if it has changed and authentication allows it
-            ...(updatedProfile.email !== user.email ? { email: updatedProfile.email } : {})
-          })
-          .eq("id", user.id);
-
-        if (error) {
-          console.error("Error updating profile in Supabase:", error);
-          toast({
-            title: "Warning",
-            description: "Profile saved locally but could not be updated in database.",
-            variant: "default",
-          });
-          return;
-        }
-
+      if (profileError && profileError.code !== 'PGRST116') {
+        console.error("Error fetching profile data:", profileError);
         toast({
-          title: "Success",
-          description: "Profile updated successfully",
-          variant: "default",
+          title: "Error",
+          description: "Could not load your profile data",
+          variant: "destructive",
         });
+        return;
       }
-    } catch (err) {
-      console.error("Error saving profile:", err);
+
+      // Then fetch user roles
+      const { data: rolesData, error: rolesError } = await supabase
+        .rpc('get_user_roles', { user_id: user.id });
+
+      if (rolesError) {
+        console.error("Error fetching user roles:", rolesError);
+      }
+
+      // Convert database roles to display roles
+      const displayRoles = (rolesData || []).map(role => {
+        switch(role) {
+          case 'administrator': return 'Administrator';
+          case 'teacher': return 'Teacher';
+          case 'teaching_assistant': return 'Teaching Assistant';
+          case 'learner': 
+          default: return 'Learner';
+        }
+      });
+
+      // Get values from profile or fallback to sensible defaults
+      const profile = profileData || {};
+
+      setUserProfile({
+        fullName: profile.full_name || user.user_metadata?.full_name || '',
+        email: profile.email || user.email || '',
+        bio: profile.bio || '',
+        avatarUrl: profile.avatar_url || '',
+        userRoles: displayRoles.length > 0 ? displayRoles : ['Learner']
+      });
+      
+    } catch (error) {
+      console.error("Error in fetchUserProfile:", error);
       toast({
         title: "Error",
-        description: "Could not save your profile",
+        description: "Could not load profile information",
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  return { 
-    userProfile, 
-    setUserProfile: saveProfile, 
-    isProfileOpen, 
+  const updateUserProfile = (profile: UserProfile) => {
+    setUserProfile(profile);
+  };
+
+  return {
+    userProfile,
+    setUserProfile: updateUserProfile,
+    isProfileOpen,
     setIsProfileOpen,
-    isLoading 
+    isLoading,
+    fetchUserProfile
   };
 }

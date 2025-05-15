@@ -1,9 +1,13 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { DisplayRole } from "@/types/roles";
-import { dbRoleToDisplayRole, displayRoleToDbRole, isRoleCompatible } from "@/utils/roleUtils";
+import { 
+  dbRoleToDisplayRole, 
+  displayRoleToDbRole, 
+  isRoleCompatible, 
+  getQuoteForRole 
+} from "@/utils/roleUtils";
 import { getRandomQuote } from "@/utils/roleQuotes";
 
 export function useRoleManagement() {
@@ -27,29 +31,27 @@ export function useRoleManagement() {
 
         console.log("Fetching roles for user:", session.user.id);
 
-        // Get all roles for the current user from user_roles table
+        // Get all roles for the current user using the RPC function
         try {
           const { data: userRoles, error } = await supabase
-            .from('user_roles')
-            .select('role')
-            .eq('user_id', session.user.id);
+            .rpc('get_user_roles', { user_id: session.user.id });
 
           if (!error && userRoles && userRoles.length > 0) {
             console.log("Found user roles:", userRoles);
-            const displayRoles = userRoles.map(ur => dbRoleToDisplayRole(ur.role));
+            const displayRoles = userRoles.map(ur => dbRoleToDisplayRole(ur));
             setRoles(displayRoles);
             updateAvailableRoles(displayRoles);
             setCurrentQuote(getRandomQuote(displayRoles));
             setIsLoading(false);
             return;
           } else {
-            console.log("No roles found in user_roles or error occurred:", error);
+            console.log("No roles found or error occurred:", error);
           }
         } catch (rolesError) {
           console.error("Error checking user roles:", rolesError);
         }
 
-        // If we couldn't fetch from user_roles, check the profile for the primary role
+        // If we couldn't fetch roles using RPC, check the profile for the primary role
         try {
           const { data: profile, error } = await supabase
             .from('profiles')
@@ -169,8 +171,19 @@ export function useRoleManagement() {
       }
 
       // Update local state
-      setRoles([newRole]);
-      updateAvailableRoles([newRole]);
+      setRoles(prevRoles => {
+        // Move the selected role to the front of the array if it already exists
+        if (prevRoles.includes(newRole)) {
+          return [
+            newRole,
+            ...prevRoles.filter(role => role !== newRole)
+          ];
+        }
+        // Otherwise, add it to the front
+        return [newRole, ...prevRoles];
+      });
+      
+      updateAvailableRoles([newRole, ...roles.filter(role => role !== newRole)]);
       setCurrentQuote(getRandomQuote([newRole]));
       
       toast({

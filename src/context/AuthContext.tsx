@@ -26,22 +26,30 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // First set up the auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, currentSession) => {
+        // Handle session state synchronously first
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
-        setLoading(false);
         
+        // Then handle routing and notifications
         if (event === 'SIGNED_OUT') {
-          navigate('/');
-          toast({
-            title: "Signed out",
-            description: "You have been signed out successfully",
-            duration: 3000,
-          });
+          // Use setTimeout to avoid potential Supabase auth deadlocks
+          setTimeout(() => {
+            navigate('/');
+            toast({
+              title: "Signed out",
+              description: "You have been signed out successfully",
+              duration: 3000,
+            });
+          }, 0);
         } else if (event === 'SIGNED_IN') {
-          // Redirect to appropriate page after sign in
-          const redirectPath = window.location.pathname === '/' ? '/courses' : window.location.pathname;
-          navigate(redirectPath);
+          // Use setTimeout to avoid potential Supabase auth deadlocks
+          setTimeout(() => {
+            const redirectPath = window.location.pathname === '/' ? '/courses' : window.location.pathname;
+            navigate(redirectPath);
+          }, 0);
         }
+        
+        setLoading(false);
       }
     );
 
@@ -58,7 +66,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [navigate, toast]);
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch (error) {
+      console.error("Error signing out:", error);
+      toast({
+        title: "Error",
+        description: "Failed to sign out. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const value = {

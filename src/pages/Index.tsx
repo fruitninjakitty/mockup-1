@@ -27,11 +27,9 @@ const Index = () => {
           return;
         }
         
-        // Fetch roles from the user_roles table
+        // Use the database function to get user roles safely (avoid RLS recursion)
         const { data: userRoles, error } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', session.user.id);
+          .rpc('get_user_roles', { user_id: session.user.id });
 
         if (error) {
           console.error("Error fetching user roles:", error);
@@ -46,7 +44,7 @@ const Index = () => {
         if (userRoles && userRoles.length > 0) {
           // Convert database roles to display roles
           const displayRoles: DisplayRole[] = userRoles.map(role => {
-            switch(role.role) {
+            switch(role) {
               case 'administrator': return 'Administrator';
               case 'teacher': return 'Teacher';
               case 'teaching_assistant': return 'Teaching Assistant';
@@ -68,6 +66,11 @@ const Index = () => {
         }
       } catch (error) {
         console.error("Error in fetchUserRoles:", error);
+        toast({
+          title: "Error",
+          description: "Could not load user roles",
+          variant: "destructive",
+        });
       } finally {
         setIsLoading(false);
       }
@@ -76,9 +79,40 @@ const Index = () => {
     fetchUserRoles();
   }, [navigate, toast]);
 
-  const handleRoleChange = (role: DisplayRole) => {
-    setSelectedRole(role);
-    setQuoteForRole(role);
+  const handleRoleChange = async (role: DisplayRole) => {
+    try {
+      setSelectedRole(role);
+      setQuoteForRole(role);
+      
+      // Update the user's primary role in the database
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) return;
+
+      let dbRole: string;
+      switch(role) {
+        case 'Administrator': dbRole = 'administrator'; break;
+        case 'Teacher': dbRole = 'teacher'; break;
+        case 'Teaching Assistant': dbRole = 'teaching_assistant'; break;
+        default: dbRole = 'learner';
+      }
+      
+      // Update the primary role in profiles table
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ role: dbRole })
+        .eq('id', session.user.id);
+        
+      if (profileError) {
+        console.error("Error updating role:", profileError);
+        toast({
+          title: "Error",
+          description: "Failed to update your role",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error changing role:", error);
+    }
   };
 
   const setQuoteForRole = (role: DisplayRole) => {

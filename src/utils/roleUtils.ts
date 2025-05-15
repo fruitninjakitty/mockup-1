@@ -90,3 +90,20 @@ export const getPrimaryRole = (roles: DisplayRole[]): DisplayRole => {
   if (roles.includes("Teaching Assistant")) return "Teaching Assistant";
   return "Learner";
 };
+
+/**
+ * Get all quotes for roles
+ */
+export const getQuoteForRole = (role: DisplayRole): string => {
+  switch (role) {
+    case 'Administrator':
+      return "Managing education systems requires vision, wisdom, and dedication.";
+    case 'Teacher':
+      return "Great teachers inspire minds and change lives forever.";
+    case 'Teaching Assistant':
+      return "Supporting others in their learning journey is a noble pursuit.";
+    case 'Learner':
+    default:
+      return "Continue your learning journey, every step forward is progress.";
+  }
+};

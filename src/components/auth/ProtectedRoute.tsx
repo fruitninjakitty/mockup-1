@@ -1,7 +1,10 @@
 
+import { useState, useEffect } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { Loader } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { dbRoleToDisplayRole } from "@/utils/roleUtils";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -14,30 +17,48 @@ export const ProtectedRoute = ({
 }: ProtectedRouteProps) => {
   const { user, loading, isAuthenticated } = useAuth();
   const location = useLocation();
+  const [userRoles, setUserRoles] = useState<string[]>([]);
+  const [isCheckingRoles, setIsCheckingRoles] = useState(false);
   
-  // Get all user roles from user metadata
-  const getUserRoles = (): string[] => {
-    if (!user) return [];
+  // Get all user roles from the database
+  useEffect(() => {
+    const fetchUserRoles = async () => {
+      if (!user) return;
+      
+      setIsCheckingRoles(true);
+      try {
+        // Use the RPC function to safely get roles
+        const { data, error } = await supabase
+          .rpc('get_user_roles', { user_id: user.id });
+          
+        if (error || !data) {
+          console.error("Error fetching user roles:", error);
+          setUserRoles([]);
+          return;
+        }
+        
+        // Convert to display roles
+        const displayRoles = data.map(role => dbRoleToDisplayRole(role));
+        setUserRoles(displayRoles);
+      } catch (error) {
+        console.error("Error in fetchUserRoles:", error);
+        setUserRoles([]);
+      } finally {
+        setIsCheckingRoles(false);
+      }
+    };
     
-    // First try to get roles from user_metadata (for newer implementations)
-    const userRoles = user.user_metadata?.roles;
-    if (userRoles && Array.isArray(userRoles) && userRoles.length > 0) {
-      return userRoles;
+    if (user) {
+      fetchUserRoles();
     }
-    
-    // Fallback to single role from user_metadata or app_metadata
-    const singleRole = user.user_metadata?.role || user.app_metadata?.role;
-    return singleRole ? [singleRole] : [];
-  };
-  
-  const userRoles = getUserRoles();
+  }, [user]);
 
-  if (loading) {
+  if (loading || isCheckingRoles) {
     return (
       <div className="min-h-screen w-full flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <Loader className="h-12 w-12 animate-spin text-primary" />
-          <p className="text-muted-foreground">Verifying your session...</p>
+          <p className="text-muted-foreground">Verifying your access...</p>
         </div>
       </div>
     );

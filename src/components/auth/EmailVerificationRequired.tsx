@@ -1,6 +1,9 @@
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, RefreshCw } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface EmailVerificationRequiredProps {
   email: string;
@@ -8,6 +11,37 @@ interface EmailVerificationRequiredProps {
 }
 
 export function EmailVerificationRequired({ email, onReload }: EmailVerificationRequiredProps) {
+  const [isResending, setIsResending] = useState(false);
+  const { toast } = useToast();
+  
+  const handleResendEmail = async () => {
+    try {
+      setIsResending(true);
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email,
+      });
+      
+      if (error) {
+        throw error;
+      }
+      
+      toast({
+        title: "Verification email sent",
+        description: "Please check your inbox for the verification link",
+      });
+    } catch (error: any) {
+      console.error("Error resending verification email:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Could not resend verification email",
+        variant: "destructive",
+      });
+    } finally {
+      setIsResending(false);
+    }
+  };
+  
   return (
     <div className="text-center space-y-6">
       <div className="p-6 bg-amber-50 rounded-lg border-2 border-amber-400">
@@ -18,6 +52,24 @@ export function EmailVerificationRequired({ email, onReload }: EmailVerification
         <p className="mt-4 text-sm text-gray-600">
           Please check your email inbox and click the verification link to complete your registration.
         </p>
+        <div className="mt-4">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={handleResendEmail}
+            disabled={isResending}
+            className="text-amber-600 border-amber-400 hover:bg-amber-50"
+          >
+            {isResending ? (
+              <>
+                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                Resending...
+              </>
+            ) : (
+              "Resend verification email"
+            )}
+          </Button>
+        </div>
         <p className="mt-6 text-xs text-gray-500">
           Note: If the verification link doesn't work, make sure your Supabase project has the correct Site URL and redirect URLs configured.
         </p>
