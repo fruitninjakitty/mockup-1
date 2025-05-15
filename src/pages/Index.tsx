@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
@@ -30,37 +31,41 @@ const Index = () => {
           return;
         }
         
-        // Use the database function to get user roles safely (avoid RLS recursion)
-        const { data: userRoles, error } = await supabase
-          .rpc('get_user_roles', { user_id: session.user.id });
-
-        if (error) {
+        let userDisplayRoles: DisplayRole[] = [];
+        let fallbackToDefault = true;
+        
+        try {
+          // Try to use the database function to get user roles
+          const { data: userRoles, error } = await supabase
+            .rpc('get_user_roles', { user_id: session.user.id });
+  
+          if (userRoles && userRoles.length > 0 && !error) {
+            // Convert database roles to display roles
+            userDisplayRoles = userRoles.map(role => dbRoleToDisplayRole(role));
+            fallbackToDefault = false;
+          } else {
+            console.info("No roles found or error occurred:", error);
+          }
+        } catch (error) {
           console.error("Error fetching user roles:", error);
-          toast({
-            title: "Error",
-            description: "Could not load your roles",
-            variant: "destructive",
-          });
-          return;
         }
-
-        if (userRoles && userRoles.length > 0) {
-          // Convert database roles to display roles
-          const displayRoles: DisplayRole[] = userRoles.map(role => {
-            return dbRoleToDisplayRole(role);
-          });
-          
-          setRoles(displayRoles);
-          setSelectedRole(displayRoles[0]);
-          
-          // Set a role-based quote
-          setQuoteForRole(displayRoles[0]);
-        } else {
-          // Default to Learner if no roles found
-          setRoles(['Learner']);
-          setSelectedRole('Learner');
-          setQuote("Continue your learning journey, every step forward is progress.");
+        
+        // If no roles from database, try to get from user metadata
+        if (fallbackToDefault && session.user.user_metadata?.role) {
+          const metadataRole = dbRoleToDisplayRole(session.user.user_metadata.role as DatabaseRole);
+          userDisplayRoles = [metadataRole];
+          fallbackToDefault = false;
         }
+        
+        // Default to Learner if everything else fails
+        if (fallbackToDefault || userDisplayRoles.length === 0) {
+          userDisplayRoles = ['Learner'];
+        }
+        
+        setRoles(userDisplayRoles);
+        setSelectedRole(userDisplayRoles[0]);
+        setQuoteForRole(userDisplayRoles[0]);
+        
       } catch (error) {
         console.error("Error in fetchUserRoles:", error);
         toast({
@@ -68,6 +73,11 @@ const Index = () => {
           description: "Could not load user roles",
           variant: "destructive",
         });
+        
+        // Set default role even on error
+        setRoles(['Learner']);
+        setSelectedRole('Learner');
+        setQuote("Continue your learning journey, every step forward is progress.");
       } finally {
         setIsLoading(false);
       }

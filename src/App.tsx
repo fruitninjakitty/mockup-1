@@ -11,6 +11,7 @@ import AdminRegister from "./pages/AdminRegister";
 import Onboarding from "./pages/Onboarding";
 import Courses from "./pages/Courses";
 import Course from "./pages/Course";
+import Index from "./pages/Index";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +33,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Onboarding />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/index" 
+              element={
+                <ProtectedRoute>
+                  <Index />
                 </ProtectedRoute>
               } 
             />

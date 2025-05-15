@@ -27,22 +27,34 @@ export const ProtectedRoute = ({
       
       setIsCheckingRoles(true);
       try {
-        // Use the RPC function to safely get roles
-        const { data, error } = await supabase
-          .rpc('get_user_roles', { user_id: user.id });
-          
-        if (error || !data) {
-          console.error("Error fetching user roles:", error);
-          setUserRoles([]);
+        // First try RPC function
+        try {
+          const { data, error } = await supabase
+            .rpc('get_user_roles', { user_id: user.id });
+            
+          if (data && data.length > 0 && !error) {
+            // Convert to display roles
+            const displayRoles = data.map(role => dbRoleToDisplayRole(role));
+            setUserRoles(displayRoles);
+            setIsCheckingRoles(false);
+            return;
+          }
+        } catch (rpcError) {
+          console.error("Error in RPC call:", rpcError);
+        }
+        
+        // Then try metadata
+        if (user.user_metadata?.role) {
+          setUserRoles([dbRoleToDisplayRole(user.user_metadata.role)]);
+          setIsCheckingRoles(false);
           return;
         }
         
-        // Convert to display roles
-        const displayRoles = data.map(role => dbRoleToDisplayRole(role));
-        setUserRoles(displayRoles);
+        // Fallback
+        setUserRoles(['Learner']);
       } catch (error) {
         console.error("Error in fetchUserRoles:", error);
-        setUserRoles([]);
+        setUserRoles(['Learner']);
       } finally {
         setIsCheckingRoles(false);
       }
@@ -50,6 +62,8 @@ export const ProtectedRoute = ({
     
     if (user) {
       fetchUserRoles();
+    } else {
+      setUserRoles([]);
     }
   }, [user]);
 

@@ -38,53 +38,63 @@ export function useProfileData() {
     try {
       setIsLoading(true);
       
-      // First fetch the basic profile data
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('full_name, email, bio, avatar_url')
-        .eq('id', user.id)
-        .maybeSingle();
+      // First try to get user metadata from auth session (doesn't trigger RLS)
+      const initialProfile: UserProfile = {
+        fullName: user.user_metadata?.full_name || '',
+        email: user.email || '',
+        bio: '',
+        avatarUrl: '',
+        userRoles: ['Learner'] // Default role
+      };
 
-      if (profileError && profileError.code !== 'PGRST116') {
-        console.error("Error fetching profile data:", profileError);
-        toast({
-          title: "Error",
-          description: "Could not load your profile data",
-          variant: "destructive",
-        });
-        return;
-      }
+      // Then try to fetch additional profile data from profiles table
+      try {
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('full_name, email, bio, avatar_url')
+          .eq('id', user.id)
+          .maybeSingle();
 
-      // Then fetch user roles
-      const { data: rolesData, error: rolesError } = await supabase
-        .rpc('get_user_roles', { user_id: user.id });
-
-      if (rolesError) {
-        console.error("Error fetching user roles:", rolesError);
-      }
-
-      // Convert database roles to display roles
-      const displayRoles = (rolesData || []).map(role => {
-        switch(role) {
-          case 'administrator': return 'Administrator';
-          case 'teacher': return 'Teacher';
-          case 'teaching_assistant': return 'Teaching Assistant';
-          case 'learner': 
-          default: return 'Learner';
+        if (profileData && !profileError) {
+          const profile: ProfileData = profileData;
+          
+          initialProfile.fullName = profile.full_name || initialProfile.fullName;
+          initialProfile.email = profile.email || initialProfile.email;
+          initialProfile.bio = profile.bio || initialProfile.bio;
+          initialProfile.avatarUrl = profile.avatar_url || initialProfile.avatarUrl;
+        } else if (profileError && profileError.code !== 'PGRST116') {
+          console.error("Error fetching profile data:", profileError);
         }
-      });
+      } catch (profileFetchError) {
+        console.error("Error in profile fetch:", profileFetchError);
+      }
 
-      // Get values from profile or fallback to sensible defaults
-      const profile: ProfileData = profileData || {};
+      // Then try to fetch user roles separately
+      try {
+        const { data: rolesData, error: rolesError } = await supabase
+          .rpc('get_user_roles', { user_id: user.id });
 
-      setUserProfile({
-        fullName: profile.full_name || user.user_metadata?.full_name || '',
-        email: profile.email || user.email || '',
-        bio: profile.bio || '',
-        avatarUrl: profile.avatar_url || '',
-        userRoles: displayRoles.length > 0 ? displayRoles : ['Learner']
-      });
-      
+        if (rolesData && !rolesError) {
+          // Convert database roles to display roles
+          const displayRoles = (rolesData || []).map(role => {
+            switch(role) {
+              case 'administrator': return 'Administrator';
+              case 'teacher': return 'Teacher';
+              case 'teaching_assistant': return 'Teaching Assistant';
+              case 'learner': 
+              default: return 'Learner';
+            }
+          });
+
+          if (displayRoles.length > 0) {
+            initialProfile.userRoles = displayRoles;
+          }
+        }
+      } catch (rolesFetchError) {
+        console.error("Error in roles fetch:", rolesFetchError);
+      }
+
+      setUserProfile(initialProfile);
     } catch (error) {
       console.error("Error in fetchUserProfile:", error);
       toast({

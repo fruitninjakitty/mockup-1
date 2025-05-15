@@ -44,8 +44,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         } else if (event === 'SIGNED_IN') {
           // Use setTimeout to avoid potential Supabase auth deadlocks
           setTimeout(() => {
-            const redirectPath = window.location.pathname === '/' ? '/courses' : window.location.pathname;
-            navigate(redirectPath);
+            // Only redirect if we're on the login page
+            if (window.location.pathname === '/') {
+              navigate('/courses');
+            }
           }, 0);
         }
         

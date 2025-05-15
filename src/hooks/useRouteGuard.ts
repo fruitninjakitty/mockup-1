@@ -15,20 +15,26 @@ export function useRouteGuard(requiredAuth = true, allowedRoles: string[] = []) 
     if (!user) return [];
     
     try {
-      // Use the dedicated RPC function to avoid RLS recursion
+      // First try to get roles from the dedicated RPC function
       const { data, error } = await supabase
         .rpc('get_user_roles', { user_id: user.id });
         
-      if (error || !data) {
-        console.error("Error fetching user roles:", error);
-        return [];
+      if (data && !error) {
+        // Convert to display roles
+        return data.map(role => dbRoleToDisplayRole(role));
       }
       
-      // Convert to display roles
-      return data.map(role => dbRoleToDisplayRole(role));
+      // Fallback: If RPC fails, check user metadata for a role
+      if (user.user_metadata?.role) {
+        const metadataRole = dbRoleToDisplayRole(user.user_metadata.role);
+        return [metadataRole];
+      }
+      
+      // Ultimate fallback: return Learner role
+      return ['Learner'];
     } catch (error) {
       console.error("Error in getUserRoles:", error);
-      return [];
+      return ['Learner']; // Default fallback role
     }
   };
 
