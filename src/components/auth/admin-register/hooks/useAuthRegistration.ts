@@ -36,13 +36,14 @@ export function useAuthRegistration() {
     setIsLoading(true);
     
     try {
-      // Create the user account first
+      // Create the user account first with administrator role in metadata
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: {
             full_name: `${firstName} ${lastName}`.trim(),
+            role: 'administrator' // Explicitly set administrator role in metadata
           },
           emailRedirectTo: window.location.origin
         }
