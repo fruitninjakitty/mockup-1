@@ -25,7 +25,9 @@ export function useRoleManagement() {
           return;
         }
 
-        // Get all roles for the current user
+        console.log("Fetching roles for user:", session.user.id);
+
+        // Get all roles for the current user from user_roles table
         try {
           const { data: userRoles, error } = await supabase
             .from('user_roles')
@@ -41,23 +43,24 @@ export function useRoleManagement() {
             setIsLoading(false);
             return;
           } else {
-            console.log("No roles found or error occurred:", error);
+            console.log("No roles found in user_roles or error occurred:", error);
           }
         } catch (rolesError) {
           console.error("Error checking user roles:", rolesError);
         }
 
-        // If we couldn't fetch the roles, check the profile for the primary role
+        // If we couldn't fetch from user_roles, check the profile for the primary role
         try {
           const { data: profile, error } = await supabase
             .from('profiles')
-            .select('role')
+            .select('role, full_name')
             .eq('id', session.user.id)
             .maybeSingle();
 
           if (!error && profile && profile.role) {
             console.log("Found role in profile:", profile.role);
             const userRole = dbRoleToDisplayRole(profile.role);
+            console.log("Converted to display role:", userRole);
             setRoles([userRole]);
             updateAvailableRoles([userRole]);
             setCurrentQuote(getRandomQuote([userRole]));

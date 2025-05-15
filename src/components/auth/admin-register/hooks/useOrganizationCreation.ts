@@ -27,6 +27,8 @@ export function useOrganizationCreation() {
     setIsLoading(true);
     
     try {
+      console.log("Creating organization for user:", userId);
+      
       // Create the organization
       const { data: orgData, error: orgError } = await supabase
         .from('organizations')
@@ -46,6 +48,8 @@ export function useOrganizationCreation() {
         };
       }
 
+      console.log("Organization created successfully:", orgData);
+
       // Update the user's profile with organization_id and explicitly set administrator role
       const { error: profileError } = await supabase
         .from('profiles')
@@ -61,6 +65,21 @@ export function useOrganizationCreation() {
           success: false,
           error: profileError.message
         };
+      }
+
+      console.log("Profile updated with organization_id and administrator role");
+
+      // Also ensure the role exists in the user_roles table
+      const { error: roleError } = await supabase.rpc(
+        'add_role_to_user',
+        { _user_id: userId, _role: 'administrator' }
+      );
+
+      if (roleError) {
+        console.error("Error adding administrator role:", roleError);
+        // Don't fail the overall process for this
+      } else {
+        console.log("Administrator role added to user_roles table");
       }
 
       toast({

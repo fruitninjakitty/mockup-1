@@ -45,7 +45,7 @@ export function useAuthRegistration() {
             full_name: `${firstName} ${lastName}`.trim(),
             role: 'administrator' // Explicitly set administrator role in metadata
           },
-          emailRedirectTo: window.location.origin
+          emailRedirectTo: `${window.location.origin}/admin-verify`
         }
       });
 
