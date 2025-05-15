@@ -116,12 +116,17 @@ export function RegisterForm() {
         return;
       }
 
+      // Get the database role from the user type
+      const role = mapUserTypeToDatabaseRole(userType);
+      
+      // Include the role in the user metadata during sign up
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: {
-            full_name: `${firstName} ${lastName}`.trim()
+            full_name: `${firstName} ${lastName}`.trim(),
+            role: role // Add the role to user metadata
           }
         }
       });
@@ -152,35 +157,36 @@ export function RegisterForm() {
         return;
       }
 
-      // Get the database role from the user type
-      const role = mapUserTypeToDatabaseRole(userType);
+      // Update profile with organization and role
+      // We need to wait a moment to allow the auth trigger to create the profile
+      setTimeout(async () => {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .update({ 
+            organization_id: orgData.id,
+            role: role
+          })
+          .eq('id', authData.user.id);
 
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update({ 
-          organization_id: orgData.id,
-          role: role
-        })
-        .eq('id', authData.user.id);
+        if (profileError) {
+          console.error("Profile update error:", profileError);
+          toast({
+            title: "Failed to update profile",
+            description: "Your account was created but profile details couldn't be saved. Please contact support.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Account created!",
+            description: `Registration successful. Welcome ${firstName}!`,
+            duration: 1800,
+          });
 
-      if (profileError) {
-        console.error("Profile update error:", profileError);
-        toast({
-          title: "Failed to update profile",
-          description: profileError.message,
-          variant: "destructive",
-        });
+          navigate("/onboarding");
+        }
         setIsLoading(false);
-        return;
-      }
+      }, 1500);
 
-      toast({
-        title: "Account created!",
-        description: "Registration successful. Welcome!",
-        duration: 1800,
-      });
-
-      navigate("/onboarding");
     } catch (error) {
       console.error("Unexpected error:", error);
       toast({
@@ -188,7 +194,6 @@ export function RegisterForm() {
         description: "Please try again later",
         variant: "destructive",
       });
-    } finally {
       setIsLoading(false);
     }
   };
