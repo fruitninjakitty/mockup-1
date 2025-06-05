@@ -38,12 +38,15 @@ export function Leaderboard() {
       // Type-safe data handling
       const typedData: LeaderboardEntry[] = (data || []).map(entry => {
         const profileData = entry.profile;
+        
+        // Check if profileData exists and has the required structure
+        const hasValidProfile = profileData && 
+                               typeof profileData === 'object' && 
+                               'full_name' in profileData;
+        
         return {
           ...entry,
-          profile: profileData && 
-                  typeof profileData === 'object' && 
-                  profileData !== null && 
-                  'full_name' in profileData 
+          profile: hasValidProfile 
             ? profileData as { full_name: string; avatar_url?: string }
             : null
         };
