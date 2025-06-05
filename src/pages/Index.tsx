@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { DisplayRole } from '@/types/roles';
 import { displayRoleToDbRole, dbRoleToDisplayRole } from '@/utils/roleUtils';
 import { Database } from "@/integrations/supabase/types";
+import { PointsDisplay } from '@/components/gamification/PointsDisplay';
+import { useGamification } from '@/hooks/useGamification';
 
 type DatabaseRole = Database["public"]["Enums"]["user_role"];
 
@@ -18,6 +20,7 @@ const Index = () => {
   const [selectedRole, setSelectedRole] = useState<DisplayRole | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [quote, setQuote] = useState("");
+  const { stats } = useGamification();
 
   useEffect(() => {
     const fetchUserRoles = async () => {
@@ -155,6 +158,37 @@ const Index = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br from-[#F4F4F6] via-[#F8F7FA] to-[#E5DEFF]">
       <div className="w-full max-w-md text-center space-y-6">
+        {/* Gamification Stats */}
+        {stats && (
+          <div className="bg-white/80 backdrop-blur-sm rounded-lg p-4 shadow-lg mb-6">
+            <div className="flex items-center justify-center gap-6">
+              <PointsDisplay 
+                points={stats.total_points} 
+                size="lg" 
+                animated={true}
+              />
+              {stats.league && (
+                <div className="flex items-center gap-2">
+                  <div 
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold"
+                    style={{ backgroundColor: stats.league.color }}
+                  >
+                    {stats.league.name.charAt(0)}
+                  </div>
+                  <span className="text-sm font-medium" style={{ color: stats.league.color }}>
+                    {stats.league.name}
+                  </span>
+                </div>
+              )}
+            </div>
+            {stats.current_streak > 0 && (
+              <p className="text-sm text-orange-600 mt-2">
+                🔥 {stats.current_streak} day streak!
+              </p>
+            )}
+          </div>
+        )}
+
         <div>
           <h1 className="text-4xl font-bold mb-2 text-blue-600">
             Hello, {selectedRole && (
