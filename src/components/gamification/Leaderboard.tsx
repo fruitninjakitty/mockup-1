@@ -10,7 +10,7 @@ interface LeaderboardEntry extends UserGamificationStats {
   profile?: {
     full_name: string;
     avatar_url?: string;
-  };
+  } | null;
 }
 
 export function Leaderboard() {
@@ -34,7 +34,16 @@ export function Leaderboard() {
         .limit(10);
 
       if (error) throw error;
-      setLeaderboard(data || []);
+      
+      // Type-safe data handling
+      const typedData: LeaderboardEntry[] = (data || []).map(entry => ({
+        ...entry,
+        profile: entry.profile && typeof entry.profile === 'object' && 'full_name' in entry.profile 
+          ? entry.profile as { full_name: string; avatar_url?: string }
+          : null
+      }));
+      
+      setLeaderboard(typedData);
     } catch (error) {
       console.error('Error fetching leaderboard:', error);
     } finally {

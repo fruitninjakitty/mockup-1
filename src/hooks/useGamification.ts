@@ -104,7 +104,7 @@ export function useGamification() {
     }
   };
 
-  const awardPoints = async (points: number, achievementType?: string, value?: number) => {
+  const awardPoints = async (points: number, achievementType?: 'course_completion' | 'lesson_streak' | 'points_milestone' | 'first_lesson' | 'perfect_score' | 'speed_learner' | 'consistent_learner', value?: number) => {
     if (!user) return false;
 
     try {
