@@ -38,7 +38,7 @@ export function Leaderboard() {
       // Type-safe data handling
       const typedData: LeaderboardEntry[] = (data || []).map(entry => ({
         ...entry,
-        profile: entry.profile && typeof entry.profile === 'object' && 'full_name' in entry.profile 
+        profile: entry.profile && typeof entry.profile === 'object' && entry.profile !== null && 'full_name' in entry.profile 
           ? entry.profile as { full_name: string; avatar_url?: string }
           : null
       }));
