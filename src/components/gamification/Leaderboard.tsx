@@ -46,7 +46,7 @@ export function Leaderboard() {
         
         return {
           ...entry,
-          profile: hasValidProfile 
+          profile: hasValidProfile && profileData
             ? profileData as { full_name: string; avatar_url?: string }
             : null
         };
