@@ -393,7 +393,7 @@ export function LearningMapVisualization({ data, links, theme }: LearningMapVisu
       item.append("rect")
         .attr("width", 15)
         .attr("height", 15)
-        .attr("fill", currentThemeColors.nodeFillAvailable(difficulty) as string);
+        .attr("fill", currentThemeColors.nodeFillAvailable(difficulty as 'easy' | 'medium' | 'hard') as string);
 
       item.append("text")
         .attr("x", 20)

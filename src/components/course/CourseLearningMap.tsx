@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { LearningMapVisualization, ModuleData, LinkData } from "./LearningMapVisualization";
-import React, { useState } from "react";
+import React from "react";
+import { useTheme } from "@/context/ThemeContext"; // Import useTheme hook
 
 interface CourseLearningMapProps {
   selectedView: string;
@@ -59,15 +60,7 @@ const dummyLinks: LinkData[] = [
 
 export function CourseLearningMap({ selectedView, onViewChange }: CourseLearningMapProps) {
   const views = ["Regions", "Modules", "Topics", "Resources"];
-  const [theme, setTheme] = useState<'light' | 'dark' | 'contrast'>('light'); // 'light' | 'dark' | 'contrast'
-
-  const toggleTheme = () => {
-    setTheme(prevTheme => {
-      if (prevTheme === 'light') return 'dark';
-      if (prevTheme === 'dark') return 'contrast';
-      return 'light';
-    });
-  };
+  const { theme, toggleTheme } = useTheme(); // Consume theme from context
 
   return (
     <div className="lg:col-span-2 bg-white rounded-lg p-6 shadow-sm">
