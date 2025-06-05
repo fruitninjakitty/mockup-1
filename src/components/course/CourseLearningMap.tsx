@@ -1,10 +1,19 @@
-
 import { Button } from "@/components/ui/button";
+import { LearningMapVisualization } from "./LearningMapVisualization";
 
 interface CourseLearningMapProps {
   selectedView: string;
   onViewChange: (view: string) => void;
 }
+
+// Define dummy module data for demonstration
+const dummyModules = [
+  { id: "mod1", name: "Introduction to Programming" },
+  { id: "mod2", name: "Data Structures and Algorithms" },
+  { id: "mod3", name: "Web Development Basics" },
+  { id: "mod4", name: "Database Management" },
+  { id: "mod5", name: "Object-Oriented Programming" },
+];
 
 export function CourseLearningMap({ selectedView, onViewChange }: CourseLearningMapProps) {
   const views = ["Regions", "Modules", "Topics", "Resources"];
@@ -27,9 +36,7 @@ export function CourseLearningMap({ selectedView, onViewChange }: CourseLearning
       </div>
 
       <div className="aspect-square bg-gray-50 rounded-lg border relative">
-        <div className="absolute inset-0 grid place-items-center text-gray-400">
-          Learning Map Visualization
-        </div>
+        <LearningMapVisualization data={dummyModules} />
       </div>
     </div>
   );
