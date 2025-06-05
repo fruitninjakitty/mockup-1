@@ -3,7 +3,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Archive, ArchiveRestore, ChevronRight } from "lucide-react";
+import { Archive, ArchiveRestore, ChevronRight, Clock, Users } from "lucide-react";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { Course } from "@/types/course";
 
@@ -73,52 +73,54 @@ export function CourseCard({ course, isArchived = false, onArchiveToggle }: Cour
         </Card>
       </HoverCardTrigger>
       
-      <HoverCardContent className="w-80 p-4">
-        <div className="space-y-4">
-          {courseData.duration && (
-            <p className="text-xs text-gray-600 flex items-center gap-1 mb-1">
-              <span className="font-medium">Duration:</span> {courseData.duration}
-            </p>
-          )}
+      <HoverCardContent className="w-64 p-3">
+        <div className="space-y-3">
+          {/* Course Stats */}
+          <div className="flex items-center justify-between text-xs text-gray-600">
+            <div className="flex items-center gap-1">
+              <Clock className="h-3 w-3" />
+              <span>{courseData.duration}</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Users className="h-3 w-3" />
+              <span>{courseData.totalStudents}</span>
+            </div>
+          </div>
           
-          {courseData.totalStudents !== undefined && (
-            <p className="text-xs text-gray-600 flex items-center gap-1 mb-1">
-              <span className="font-medium">Students Enrolled:</span> {courseData.totalStudents}
-            </p>
-          )}
-          
+          {/* Prerequisites - Only show if they exist and limit to 2 */}
           {courseData.prerequisites && courseData.prerequisites.length > 0 && (
             <div>
-              <h4 className="text-sm font-semibold mb-1">Prerequisites</h4>
+              <h4 className="text-xs font-semibold mb-1">Prerequisites</h4>
               <ul className="space-y-1">
-                {courseData.prerequisites.slice(0, 3).map((prerequisite, index) => (
+                {courseData.prerequisites.slice(0, 2).map((prerequisite, index) => (
                   <li key={index} className="flex items-start gap-1 text-xs text-gray-600">
-                    <ChevronRight className="h-3 w-3 mt-0.5 flex-shrink-0 text-[#43BC88]" />
-                    <span>{prerequisite}</span>
+                    <ChevronRight className="h-2.5 w-2.5 mt-0.5 flex-shrink-0 text-[#43BC88]" />
+                    <span className="line-clamp-1">{prerequisite}</span>
                   </li>
                 ))}
-                {courseData.prerequisites.length > 3 && (
+                {courseData.prerequisites.length > 2 && (
                   <li className="text-xs text-gray-500 italic">
-                    +{courseData.prerequisites.length - 3} more prerequisites
+                    +{courseData.prerequisites.length - 2} more
                   </li>
                 )}
               </ul>
             </div>
           )}
           
+          {/* Learning Objectives - Only show if they exist and limit to 2 */}
           {courseData.learningObjectives && courseData.learningObjectives.length > 0 && (
             <div>
-              <h4 className="text-sm font-semibold mb-1">Learning Objectives</h4>
+              <h4 className="text-xs font-semibold mb-1">What you'll learn</h4>
               <ul className="space-y-1">
                 {courseData.learningObjectives.slice(0, 2).map((objective, index) => (
                   <li key={index} className="flex items-start gap-1 text-xs text-gray-600">
-                    <ChevronRight className="h-3 w-3 mt-0.5 flex-shrink-0 text-[#43BC88]" />
-                    <span>{objective}</span>
+                    <ChevronRight className="h-2.5 w-2.5 mt-0.5 flex-shrink-0 text-[#43BC88]" />
+                    <span className="line-clamp-1">{objective}</span>
                   </li>
                 ))}
                 {courseData.learningObjectives.length > 2 && (
                   <li className="text-xs text-gray-500 italic">
-                    +{courseData.learningObjectives.length - 2} more objectives
+                    +{courseData.learningObjectives.length - 2} more topics
                   </li>
                 )}
               </ul>
