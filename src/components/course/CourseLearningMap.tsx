@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { LearningMapVisualization } from "./LearningMapVisualization";
+import { LearningMapVisualization, ModuleData, LinkData } from "./LearningMapVisualization";
 
 interface CourseLearningMapProps {
   selectedView: string;
@@ -7,12 +7,29 @@ interface CourseLearningMapProps {
 }
 
 // Define dummy module data for demonstration
-const dummyModules = [
-  { id: "mod1", name: "Introduction to Programming" },
-  { id: "mod2", name: "Data Structures and Algorithms" },
-  { id: "mod3", name: "Web Development Basics" },
-  { id: "mod4", name: "Database Management" },
-  { id: "mod5", name: "Object-Oriented Programming" },
+const dummyModules: ModuleData[] = [
+  { id: "mod1", name: "Introduction to Programming", difficulty: "easy", available: true },
+  { id: "mod2", name: "Data Structures and Algorithms", difficulty: "medium", available: true },
+  { id: "mod3", name: "Web Development Basics", difficulty: "easy", available: true },
+  { id: "mod4", name: "Database Management", difficulty: "hard", available: false },
+  { id: "mod5", name: "Object-Oriented Programming", difficulty: "medium", available: true },
+  { id: "mod6", name: "Advanced JavaScript", difficulty: "medium", available: true },
+  { id: "mod7", name: "Frontend Frameworks", difficulty: "hard", available: false },
+  { id: "mod8", name: "Backend Development", difficulty: "hard", available: true },
+  { id: "mod9", name: "Cloud Computing Fundamentals", difficulty: "easy", available: false },
+  { id: "mod10", name: "Machine Learning Basics", difficulty: "hard", available: true },
+];
+
+const dummyLinks: LinkData[] = [
+  { source: "mod1", target: "mod2" },
+  { source: "mod1", target: "mod3" },
+  { source: "mod2", target: "mod5" },
+  { source: "mod3", target: "mod6" },
+  { source: "mod6", target: "mod7" },
+  { source: "mod6", target: "mod8" },
+  { source: "mod5", target: "mod8" },
+  { source: "mod8", target: "mod4" },
+  { source: "mod2", target: "mod10" },
 ];
 
 export function CourseLearningMap({ selectedView, onViewChange }: CourseLearningMapProps) {
@@ -36,7 +53,7 @@ export function CourseLearningMap({ selectedView, onViewChange }: CourseLearning
       </div>
 
       <div className="aspect-square bg-gray-50 rounded-lg border relative">
-        <LearningMapVisualization data={dummyModules} />
+        <LearningMapVisualization data={dummyModules} links={dummyLinks} />
       </div>
     </div>
   );
