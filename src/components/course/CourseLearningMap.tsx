@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { LearningMapVisualization, ModuleData, LinkData } from "./LearningMapVisualization";
+import React, { useState } from "react";
 
 interface CourseLearningMapProps {
   selectedView: string;
@@ -8,26 +9,26 @@ interface CourseLearningMapProps {
 
 // Define dummy module data for demonstration
 const dummyModules: ModuleData[] = [
-  { id: "mod1", name: "Intro to CS", difficulty: "easy", available: true },
-  { id: "mod2", name: "Data Structures", difficulty: "medium", available: true },
-  { id: "mod3", name: "Web Dev Basics", difficulty: "easy", available: true },
-  { id: "mod4", name: "Databases", difficulty: "hard", available: false },
-  { id: "mod5", name: "OOP Principles", difficulty: "medium", available: true },
-  { id: "mod6", name: "Adv. JavaScript", difficulty: "medium", available: true },
-  { id: "mod7", name: "Frontend Frameworks", difficulty: "hard", available: false },
-  { id: "mod8", name: "Backend Dev", difficulty: "hard", available: true },
-  { id: "mod9", name: "Cloud Fundamentals", difficulty: "easy", available: false },
-  { id: "mod10", name: "ML Basics", difficulty: "hard", available: true },
-  { id: "mod11", name: "Algorithms Design", difficulty: "hard", available: true },
-  { id: "mod12", name: "Network Security", difficulty: "hard", available: false },
-  { id: "mod13", name: "UI/UX Design", difficulty: "easy", available: true },
-  { id: "mod14", name: "Mobile App Dev", difficulty: "medium", available: true },
-  { id: "mod15", name: "Software Testing", difficulty: "medium", available: false },
-  { id: "mod16", name: "DevOps Practices", difficulty: "hard", available: true },
-  { id: "mod17", name: "Big Data Analytics", difficulty: "hard", available: false },
-  { id: "mod18", name: "Cybersecurity Intro", difficulty: "medium", available: true },
-  { id: "mod19", name: "Game Development", difficulty: "easy", available: true },
-  { id: "mod20", name: "AI Ethics", difficulty: "medium", available: false },
+  { id: "mod1", name: "Intro to CS", difficulty: "easy", available: true, completed: true, content: { type: 'text', value: 'This module introduces fundamental concepts of computer science.' } },
+  { id: "mod2", name: "Data Structures", difficulty: "medium", available: true, completed: false, content: { type: 'text', value: 'Learn about arrays, linked lists, trees, and graphs.' } },
+  { id: "mod3", name: "Web Dev Basics", difficulty: "easy", available: true, completed: true, content: { type: 'text', value: 'An introduction to HTML, CSS, and basic JavaScript for web development.' } },
+  { id: "mod4", name: "Databases", difficulty: "hard", available: false, completed: false, content: { type: 'text', value: 'Explore relational databases, SQL, and NoSQL concepts.' } },
+  { id: "mod5", name: "OOP Principles", difficulty: "medium", available: true, completed: true, content: { type: 'text', value: 'Understand encapsulation, inheritance, polymorphism, and abstraction.' } },
+  { id: "mod6", name: "Adv. JavaScript", difficulty: "medium", available: true, completed: false, content: { type: 'text', value: 'Dive deeper into JavaScript, including asynchronous programming and ES6 features.' } },
+  { id: "mod7", name: "Frontend Frameworks", difficulty: "hard", available: false, completed: false, content: { type: 'text', value: 'Introduction to modern frontend frameworks like React and Vue.' } },
+  { id: "mod8", name: "Backend Dev", difficulty: "hard", available: true, completed: true, content: { type: 'text', value: 'Learn about server-side programming, APIs, and backend architectures.' } },
+  { id: "mod9", name: "Cloud Fundamentals", difficulty: "easy", available: false, completed: false, content: { type: 'text', value: 'Basic concepts of cloud computing, including IaaS, PaaS, and SaaS.' } },
+  { id: "mod10", name: "ML Basics", difficulty: "hard", available: true, completed: false, content: { type: 'text', value: 'An introduction to machine learning algorithms and concepts.' } },
+  { id: "mod11", name: "Algorithms Design", difficulty: "hard", available: true, completed: true, content: { type: 'text', value: 'Techniques for designing efficient algorithms, including dynamic programming.' } },
+  { id: "mod12", name: "Network Security", difficulty: "hard", available: false, completed: false, content: { type: 'text', value: 'Fundamentals of network security, firewalls, and intrusion detection.' } },
+  { id: "mod13", name: "UI/UX Design", difficulty: "easy", available: true, completed: true, content: { type: 'text', value: 'Principles of user interface and user experience design.' } },
+  { id: "mod14", name: "Mobile App Dev", difficulty: "medium", available: true, completed: false, content: { type: 'text', value: 'Building mobile applications for iOS and Android platforms.' } },
+  { id: "mod15", name: "Software Testing", difficulty: "medium", available: false, completed: false, content: { type: 'text', value: 'Learn about different testing methodologies, including unit and integration testing.' } },
+  { id: "mod16", name: "DevOps Practices", difficulty: "hard", available: true, completed: true, content: { type: 'text', value: 'Introduction to DevOps culture, practices, and tools.' } },
+  { id: "mod17", name: "Big Data Analytics", difficulty: "hard", available: false, completed: false, content: { type: 'text', value: 'Analyzing large datasets using tools like Hadoop and Spark.' } },
+  { id: "mod18", name: "Cybersecurity Intro", difficulty: "medium", available: true, completed: true, content: { type: 'text', value: 'An overview of cybersecurity threats, vulnerabilities, and defenses.' } },
+  { id: "mod19", name: "Game Development", difficulty: "easy", available: true, completed: false, content: { type: 'text', value: 'Fundamentals of game design and development using a game engine.' } },
+  { id: "mod20", name: "AI Ethics", difficulty: "medium", available: false, completed: false, content: { type: 'text', value: 'Exploring the ethical implications and societal impact of artificial intelligence.' } },
 ];
 
 const dummyLinks: LinkData[] = [
@@ -58,6 +59,15 @@ const dummyLinks: LinkData[] = [
 
 export function CourseLearningMap({ selectedView, onViewChange }: CourseLearningMapProps) {
   const views = ["Regions", "Modules", "Topics", "Resources"];
+  const [theme, setTheme] = useState<'light' | 'dark' | 'contrast'>('light'); // 'light' | 'dark' | 'contrast'
+
+  const toggleTheme = () => {
+    setTheme(prevTheme => {
+      if (prevTheme === 'light') return 'dark';
+      if (prevTheme === 'dark') return 'contrast';
+      return 'light';
+    });
+  };
 
   return (
     <div className="lg:col-span-2 bg-white rounded-lg p-6 shadow-sm">
@@ -74,10 +84,11 @@ export function CourseLearningMap({ selectedView, onViewChange }: CourseLearning
             </Button>
           ))}
         </div>
+        <Button onClick={toggleTheme}>Toggle Theme: {theme.toUpperCase()}</Button>
       </div>
 
       <div className="aspect-square bg-gray-50 rounded-lg border relative">
-        <LearningMapVisualization data={dummyModules} links={dummyLinks} />
+        <LearningMapVisualization data={dummyModules} links={dummyLinks} theme={theme} />
       </div>
     </div>
   );
