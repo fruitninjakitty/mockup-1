@@ -9,6 +9,45 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      achievements: {
+        Row: {
+          color: string
+          created_at: string | null
+          description: string
+          icon: string
+          id: number
+          is_repeatable: boolean | null
+          name: string
+          points_reward: number
+          requirement_value: number | null
+          type: Database["public"]["Enums"]["achievement_type"]
+        }
+        Insert: {
+          color?: string
+          created_at?: string | null
+          description: string
+          icon: string
+          id?: number
+          is_repeatable?: boolean | null
+          name: string
+          points_reward?: number
+          requirement_value?: number | null
+          type: Database["public"]["Enums"]["achievement_type"]
+        }
+        Update: {
+          color?: string
+          created_at?: string | null
+          description?: string
+          icon?: string
+          id?: number
+          is_repeatable?: boolean | null
+          name?: string
+          points_reward?: number
+          requirement_value?: number | null
+          type?: Database["public"]["Enums"]["achievement_type"]
+        }
+        Relationships: []
+      }
       approval_requests: {
         Row: {
           id: string
@@ -88,30 +127,145 @@ export type Database = {
           },
         ]
       }
+      course_progress: {
+        Row: {
+          completed_modules: Json | null
+          course_id: number | null
+          id: string
+          last_accessed: string | null
+          progress_percentage: number | null
+          user_id: string | null
+        }
+        Insert: {
+          completed_modules?: Json | null
+          course_id?: number | null
+          id?: string
+          last_accessed?: string | null
+          progress_percentage?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          completed_modules?: Json | null
+          course_id?: number | null
+          id?: string
+          last_accessed?: string | null
+          progress_percentage?: number | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_progress_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      course_user_stats: {
+        Row: {
+          completion_percentage: number | null
+          course_id: number
+          id: string
+          last_activity: string | null
+          lessons_completed: number | null
+          perfect_scores: number | null
+          points_earned: number | null
+          user_id: string
+        }
+        Insert: {
+          completion_percentage?: number | null
+          course_id: number
+          id?: string
+          last_activity?: string | null
+          lessons_completed?: number | null
+          perfect_scores?: number | null
+          points_earned?: number | null
+          user_id: string
+        }
+        Update: {
+          completion_percentage?: number | null
+          course_id?: number
+          id?: string
+          last_activity?: string | null
+          lessons_completed?: number | null
+          perfect_scores?: number | null
+          points_earned?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_user_stats_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       courses: {
         Row: {
+          course_type: string | null
           created_at: string
           created_by: string | null
           description: string
           id: number
           image: string
+          settings: Json | null
+          status: string | null
           title: string
         }
         Insert: {
+          course_type?: string | null
           created_at?: string
           created_by?: string | null
           description: string
           id?: number
           image: string
+          settings?: Json | null
+          status?: string | null
           title: string
         }
         Update: {
+          course_type?: string | null
           created_at?: string
           created_by?: string | null
           description?: string
           id?: number
           image?: string
+          settings?: Json | null
+          status?: string | null
           title?: string
+        }
+        Relationships: []
+      }
+      leagues: {
+        Row: {
+          color: string
+          icon: string
+          id: number
+          max_points: number | null
+          min_points: number
+          name: string
+          order_rank: number
+        }
+        Insert: {
+          color: string
+          icon: string
+          id?: number
+          max_points?: number | null
+          min_points: number
+          name: string
+          order_rank: number
+        }
+        Update: {
+          color?: string
+          icon?: string
+          id?: number
+          max_points?: number | null
+          min_points?: number
+          name?: string
+          order_rank?: number
         }
         Relationships: []
       }
@@ -143,6 +297,7 @@ export type Database = {
         Row: {
           avatar_url: string | null
           bio: string | null
+          completion_status: Json | null
           created_at: string
           email: string
           full_name: string
@@ -150,10 +305,12 @@ export type Database = {
           is_approved: boolean
           organization_id: string | null
           role: Database["public"]["Enums"]["user_role"]
+          settings: Json | null
         }
         Insert: {
           avatar_url?: string | null
           bio?: string | null
+          completion_status?: Json | null
           created_at?: string
           email: string
           full_name: string
@@ -161,10 +318,12 @@ export type Database = {
           is_approved?: boolean
           organization_id?: string | null
           role?: Database["public"]["Enums"]["user_role"]
+          settings?: Json | null
         }
         Update: {
           avatar_url?: string | null
           bio?: string | null
+          completion_status?: Json | null
           created_at?: string
           email?: string
           full_name?: string
@@ -172,6 +331,7 @@ export type Database = {
           is_approved?: boolean
           organization_id?: string | null
           role?: Database["public"]["Enums"]["user_role"]
+          settings?: Json | null
         }
         Relationships: [
           {
@@ -182,6 +342,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      role_hierarchy: {
+        Row: {
+          can_manage: Database["public"]["Enums"]["user_role"][]
+          level: Database["public"]["Enums"]["role_level"]
+          role: Database["public"]["Enums"]["user_role"]
+        }
+        Insert: {
+          can_manage: Database["public"]["Enums"]["user_role"][]
+          level: Database["public"]["Enums"]["role_level"]
+          role: Database["public"]["Enums"]["user_role"]
+        }
+        Update: {
+          can_manage?: Database["public"]["Enums"]["user_role"][]
+          level?: Database["public"]["Enums"]["role_level"]
+          role?: Database["public"]["Enums"]["user_role"]
+        }
+        Relationships: []
       }
       student_progress: {
         Row: {
@@ -335,6 +513,91 @@ export type Database = {
           },
         ]
       }
+      user_achievements: {
+        Row: {
+          achievement_id: number
+          earned_at: string | null
+          id: string
+          is_completed: boolean | null
+          progress: number | null
+          user_id: string
+        }
+        Insert: {
+          achievement_id: number
+          earned_at?: string | null
+          id?: string
+          is_completed?: boolean | null
+          progress?: number | null
+          user_id: string
+        }
+        Update: {
+          achievement_id?: number
+          earned_at?: string | null
+          id?: string
+          is_completed?: boolean | null
+          progress?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_achievements_achievement_id_fkey"
+            columns: ["achievement_id"]
+            isOneToOne: false
+            referencedRelation: "achievements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_gamification_stats: {
+        Row: {
+          courses_completed: number | null
+          created_at: string | null
+          current_league_id: number | null
+          current_streak: number | null
+          id: string
+          last_activity_date: string | null
+          lessons_completed: number | null
+          longest_streak: number | null
+          total_points: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          courses_completed?: number | null
+          created_at?: string | null
+          current_league_id?: number | null
+          current_streak?: number | null
+          id?: string
+          last_activity_date?: string | null
+          lessons_completed?: number | null
+          longest_streak?: number | null
+          total_points?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          courses_completed?: number | null
+          created_at?: string | null
+          current_league_id?: number | null
+          current_streak?: number | null
+          id?: string
+          last_activity_date?: string | null
+          lessons_completed?: number | null
+          longest_streak?: number | null
+          total_points?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_gamification_stats_current_league_id_fkey"
+            columns: ["current_league_id"]
+            isOneToOne: false
+            referencedRelation: "leagues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -403,6 +666,22 @@ export type Database = {
         }
         Returns: boolean
       }
+      award_points: {
+        Args: {
+          p_user_id: string
+          p_points: number
+          p_achievement_type?: Database["public"]["Enums"]["achievement_type"]
+          p_value?: number
+        }
+        Returns: boolean
+      }
+      check_role_hierarchy: {
+        Args: {
+          checking_role: Database["public"]["Enums"]["user_role"]
+          target_role: Database["public"]["Enums"]["user_role"]
+        }
+        Returns: boolean
+      }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -453,7 +732,20 @@ export type Database = {
       }
     }
     Enums: {
+      achievement_type:
+        | "course_completion"
+        | "lesson_streak"
+        | "points_milestone"
+        | "first_lesson"
+        | "perfect_score"
+        | "speed_learner"
+        | "consistent_learner"
       request_status: "pending" | "accepted" | "rejected"
+      role_level:
+        | "1_administrator"
+        | "2_teacher"
+        | "3_teaching_assistant"
+        | "4_learner"
       user_role: "teacher" | "teaching_assistant" | "learner" | "administrator"
     }
     CompositeTypes: {
@@ -570,7 +862,22 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      achievement_type: [
+        "course_completion",
+        "lesson_streak",
+        "points_milestone",
+        "first_lesson",
+        "perfect_score",
+        "speed_learner",
+        "consistent_learner",
+      ],
       request_status: ["pending", "accepted", "rejected"],
+      role_level: [
+        "1_administrator",
+        "2_teacher",
+        "3_teaching_assistant",
+        "4_learner",
+      ],
       user_role: ["teacher", "teaching_assistant", "learner", "administrator"],
     },
   },

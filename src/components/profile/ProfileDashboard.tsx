@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { 
   Dialog,
@@ -10,8 +11,10 @@ import { Button } from "@/components/ui/button";
 import { Check, User, X, Loader } from "lucide-react";
 import { UserProfile } from "./types";
 import { ProfileForm } from "./ProfileForm";
+import { ProfileGamification } from "./ProfileGamification";
 import { useProfileManager } from "./useProfileManager";
 import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface ProfileDashboardProps {
   isOpen: boolean;
@@ -60,7 +63,7 @@ export function ProfileDashboard({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[550px]">
+      <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl font-semibold flex items-center gap-2">
             <User className="h-5 w-5 text-secondary" />
@@ -78,13 +81,26 @@ export function ProfileDashboard({
           </div>
         )}
         
-        <ProfileForm 
-          profile={profile}
-          isLoading={isLoading}
-          avatarFile={avatarFile}
-          onProfileChange={handleChange}
-          onAvatarChange={handleAvatarChange}
-        />
+        <Tabs defaultValue="profile" className="space-y-4">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="profile">Profile Info</TabsTrigger>
+            <TabsTrigger value="gamification">Gaming Progress</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="profile" className="space-y-4">
+            <ProfileForm 
+              profile={profile}
+              isLoading={isLoading}
+              avatarFile={avatarFile}
+              onProfileChange={handleChange}
+              onAvatarChange={handleAvatarChange}
+            />
+          </TabsContent>
+
+          <TabsContent value="gamification" className="space-y-4">
+            <ProfileGamification />
+          </TabsContent>
+        </Tabs>
         
         <DialogFooter>
           <Button variant="outline" onClick={onClose} className="gap-2" disabled={isLoading}>
