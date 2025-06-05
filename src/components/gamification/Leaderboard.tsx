@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -35,15 +36,18 @@ export function Leaderboard() {
       if (error) throw error;
       
       // Type-safe data handling
-      const typedData: LeaderboardEntry[] = (data || []).map(entry => ({
-        ...entry,
-        profile: entry.profile && 
-                typeof entry.profile === 'object' && 
-                entry.profile !== null && 
-                'full_name' in entry.profile 
-          ? entry.profile as { full_name: string; avatar_url?: string }
-          : null
-      }));
+      const typedData: LeaderboardEntry[] = (data || []).map(entry => {
+        const profileData = entry.profile;
+        return {
+          ...entry,
+          profile: profileData && 
+                  typeof profileData === 'object' && 
+                  profileData !== null && 
+                  'full_name' in profileData 
+            ? profileData as { full_name: string; avatar_url?: string }
+            : null
+        };
+      });
       
       setLeaderboard(typedData);
     } catch (error) {
