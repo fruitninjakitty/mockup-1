@@ -9,10 +9,6 @@ export interface ModuleData {
   available: boolean;
   completed: boolean;
   content?: { type: 'text' | 'image' | 'audio'; value: string; }; // Added for multi-modal support
-  x?: number;
-  y?: number;
-  fx?: number | null;
-  fy?: number | null;
 }
 
 export interface LinkData {
@@ -34,49 +30,28 @@ interface LearningMapVisualizationProps {
   currentModuleInPath: ModuleData | null;
 }
 
-type NodeFillAvailableFunction = (difficulty: 'easy' | 'medium' | 'hard') => string;
-
-interface ThemeProperties {
-  background: string;
-  nodeFillAvailable: NodeFillAvailableFunction;
-  nodeFillCompleted: string;
-  nodeFillUnavailable: string;
-  nodeStroke: string;
-  nodeStrokeUnavailable: string;
-  linkStroke: string;
-  labelFill: string;
-  lockIconFill: string;
-  checkmarkFill: string;
-  minimapBackground: string;
-  minimapStroke: string;
-  minimapViewboxStroke: string;
-  legendText: string;
-}
-
-interface ThemeColors {
-  light: ThemeProperties;
-  dark: ThemeProperties;
-  contrast: ThemeProperties;
-}
-
 export function LearningMapVisualization({ data, links, theme, selectedPath, currentModuleInPath }: LearningMapVisualizationProps) {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null); // Ref for the parent container
   const [currentTransform, setCurrentTransform] = useState<d3.ZoomTransform>(d3.zoomIdentity); // State for zoom transform
   const [selectedModule, setSelectedModule] = useState<ModuleData | null>(null); // State for selected module
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
-  const zoomRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null); // Ref for D3 zoom behavior
 
   // Define theme colors
-  const themeColors: ThemeColors = {
+  const themeColors = {
     light: {
-      background: '#f5f0e1', // Light beige/tan for map background
-      nodeFillAvailable: (difficulty: 'easy' | 'medium' | 'hard') => 'white', // Always return white for light theme available nodes
-      nodeFillCompleted: 'white', // White fill for completed nodes
-      nodeFillUnavailable: '#cccccc', // Gray for unavailable
-      nodeStroke: '#fff', // Default white stroke (might change based on path/current)
+      background: '#f8f9fa',
+      nodeFillAvailable: (difficulty: 'easy' | 'medium' | 'hard') => {
+        const colorScale = d3.scaleOrdinal<string, string>()
+          .domain(["easy", "medium", "hard"])
+          .range(["#a5d6a7", "#ffcc80", "#ef9a9a"]); // Green, Orange, Red shades
+        return colorScale(difficulty);
+      },
+      nodeFillCompleted: '#4CAF50',
+      nodeFillUnavailable: '#cccccc',
+      nodeStroke: '#fff',
       nodeStrokeUnavailable: '#999',
-      linkStroke: '#D3D3D3', // Light gray for non-path links
+      linkStroke: '#999',
       labelFill: 'black',
       lockIconFill: '#333333',
       checkmarkFill: 'white',
@@ -97,7 +72,7 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
       nodeFillUnavailable: '#6c757d',
       nodeStroke: '#212529',
       nodeStrokeUnavailable: '#adb5bd',
-      linkStroke: '#6c757d', // Darker gray for non-path links in dark theme
+      linkStroke: '#adb5bd',
       labelFill: 'white',
       lockIconFill: '#e9ecef',
       checkmarkFill: 'black',
@@ -178,37 +153,10 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
     // Append a group for zoom and pan
     const g = svg.append("g");
 
-    // Add subtle background lines to mimic a map
-    const mapBackground = svg.append("g")
-      .attr("class", "map-background")
-      .attr("stroke", "#E0E0E0") // Very light gray
-      .attr("stroke-width", 1)
-      .attr("stroke-dasharray", "1 2");
-
-    // Example map lines (can be made more complex/dynamic)
-    mapBackground.append("line").attr("x1", 0).attr("y1", height / 4).attr("x2", width).attr("y2", height / 4);
-    mapBackground.append("line").attr("x1", 0).attr("y1", height / 2).attr("x2", width).attr("y2", height / 2);
-    mapBackground.append("line").attr("x1", 0).attr("y1", height * 3 / 4).attr("x2", width).attr("y2", height * 3 / 4);
-    mapBackground.append("line").attr("x1", width / 4).attr("y1", 0).attr("x2", width / 4).attr("y2", height);
-    mapBackground.append("line").attr("x1", width / 2).attr("y1", 0).attr("x2", width / 2).attr("y2", height);
-    mapBackground.append("line").attr("x1", width * 3 / 4).attr("y1", 0).attr("x2", width * 3 / 4).attr("y2", height);
-
-    // TODO: Implement clustering logic here. Nodes should be clustered based on similarity.
-    // For now, a simple grid layout is used to provide initial fixed positions.
-    const nodes = data.map(d => ({ ...d })); // Create a mutable copy of nodes
-
-    const simulation = d3.forceSimulation(nodes as d3.SimulationNodeDatum[])
-      .force("link", d3.forceLink(links).id((d: any) => d.id).distance(80)) // Increased link distance
-      .force("charge", d3.forceManyBody().strength(-50)) // Reduced charge strength
-      .force("center", d3.forceCenter(width / 2, height / 2)); // Re-added force to center the layout
-
-    // Fix nodes after simulation has settled to prevent continuous movement
-    simulation.on("end", () => {
-      nodes.forEach(d => {
-        d.fx = d.x;
-        d.fy = d.y;
-      });
-    });
+    const simulation = d3.forceSimulation(data as d3.SimulationNodeDatum[])
+      .force("link", d3.forceLink(links).id((d: any) => d.id).distance(50))
+      .force("charge", d3.forceManyBody().strength(-200))
+      .force("center", d3.forceCenter(width / 2, height / 2));
 
     // Define color scale for difficulty (now using theme-dependent function)
     const difficultyColor = currentThemeColors.nodeFillAvailable;
@@ -218,54 +166,37 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
       .selectAll("line")
       .data(links)
       .join("line")
-      .attr("stroke-width", d => {
-        const isPathLink = selectedPath &&
-                           selectedPath.modules.includes((d.source as any).id) &&
-                           selectedPath.modules.includes((d.target as any).id) &&
-                           selectedPath.modules.indexOf((d.source as any).id) < selectedPath.modules.indexOf((d.target as any).id);
-        return isPathLink ? 3 : 1; // Thicker for path links, thinner for others
-      })
+      .attr("stroke-width", 1)
       .attr("stroke", d => {
-        const isPathLink = selectedPath &&
-                           selectedPath.modules.includes((d.source as any).id) &&
+        const isPathLink = selectedPath && 
+                           selectedPath.modules.includes((d.source as any).id) && 
                            selectedPath.modules.includes((d.target as any).id) &&
                            selectedPath.modules.indexOf((d.source as any).id) < selectedPath.modules.indexOf((d.target as any).id);
-        return isPathLink ? "#1E90FF" : currentThemeColors.linkStroke; // DodgerBlue for path links, theme-dependent for others
+        return isPathLink ? "#1E90FF" : currentThemeColors.linkStroke; // DodgerBlue for path links
       })
-      .attr("stroke-dasharray", d => {
-        const isPathLink = selectedPath &&
-                           selectedPath.modules.includes((d.source as any).id) &&
+      .attr("stroke-width", d => {
+        const isPathLink = selectedPath && 
+                           selectedPath.modules.includes((d.source as any).id) && 
                            selectedPath.modules.includes((d.target as any).id) &&
                            selectedPath.modules.indexOf((d.source as any).id) < selectedPath.modules.indexOf((d.target as any).id);
-        // Dotted if either connected node is unavailable, or if it's not a path link
-        if (isPathLink) {
-          // If it's a path link, check for unavailability for dotted style
-          return (!(d.source as ModuleData).available || !(d.target as ModuleData).available) ? "2 2" : "0";
-        } else {
-          // If it's not a path link, always make it dashed
-          return "4 4"; // Dashed style for non-path links
-        }
+        return isPathLink ? 3 : 1; // Thicker for path links
       });
 
     const nodeElements = g.append("g")
       .attr("stroke-width", 1.5)
       .selectAll("circle")
-      .data(nodes)
+      .data(data)
       .join("circle")
       .attr("r", 8)
       .attr("fill", d => {
-        if (!d.available) return currentThemeColors.nodeFillUnavailable; // Unavailable nodes are gray
-        if (currentModuleInPath && d.id === currentModuleInPath.id) return "#1E90FF"; // Blue for current module
-        // Specific node fills based on name as seen in the example image
-        if (d.name === 'Mastering AI & Big Data') return '#ffa726'; // Orange fill
-        if (d.name === 'AI & Data Science Expert') return '#1E90FF'; // Blue fill (assuming this is the 'AI & Data Science Expert' node)
-        // Default fill for other available nodes
-        return currentThemeColors.nodeFillAvailable(d.difficulty);
+        if (d.completed) return currentThemeColors.nodeFillCompleted;
+        if (!d.available) return currentThemeColors.nodeFillUnavailable;
+        return difficultyColor(d.difficulty);
       })
       .attr("stroke", d => {
-        if (currentModuleInPath && d.id === currentModuleInPath.id) return "#1E90FF"; // Blue stroke for current module
-        if (selectedPath && selectedPath.modules.includes(d.id)) return "#4CAF50"; // Green stroke for path nodes
-        return currentThemeColors.nodeStroke; // Default stroke
+        if (currentModuleInPath && d.id === currentModuleInPath.id) return "#FFD700"; // Gold for current module
+        if (selectedPath && selectedPath.modules.includes(d.id)) return "#1E90FF"; // DodgerBlue for path nodes
+        return d.available ? currentThemeColors.nodeStroke : currentThemeColors.nodeStrokeUnavailable;
       })
       .attr("stroke-width", d => {
         if (currentModuleInPath && d.id === currentModuleInPath.id) return 4; // Thicker stroke for current module
@@ -292,8 +223,8 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
       .on("click", function(event, d) {
         // Center the clicked node
         const currentZoomTransform = d3.zoomTransform(svg.node() as SVGSVGElement);
-        const newX = -(d.x! * currentZoomTransform.k) + width / 2; // Use d.x and d.y directly
-        const newY = -(d.y! * currentZoomTransform.k) + height / 2;
+        const newX = -((d as d3.SimulationNodeDatum).x! * currentZoomTransform.k) + width / 2;
+        const newY = -((d as d3.SimulationNodeDatum).y! * currentZoomTransform.k) + height / 2;
         svg.transition().duration(500).call(zoom.transform as any, d3.zoomIdentity.translate(newX, newY).scale(currentZoomTransform.k));
 
         // Select module for overlay
@@ -302,7 +233,7 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
 
     const labelElements = g.append("g")
       .selectAll("text")
-      .data(nodes) // Changed from 'data' to 'nodes'
+      .data(data)
       .join("text")
       .text(d => d.name)
       .attr("font-size", (d) => currentTransform.k > 0.6 ? 10 : 0) // Adjust font size based on zoom, hide completely if too zoomed out
@@ -313,72 +244,51 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
 
     const lockIcons = g.append("g")
       .selectAll("text")
-      .data(nodes.filter(d => !d.available))
+      .data(data.filter(d => !d.available))
       .join("text")
-      .attr("font-family", "FontAwesome, sans-serif")
+      .attr("font-family", "FontAwesome, sans-serif") // Requires FontAwesome to be available
       .attr("font-size", 12)
       .attr("fill", currentThemeColors.lockIconFill)
-      .attr("text-anchor", "middle") // Center the icon horizontally
-      .attr("dominant-baseline", "central") // Center the icon vertically
-      .attr("dx", 0) // Removed offset
-      .attr("dy", 0) // Removed offset
-      .text("\uf023"); // FontAwesome lock icon
+      .attr("text-anchor", "middle")
+      .attr("dominant-baseline", "central")
+      .text('\u{1F512}') // Unicode for lock icon
+      .style("display", (d) => currentTransform.k > 0.9 ? "block" : "none"); // Show only when zoomed in
 
-    const checkmarkIcons = g.append("g")
+    // Add checkmark for completed modules
+    const checkmarks = g.append("g")
       .selectAll("text")
-      .data(nodes.filter(d => d.completed))
+      .data(data.filter(d => d.completed))
       .join("text")
-      .attr("font-family", "FontAwesome, sans-serif")
+      .attr("font-family", "FontAwesome, sans-serif") // Or a suitable icon font
       .attr("font-size", 12)
       .attr("fill", currentThemeColors.checkmarkFill)
-      .attr("text-anchor", "middle") // Center the icon horizontally
-      .attr("dominant-baseline", "central") // Center the icon vertically
-      .attr("dx", 0) // Removed offset
-      .attr("dy", 0) // Removed offset
-      .text("\uf00c"); // FontAwesome checkmark icon
-
-    // Add specific icons for special nodes as seen in the example image
-    // You Are Here (Current Module) - Green Arrow
-    const currentLocationIcon = g.append("g")
-      .selectAll("text")
-      .data(nodes.filter(d => currentModuleInPath && d.id === currentModuleInPath.id))
-      .join("text")
-      .attr("font-family", "FontAwesome, sans-serif")
-      .attr("font-size", 12)
-      .attr("fill", "#4CAF50") // Green color for the arrow
       .attr("text-anchor", "middle")
       .attr("dominant-baseline", "central")
-      .attr("dx", 0)
-      .attr("dy", 0)
-      .text("\uf061"); // FontAwesome arrow-right icon
+      .text('\u{2713}'); // Unicode for checkmark
 
-    // Question Mark Node (Mastering AI & Big Data) - White Question Mark
-    const questionMarkIcon = g.append("g")
-      .selectAll("text")
-      .data(nodes.filter(d => d.name === 'Mastering AI & Big Data'))
-      .join("text")
-      .attr("font-family", "FontAwesome, sans-serif")
-      .attr("font-size", 12)
-      .attr("fill", "white") // White question mark on orange background
-      .attr("text-anchor", "middle")
-      .attr("dominant-baseline", "central")
-      .attr("dx", 0)
-      .attr("dy", 0)
-      .text("\uf059"); // FontAwesome question-circle icon
+    function dragstarted(event: any) {
+      if (!event.active) simulation.alphaTarget(0.3).restart();
+      event.subject.fx = event.subject.x;
+      event.subject.fy = event.subject.y;
+    }
 
-    // Pin Icon Node (AI & Data Science Expert) - Red Pin
-    const pinIcon = g.append("g")
-      .selectAll("text")
-      .data(nodes.filter(d => d.name === 'AI & Data Science Expert'))
-      .join("text")
-      .attr("font-family", "FontAwesome, sans-serif")
-      .attr("font-size", 12)
-      .attr("fill", "red") // Red color for the pin icon
-      .attr("text-anchor", "middle")
-      .attr("dominant-baseline", "central")
-      .attr("dx", 0)
-      .attr("dy", 0)
-      .text("\uf041"); // FontAwesome map-pin icon
+    function dragged(event: any) {
+      event.subject.fx = event.x;
+      event.subject.fy = event.y;
+    }
+
+    function dragended(event: any) {
+      if (!event.active) simulation.alphaTarget(0);
+      event.subject.fx = null;
+      event.subject.fy = null;
+    }
+
+    const drag = d3.drag()
+      .on("start", dragstarted)
+      .on("drag", dragged)
+      .on("end", dragended);
+
+    nodeElements.call(drag as any);
 
     simulation.on("tick", () => {
       linkElements
@@ -396,19 +306,10 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
         .attr("y", d => (d as d3.SimulationNodeDatum).y!);
       lockIcons
         .attr("x", d => (d as d3.SimulationNodeDatum).x!)
-        .attr("y", d => (d as d3.SimulationNodeDatum).y!);
-      checkmarkIcons
+        .attr("y", d => (d as d3.SimulationNodeDatum).y!); // Center the lock icon on the node
+      checkmarks
         .attr("x", d => (d as d3.SimulationNodeDatum).x!)
-        .attr("y", d => (d as d3.SimulationNodeDatum).y!);
-      currentLocationIcon
-        .attr("x", d => (d as d3.SimulationNodeDatum).x!)
-        .attr("y", d => (d as d3.SimulationNodeDatum).y!);
-      questionMarkIcon
-        .attr("x", d => (d as d3.SimulationNodeDatum).x!)
-        .attr("y", d => (d as d3.SimulationNodeDatum).y!);
-      pinIcon
-        .attr("x", d => (d as d3.SimulationNodeDatum).x!)
-        .attr("y", d => (d as d3.SimulationNodeDatum).y!);
+        .attr("y", d => (d as d3.SimulationNodeDatum).y!); // Center the checkmark on the node
     });
 
     // Zoom behavior
@@ -419,21 +320,20 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
         setCurrentTransform(event.transform);
         updateMinimapViewbox(event.transform);
       });
-    zoomRef.current = zoom; // Store zoom behavior in ref
+    svg.call(zoom);
 
     // Initial positioning based on currentModuleInPath (GPS-like indicator)
     if (currentModuleInPath) {
       const currentModuleDatum = currentModuleInPath as d3.SimulationNodeDatum;
       const initialX = -(currentModuleDatum.x! * currentTransform.k) + width / 2;
       const initialY = -(currentModuleDatum.y! * currentTransform.k) + height / 2;
-      // Apply zoom directly using the zoom behavior, not by dispatching a WheelEvent
       svg.transition().duration(750).call(zoom.transform as any, d3.zoomIdentity.translate(initialX, initialY).scale(currentTransform.k));
     }
 
     // Minimap setup
-    const minimapWidth = 150; // Reduced minimap width
-    const minimapHeight = 150; // Reduced minimap height
-    const allNodes = nodes as d3.SimulationNodeDatum[]; // Changed from 'data' to 'nodes'
+    const minimapWidth = 200;
+    const minimapHeight = 200;
+    const allNodes = data as d3.SimulationNodeDatum[];
     const xMin = d3.min(allNodes, d => d.x || 0) || 0;
     const xMax = d3.max(allNodes, d => d.x || 0) || 0;
     const yMin = d3.min(allNodes, d => d.y || 0) || 0;
@@ -442,7 +342,7 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
     const graphWidth = xMax - xMin;
     const graphHeight = yMax - yMin;
 
-    const minimapScale = Math.min(minimapWidth / graphWidth, minimapHeight / graphHeight); // Removed extra padding from scale calculation
+    const minimapScale = Math.min(minimapWidth / (graphWidth + 20), minimapHeight / (graphHeight + 20));
 
     const minimap = svg.append("g")
       .attr("transform", `translate(${width - minimapWidth - 10}, ${height - minimapHeight - 10})`);
@@ -489,145 +389,119 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
     // Draw minimap nodes
     minimap.append("g")
       .selectAll("circle")
-      .data(nodes) // Changed from 'data' to 'nodes'
+      .data(data)
       .join("circle")
       .attr("r", 3)
-      .attr("fill", d => {
-        if (!d.available) return currentThemeColors.nodeFillUnavailable; // Unavailable nodes are gray
-        if (currentModuleInPath && d.id === currentModuleInPath.id) return "#1E90FF"; // Blue for current module
-        // Specific node fills based on name as seen in the example image
-        if (d.name === 'Mastering AI & Big Data') return '#ffa726'; // Orange fill
-        if (d.name === 'AI & Data Science Expert') return '#1E90FF'; // Blue fill (assuming this is the 'AI & Data Science Expert' node)
-        // Default fill for other available nodes
-        return currentThemeColors.nodeFillAvailable(d.difficulty);
-      })
+      .attr("fill", d => d.available ? currentThemeColors.nodeFillAvailable(d.difficulty) : currentThemeColors.nodeFillUnavailable)
+      .attr("cx", d => (d.x! - xMin) * minimapScale)
+      .attr("cy", d => (d.y! - yMin) * minimapScale)
       .attr("stroke", d => {
-        if (currentModuleInPath && d.id === currentModuleInPath.id) return "#1E90FF"; // Blue stroke for current module
-        if (selectedPath && selectedPath.modules.includes(d.id)) return "#4CAF50"; // Green stroke for path nodes
-        return currentThemeColors.nodeStroke; // Default stroke
+        if (currentModuleInPath && d.id === currentModuleInPath.id) return "#FFD700"; // Gold for current module
+        if (selectedPath && selectedPath.modules.includes(d.id)) return "#1E90FF"; // DodgerBlue for path nodes
+        return "none"; // No stroke for other minimap nodes
       })
-      .attr("stroke-width", 0.5)
-      .attr("cx", d => (d.x - xMin) * minimapScale)
-      .attr("cy", d => (d.y - yMin) * minimapScale);
+      .attr("stroke-width", d => {
+        if (currentModuleInPath && d.id === currentModuleInPath.id) return 1; // Thicker stroke for current module
+        if (selectedPath && selectedPath.modules.includes(d.id)) return 0.5; // Thicker stroke for path nodes
+        return 0;
+      });
 
-    // Minimap viewbox (represents the current zoom/pan area)
+    // Minimap viewbox indicator (the "GPS-like indicator")
     const minimapViewbox = minimap.append("rect")
-      .attr("class", "minimap-viewbox")
       .attr("stroke", currentThemeColors.minimapViewboxStroke)
       .attr("stroke-width", 2)
       .attr("fill", "none")
-      .style("pointer-events", "none"); // Prevent interaction
+      .attr("pointer-events", "none");
 
-    // Function to update minimap viewbox
     function updateMinimapViewbox(transform: d3.ZoomTransform) {
-      const viewboxX = (-transform.x / transform.k - xMin) * minimapScale;
-      const viewboxY = (-transform.y / transform.k - yMin) * minimapScale;
-      const viewboxWidth = (width / transform.k) * minimapScale;
-      const viewboxHeight = (height / transform.k) * minimapScale;
-
       minimapViewbox
-        .attr("x", viewboxX)
-        .attr("y", viewboxY)
-        .attr("width", viewboxWidth)
-        .attr("height", viewboxHeight);
+        .attr("x", -transform.x * minimapScale / transform.k)
+        .attr("y", -transform.y * minimapScale / transform.k)
+        .attr("width", width * minimapScale / transform.k)
+        .attr("height", height * minimapScale / transform.k);
     }
 
-    // Initial update of minimap viewbox
-    updateMinimapViewbox(currentTransform);
+    simulation.on("end", () => {
+      updateMinimapViewbox(d3.zoomTransform(svg.node() as SVGSVGElement));
+    });
 
-    // Legend setup
-    const legendData = [
-      { label: "Easy", color: currentThemeColors.nodeFillAvailable('easy') },
-      { label: "Medium", color: currentThemeColors.nodeFillAvailable('medium') },
-      { label: "Hard", color: currentThemeColors.nodeFillAvailable('hard') },
-      { label: "Completed", color: currentThemeColors.nodeFillCompleted },
-      { label: "Unavailable", color: currentThemeColors.nodeFillUnavailable },
+    // Add color legend
+    const legend = svg.append("g")
+      .attr("transform", `translate(${width - 120}, 20)`); // Position at top-right
+
+    legend.append("text")
+      .attr("x", 0)
+      .attr("y", 0)
+      .attr("font-size", 12)
+      .attr("font-weight", "bold")
+      .attr("fill", currentThemeColors.legendText)
+      .text("Difficulty");
+
+    const legendItems = ["easy", "medium", "hard"];
+
+    legendItems.forEach((difficulty, i) => {
+      const item = legend.append("g")
+        .attr("transform", `translate(0, ${20 + i * 20})`);
+
+      item.append("rect")
+        .attr("width", 15)
+        .attr("height", 15)
+        .attr("fill", currentThemeColors.nodeFillAvailable(difficulty as 'easy' | 'medium' | 'hard') as string);
+
+      item.append("text")
+        .attr("x", 20)
+        .attr("y", 8)
+        .attr("dy", "0.35em")
+        .attr("font-size", 10)
+        .attr("fill", currentThemeColors.legendText)
+        .text(difficulty.charAt(0).toUpperCase() + difficulty.slice(1));
+    });
+
+    // Add legend for availability
+    const availabilityLegend = svg.append("g")
+      .attr("transform", `translate(${width - 120}, ${20 + legendItems.length * 20 + 30})`);
+
+    availabilityLegend.append("text")
+      .attr("x", 0)
+      .attr("y", 0)
+      .attr("font-size", 12)
+      .attr("font-weight", "bold")
+      .attr("fill", currentThemeColors.legendText)
+      .text("Availability");
+
+    const availabilityItems = [
+      { label: "Available (Not Started)", fill: currentThemeColors.nodeFillAvailable('easy'), stroke: currentThemeColors.nodeStroke, dasharray: "0" },
+      { label: "Completed", fill: currentThemeColors.nodeFillCompleted, stroke: currentThemeColors.nodeStroke, dasharray: "0" },
+      { label: "Unavailable", fill: currentThemeColors.nodeFillUnavailable, stroke: currentThemeColors.nodeStrokeUnavailable, dasharray: "2 2" }
     ];
 
-    const legendRectSize = 12;
-    const legendSpacing = 4;
+    availabilityItems.forEach((item, i) => {
+      const availItem = availabilityLegend.append("g")
+        .attr("transform", `translate(0, ${20 + i * 20})`);
 
-    const legend = svg.append("g")
-      .attr("class", "legend")
-      .attr("transform", `translate(10, ${height - (legendData.length * (legendRectSize + legendSpacing) + 20)})`); // Dynamic positioning to prevent cutoff
+      availItem.append("rect")
+        .attr("width", 15)
+        .attr("height", 15)
+        .attr("fill", item.fill)
+        .attr("stroke", item.stroke)
+        .attr("stroke-dasharray", item.dasharray);
 
-    const legendItems = legend.selectAll(".legend-item")
-      .data(legendData)
-      .enter()
-      .append("g")
-      .attr("class", "legend-item")
-      .attr("transform", (d, i) => `translate(0, ${i * (legendRectSize + legendSpacing)})`);
+      availItem.append("text")
+        .attr("x", 20)
+        .attr("y", 8)
+        .attr("dy", "0.35em")
+        .attr("font-size", 10)
+        .attr("fill", currentThemeColors.legendText)
+        .text(item.label);
+    });
 
-    legendItems.append("rect")
-      .attr("width", legendRectSize)
-      .attr("height", legendRectSize)
-      .attr("fill", d => d.color);
-
-    legendItems.append("text")
-      .attr("x", legendRectSize + legendSpacing)
-      .attr("y", legendRectSize / 2)
-      .attr("dy", "0.35em")
-      .style("font-size", "10px")
-      .attr("fill", currentThemeColors.legendText)
-      .text(d => d.label);
-
-    // Event listeners to handle window resize for responsive SVG
-    const handleResize = () => {
-      if (containerRef.current) {
-        setDimensions({
-          width: containerRef.current.clientWidth,
-          height: containerRef.current.clientHeight,
-        });
-      }
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      simulation.stop();
-    };
-
-  }, [data, links, dimensions.width, dimensions.height, theme, selectedPath, currentModuleInPath, currentTransform]);
-
-  const handleZoomIn = () => {
-    if (svgRef.current && zoomRef.current) {
-      d3.select(svgRef.current)
-        .transition().duration(250)
-        .call(zoomRef.current.scaleBy as any, 1.2);
-    }
-  };
-
-  const handleZoomOut = () => {
-    if (svgRef.current && zoomRef.current) {
-      d3.select(svgRef.current)
-        .transition().duration(250)
-        .call(zoomRef.current.scaleBy as any, 0.8);
-    }
-  };
+  }, [data, links, currentTransform, dimensions, theme]); // Redraw when data, links, transform, dimensions or theme changes
 
   return (
-    <div ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
-      <svg ref={svgRef} style={{ width: '100%', height: '100%' }}></svg>
-      <div style={{ // Zoom buttons container
-        position: 'absolute',
-        top: '20px',
-        right: '20px',
-        backgroundColor: 'rgba(255,255,255,0.7)',
-        padding: '10px',
-        borderRadius: '5px',
-        display: 'flex',
-        gap: '10px',
-        zIndex: 1000,
-      }}>
-        <button onClick={handleZoomIn} style={{ padding: '5px 10px', cursor: 'pointer' }}>+</button>
-        <button onClick={handleZoomOut} style={{ padding: '5px 10px', cursor: 'pointer' }}>-</button>
-      </div>
+    <div ref={containerRef} style={{ position: 'relative', width: '100%', height: '100%' }}>
+      <svg ref={svgRef} className="w-full h-full"></svg>
       {selectedModule && (
-        <ModuleDetailsOverlay
-          module={selectedModule}
-          onClose={() => setSelectedModule(null)}
-          theme={theme}
-        />
+        <ModuleDetailsOverlay module={selectedModule} onClose={() => setSelectedModule(null)} theme={theme} />
       )}
     </div>
   );
