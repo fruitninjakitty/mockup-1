@@ -166,13 +166,7 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
       .selectAll("line")
       .data(links)
       .join("line")
-      .attr("stroke-width", d => {
-        const isPathLink = selectedPath &&
-                           selectedPath.modules.includes((d.source as any).id) &&
-                           selectedPath.modules.includes((d.target as any).id) &&
-                           selectedPath.modules.indexOf((d.source as any).id) < selectedPath.modules.indexOf((d.target as any).id);
-        return isPathLink ? 3 : 1; // Thicker for path links, thinner for others
-      })
+      .attr("stroke-width", 1)
       .attr("stroke", d => {
         const isPathLink = selectedPath && 
                            selectedPath.modules.includes((d.source as any).id) && 
@@ -189,11 +183,11 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
       });
 
     const nodeElements = g.append("g")
-      .attr("stroke-width", 2) // Increased from 1.5
+      .attr("stroke-width", 1.5)
       .selectAll("circle")
       .data(data)
       .join("circle")
-      .attr("r", 12) // Increased from 8
+      .attr("r", 8)
       .attr("fill", d => {
         if (d.completed) return currentThemeColors.nodeFillCompleted;
         if (!d.available) return currentThemeColors.nodeFillUnavailable;
@@ -205,9 +199,9 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
         return d.available ? currentThemeColors.nodeStroke : currentThemeColors.nodeStrokeUnavailable;
       })
       .attr("stroke-width", d => {
-        if (currentModuleInPath && d.id === currentModuleInPath.id) return 5; // Increased from 4
-        if (selectedPath && selectedPath.modules.includes(d.id)) return 3; // Increased from 2.5
-        return 2; // Increased from 1.5
+        if (currentModuleInPath && d.id === currentModuleInPath.id) return 4; // Thicker stroke for current module
+        if (selectedPath && selectedPath.modules.includes(d.id)) return 2.5; // Thicker stroke for path nodes
+        return 1.5;
       })
       .attr("stroke-dasharray", d => d.available ? "0" : "2 2")
       .on("mouseover", function(event, d) {
@@ -239,10 +233,10 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
 
     const labelElements = g.append("g")
       .selectAll("text")
-      .data(nodes) // Changed from 'data' to 'nodes'
+      .data(data)
       .join("text")
       .text(d => d.name)
-      .attr("font-size", (d) => currentTransform.k > 0.6 ? 14 : 0) // Increased from 10
+      .attr("font-size", (d) => currentTransform.k > 0.6 ? 10 : 0) // Adjust font size based on zoom, hide completely if too zoomed out
       .attr("fill", currentThemeColors.labelFill)
       .attr("dx", 10) // offset text from node
       .attr("dy", 3)
@@ -252,37 +246,9 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
       .selectAll("text")
       .data(data.filter(d => !d.available))
       .join("text")
-      .attr("font-family", "FontAwesome, sans-serif")
+      .attr("font-family", "FontAwesome, sans-serif") // Requires FontAwesome to be available
       .attr("font-size", 12)
       .attr("fill", currentThemeColors.lockIconFill)
-      .attr("text-anchor", "middle") // Center the icon horizontally
-      .attr("dominant-baseline", "central") // Center the icon vertically
-      .attr("dx", 0) // Removed offset
-      .attr("dy", 0) // Removed offset
-      .text("\uf023"); // FontAwesome lock icon
-
-    const checkmarkIcons = g.append("g")
-      .selectAll("text")
-      .data(nodes.filter(d => d.completed))
-      .join("text")
-      .attr("font-family", "FontAwesome, sans-serif")
-      .attr("font-size", 12)
-      .attr("fill", currentThemeColors.checkmarkFill)
-      .attr("text-anchor", "middle") // Center the icon horizontally
-      .attr("dominant-baseline", "central") // Center the icon vertically
-      .attr("dx", 0) // Removed offset
-      .attr("dy", 0) // Removed offset
-      .text("\uf00c"); // FontAwesome checkmark icon
-
-    // Add specific icons for special nodes as seen in the example image
-    // You Are Here (Current Module) - Green Arrow
-    const currentLocationIcon = g.append("g")
-      .selectAll("text")
-      .data(nodes.filter(d => currentModuleInPath && d.id === currentModuleInPath.id))
-      .join("text")
-      .attr("font-family", "FontAwesome, sans-serif")
-      .attr("font-size", 12)
-      .attr("fill", "#4CAF50") // Green color for the arrow
       .attr("text-anchor", "middle")
       .attr("dominant-baseline", "central")
       .text('\u{1F512}') // Unicode for lock icon
@@ -293,28 +259,36 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
       .selectAll("text")
       .data(data.filter(d => d.completed))
       .join("text")
-      .attr("font-family", "FontAwesome, sans-serif")
+      .attr("font-family", "FontAwesome, sans-serif") // Or a suitable icon font
       .attr("font-size", 12)
-      .attr("fill", "white") // White question mark on orange background
+      .attr("fill", currentThemeColors.checkmarkFill)
       .attr("text-anchor", "middle")
       .attr("dominant-baseline", "central")
-      .attr("dx", 0)
-      .attr("dy", 0)
-      .text("\uf059"); // FontAwesome question-circle icon
+      .text('\u{2713}'); // Unicode for checkmark
 
-    // Pin Icon Node (AI & Data Science Expert) - Red Pin
-    const pinIcon = g.append("g")
-      .selectAll("text")
-      .data(nodes.filter(d => d.name === 'AI & Data Science Expert'))
-      .join("text")
-      .attr("font-family", "FontAwesome, sans-serif")
-      .attr("font-size", 12)
-      .attr("fill", "red") // Red color for the pin icon
-      .attr("text-anchor", "middle")
-      .attr("dominant-baseline", "central")
-      .attr("dx", 0)
-      .attr("dy", 0)
-      .text("\uf041"); // FontAwesome map-pin icon
+    function dragstarted(event: any) {
+      if (!event.active) simulation.alphaTarget(0.3).restart();
+      event.subject.fx = event.subject.x;
+      event.subject.fy = event.subject.y;
+    }
+
+    function dragged(event: any) {
+      event.subject.fx = event.x;
+      event.subject.fy = event.y;
+    }
+
+    function dragended(event: any) {
+      if (!event.active) simulation.alphaTarget(0);
+      event.subject.fx = null;
+      event.subject.fy = null;
+    }
+
+    const drag = d3.drag()
+      .on("start", dragstarted)
+      .on("drag", dragged)
+      .on("end", dragended);
+
+    nodeElements.call(drag as any);
 
     simulation.on("tick", () => {
       linkElements
@@ -326,7 +300,7 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
       nodeElements
         .attr("cx", d => (d as d3.SimulationNodeDatum).x!)
         .attr("cy", d => (d as d3.SimulationNodeDatum).y!)
-        .attr("r", (d) => currentTransform.k * 12 > 8 ? 12 : (currentTransform.k * 12 < 4 ? 4 : currentTransform.k * 12)); // Adjusted for new base size
+        .attr("r", (d) => currentTransform.k * 8 > 5 ? 8 : (currentTransform.k * 8 < 3 ? 3 : currentTransform.k * 8)); // Adjust radius based on zoom
       labelElements
         .attr("x", d => (d as d3.SimulationNodeDatum).x!)
         .attr("y", d => (d as d3.SimulationNodeDatum).y!);
@@ -441,48 +415,57 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
 
     function updateMinimapViewbox(transform: d3.ZoomTransform) {
       minimapViewbox
-        .attr("x", viewboxX)
-        .attr("y", viewboxY)
-        .attr("width", viewboxWidth)
-        .attr("height", viewboxHeight);
+        .attr("x", -transform.x * minimapScale / transform.k)
+        .attr("y", -transform.y * minimapScale / transform.k)
+        .attr("width", width * minimapScale / transform.k)
+        .attr("height", height * minimapScale / transform.k);
     }
 
-    // Initial update of minimap viewbox
-    updateMinimapViewbox(currentTransform);
+    simulation.on("end", () => {
+      updateMinimapViewbox(d3.zoomTransform(svg.node() as SVGSVGElement));
+    });
 
-    // Legend setup
-    const legendData = [
-      { label: "Easy", color: currentThemeColors.nodeFillAvailable('easy') },
-      { label: "Medium", color: currentThemeColors.nodeFillAvailable('medium') },
-      { label: "Hard", color: currentThemeColors.nodeFillAvailable('hard') },
-      { label: "Completed", color: currentThemeColors.nodeFillCompleted },
-      { label: "Unavailable", color: currentThemeColors.nodeFillUnavailable },
-    ];
-
-    const legendRectSize = 12;
-    const legendSpacing = 4;
-
+    // Add color legend
     const legend = svg.append("g")
-      .attr("class", "legend")
-      .attr("transform", `translate(10, ${height - (legendData.length * (legendRectSize + legendSpacing) + 20)})`); // Dynamic positioning to prevent cutoff
+      .attr("transform", `translate(${width - 120}, 20)`); // Position at top-right
 
-    const legendItems = legend.selectAll(".legend-item")
-      .data(legendData)
-      .enter()
-      .append("g")
-      .attr("class", "legend-item")
-      .attr("transform", (d, i) => `translate(0, ${i * (legendRectSize + legendSpacing)})`);
+    legend.append("text")
+      .attr("x", 0)
+      .attr("y", 0)
+      .attr("font-size", 12)
+      .attr("font-weight", "bold")
+      .attr("fill", currentThemeColors.legendText)
+      .text("Difficulty");
 
-    legendItems.append("rect")
-      .attr("width", legendRectSize)
-      .attr("height", legendRectSize)
-      .attr("fill", d => d.color);
+    const legendItems = ["easy", "medium", "hard"];
 
-    legendItems.append("text")
-      .attr("x", legendRectSize + legendSpacing)
-      .attr("y", legendRectSize / 2)
-      .attr("dy", "0.35em")
-      .style("font-size", "10px")
+    legendItems.forEach((difficulty, i) => {
+      const item = legend.append("g")
+        .attr("transform", `translate(0, ${20 + i * 20})`);
+
+      item.append("rect")
+        .attr("width", 15)
+        .attr("height", 15)
+        .attr("fill", currentThemeColors.nodeFillAvailable(difficulty as 'easy' | 'medium' | 'hard') as string);
+
+      item.append("text")
+        .attr("x", 20)
+        .attr("y", 8)
+        .attr("dy", "0.35em")
+        .attr("font-size", 10)
+        .attr("fill", currentThemeColors.legendText)
+        .text(difficulty.charAt(0).toUpperCase() + difficulty.slice(1));
+    });
+
+    // Add legend for availability
+    const availabilityLegend = svg.append("g")
+      .attr("transform", `translate(${width - 120}, ${20 + legendItems.length * 20 + 30})`);
+
+    availabilityLegend.append("text")
+      .attr("x", 0)
+      .attr("y", 0)
+      .attr("font-size", 12)
+      .attr("font-weight", "bold")
       .attr("fill", currentThemeColors.legendText)
       .text("Availability");
 
@@ -515,22 +498,8 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
   }, [data, links, currentTransform, dimensions, theme]); // Redraw when data, links, transform, dimensions or theme changes
 
   return (
-    <div ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
-      <svg ref={svgRef} style={{ width: '100%', height: '100%' }}></svg>
-      <div style={{ // Zoom buttons container
-        position: 'absolute',
-        top: '20px',
-        right: '20px',
-        backgroundColor: 'rgba(255,255,255,0.7)',
-        padding: '10px',
-        borderRadius: '5px',
-        display: 'flex',
-        gap: '10px',
-        zIndex: 1000,
-      }}>
-        <button onClick={handleZoomIn} style={{ padding: '5px 10px', cursor: 'pointer' }}>+</button>
-        <button onClick={handleZoomOut} style={{ padding: '5px 10px', cursor: 'pointer' }}>-</button>
-      </div>
+    <div ref={containerRef} style={{ position: 'relative', width: '100%', height: '100%' }}>
+      <svg ref={svgRef} className="w-full h-full"></svg>
       {selectedModule && (
         <ModuleDetailsOverlay module={selectedModule} onClose={() => setSelectedModule(null)} theme={theme} />
       )}
