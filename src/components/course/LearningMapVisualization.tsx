@@ -223,7 +223,7 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
                            selectedPath.modules.includes((d.source as any).id) &&
                            selectedPath.modules.includes((d.target as any).id) &&
                            selectedPath.modules.indexOf((d.source as any).id) < selectedPath.modules.indexOf((d.target as any).id);
-        return isPathLink ? 3 : 1; // Thicker for path links, thinner for others
+        return isPathLink ? 4 : 2; // Increased from 3:1 to 4:2
       })
       .attr("stroke", d => {
         const isPathLink = selectedPath &&
@@ -248,11 +248,11 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
       });
 
     const nodeElements = g.append("g")
-      .attr("stroke-width", 1.5)
+      .attr("stroke-width", 2) // Increased from 1.5
       .selectAll("circle")
       .data(nodes)
       .join("circle")
-      .attr("r", 8)
+      .attr("r", 12) // Increased from 8
       .attr("fill", d => {
         if (!d.available) return currentThemeColors.nodeFillUnavailable; // Unavailable nodes are gray
         if (currentModuleInPath && d.id === currentModuleInPath.id) return "#1E90FF"; // Blue for current module
@@ -268,9 +268,9 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
         return currentThemeColors.nodeStroke; // Default stroke
       })
       .attr("stroke-width", d => {
-        if (currentModuleInPath && d.id === currentModuleInPath.id) return 4; // Thicker stroke for current module
-        if (selectedPath && selectedPath.modules.includes(d.id)) return 2.5; // Thicker stroke for path nodes
-        return 1.5;
+        if (currentModuleInPath && d.id === currentModuleInPath.id) return 5; // Increased from 4
+        if (selectedPath && selectedPath.modules.includes(d.id)) return 3; // Increased from 2.5
+        return 2; // Increased from 1.5
       })
       .attr("stroke-dasharray", d => d.available ? "0" : "2 2")
       .on("mouseover", function(event, d) {
@@ -302,10 +302,10 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
 
     const labelElements = g.append("g")
       .selectAll("text")
-      .data(nodes) // Changed from 'data' to 'nodes'
+      .data(nodes)
       .join("text")
       .text(d => d.name)
-      .attr("font-size", (d) => currentTransform.k > 0.6 ? 10 : 0) // Adjust font size based on zoom, hide completely if too zoomed out
+      .attr("font-size", (d) => currentTransform.k > 0.6 ? 14 : 0) // Increased from 10
       .attr("fill", currentThemeColors.labelFill)
       .attr("dx", 10) // offset text from node
       .attr("dy", 3)
@@ -316,7 +316,7 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
       .data(nodes.filter(d => !d.available))
       .join("text")
       .attr("font-family", "FontAwesome, sans-serif")
-      .attr("font-size", 12)
+      .attr("font-size", 16) // Increased from 12
       .attr("fill", currentThemeColors.lockIconFill)
       .attr("text-anchor", "middle") // Center the icon horizontally
       .attr("dominant-baseline", "central") // Center the icon vertically
@@ -329,7 +329,7 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
       .data(nodes.filter(d => d.completed))
       .join("text")
       .attr("font-family", "FontAwesome, sans-serif")
-      .attr("font-size", 12)
+      .attr("font-size", 16) // Increased from 12
       .attr("fill", currentThemeColors.checkmarkFill)
       .attr("text-anchor", "middle") // Center the icon horizontally
       .attr("dominant-baseline", "central") // Center the icon vertically
@@ -344,7 +344,7 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
       .data(nodes.filter(d => currentModuleInPath && d.id === currentModuleInPath.id))
       .join("text")
       .attr("font-family", "FontAwesome, sans-serif")
-      .attr("font-size", 12)
+      .attr("font-size", 16) // Increased from 12
       .attr("fill", "#4CAF50") // Green color for the arrow
       .attr("text-anchor", "middle")
       .attr("dominant-baseline", "central")
@@ -358,7 +358,7 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
       .data(nodes.filter(d => d.name === 'Mastering AI & Big Data'))
       .join("text")
       .attr("font-family", "FontAwesome, sans-serif")
-      .attr("font-size", 12)
+      .attr("font-size", 16) // Increased from 12
       .attr("fill", "white") // White question mark on orange background
       .attr("text-anchor", "middle")
       .attr("dominant-baseline", "central")
@@ -372,7 +372,7 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
       .data(nodes.filter(d => d.name === 'AI & Data Science Expert'))
       .join("text")
       .attr("font-family", "FontAwesome, sans-serif")
-      .attr("font-size", 12)
+      .attr("font-size", 16) // Increased from 12
       .attr("fill", "red") // Red color for the pin icon
       .attr("text-anchor", "middle")
       .attr("dominant-baseline", "central")
@@ -390,7 +390,7 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
       nodeElements
         .attr("cx", d => (d as d3.SimulationNodeDatum).x!)
         .attr("cy", d => (d as d3.SimulationNodeDatum).y!)
-        .attr("r", (d) => currentTransform.k * 8 > 5 ? 8 : (currentTransform.k * 8 < 3 ? 3 : currentTransform.k * 8)); // Adjust radius based on zoom
+        .attr("r", (d) => currentTransform.k * 12 > 8 ? 12 : (currentTransform.k * 12 < 4 ? 4 : currentTransform.k * 12)); // Adjusted for new base size
       labelElements
         .attr("x", d => (d as d3.SimulationNodeDatum).x!)
         .attr("y", d => (d as d3.SimulationNodeDatum).y!);
@@ -544,8 +544,8 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
       { label: "Unavailable", color: currentThemeColors.nodeFillUnavailable },
     ];
 
-    const legendRectSize = 12;
-    const legendSpacing = 4;
+    const legendRectSize = 16; // Increased from 12
+    const legendSpacing = 6; // Increased from 4
 
     const legend = svg.append("g")
       .attr("class", "legend")
@@ -567,7 +567,7 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
       .attr("x", legendRectSize + legendSpacing)
       .attr("y", legendRectSize / 2)
       .attr("dy", "0.35em")
-      .style("font-size", "10px")
+      .style("font-size", "12px") // Increased from 10px
       .attr("fill", currentThemeColors.legendText)
       .text(d => d.label);
 
@@ -608,7 +608,7 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
   return (
     <div ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
       <svg ref={svgRef} style={{ width: '100%', height: '100%' }}></svg>
-      <div style={{ // Zoom buttons container
+      <div style={{ // Controls container
         position: 'absolute',
         top: '20px',
         right: '20px',
@@ -621,6 +621,30 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
       }}>
         <button onClick={handleZoomIn} style={{ padding: '5px 10px', cursor: 'pointer' }}>+</button>
         <button onClick={handleZoomOut} style={{ padding: '5px 10px', cursor: 'pointer' }}>-</button>
+        <button 
+          onClick={() => {
+            const themes: ('light' | 'dark' | 'contrast')[] = ['light', 'dark', 'contrast'];
+            const currentIndex = themes.indexOf(theme);
+            const nextTheme = themes[(currentIndex + 1) % themes.length];
+            // You'll need to implement the theme change handler in the parent component
+            // and pass it down as a prop
+          }} 
+          style={{ 
+            padding: '5px 10px', 
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '32px',
+            height: '32px',
+            borderRadius: '50%',
+            border: 'none',
+            backgroundColor: theme === 'light' ? '#f5f0e1' : theme === 'dark' ? '#343a40' : '#000000',
+            color: theme === 'light' ? '#000000' : '#ffffff'
+          }}
+        >
+          {theme === 'light' ? '☀️' : theme === 'dark' ? '🌙' : '●'}
+        </button>
       </div>
       {selectedModule && (
         <ModuleDetailsOverlay
