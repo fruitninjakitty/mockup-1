@@ -9,6 +9,10 @@ export interface ModuleData {
   available: boolean;
   completed: boolean;
   content?: { type: 'text' | 'image' | 'audio'; value: string; }; // Added for multi-modal support
+  x?: number;
+  y?: number;
+  fx?: number | null;
+  fy?: number | null;
 }
 
 export interface LinkData {
@@ -156,34 +160,20 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
 
     // TODO: Implement clustering logic here. Nodes should be clustered based on similarity.
     // For now, a simple grid layout is used to provide initial fixed positions.
-    const nodes = data.map((d, i) => {
-      // These coordinates can be replaced by a more sophisticated clustering algorithm
-      // that assigns (x, y) based on similarity.
-      const col = i % Math.ceil(Math.sqrt(data.length));
-      const row = Math.floor(i / Math.ceil(Math.sqrt(data.length)));
-      const spacing = 100; // Increased spacing for better visibility
-      const numCols = Math.ceil(Math.sqrt(data.length));
-      const numRows = Math.ceil(data.length / numCols);
-
-      const gridWidth = numCols * spacing;
-      const gridHeight = numRows * spacing;
-
-      const offsetX = (width / 2) - (gridWidth / 2) + spacing / 2; // Center the grid
-      const offsetY = (height / 2) - (gridHeight / 2) + spacing / 2;
-
-      return {
-        ...d,
-        x: col * spacing + offsetX,
-        y: row * spacing + offsetY,
-        fx: col * spacing + offsetX, // Fix the nodes at these positions
-        fy: row * spacing + offsetY,
-      };
-    });
+    const nodes = data.map(d => ({ ...d })); // Create a mutable copy of nodes
 
     const simulation = d3.forceSimulation(nodes as d3.SimulationNodeDatum[])
-      .force("link", d3.forceLink(links).id((d: any) => d.id).distance(50));
-      // Removed 'charge' and 'center' forces to keep nodes fixed.
-      // The 'link' force will still run but won't cause movement due to fx/fy.
+      .force("link", d3.forceLink(links).id((d: any) => d.id).distance(50))
+      .force("charge", d3.forceManyBody().strength(-200)) // Re-added force to create network layout
+      .force("center", d3.forceCenter(width / 2, height / 2)); // Re-added force to center the layout
+
+    // Fix nodes after simulation has settled to prevent continuous movement
+    simulation.on("end", () => {
+      nodes.forEach(d => {
+        d.fx = d.x;
+        d.fy = d.y;
+      });
+    });
 
     // Define color scale for difficulty (now using theme-dependent function)
     const difficultyColor = currentThemeColors.nodeFillAvailable;
@@ -207,6 +197,13 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
                            selectedPath.modules.includes((d.target as any).id) &&
                            selectedPath.modules.indexOf((d.source as any).id) < selectedPath.modules.indexOf((d.target as any).id);
         return isPathLink ? 3 : 1; // Thicker for path links
+      })
+      .attr("stroke-dasharray", d => {
+        // d.source and d.target are node objects after forceLink processes them
+        if (!(d.source as ModuleData).available || !(d.target as ModuleData).available) {
+          return "2 2"; // Dotted if either connected node is unavailable
+        }
+        return "0"; // Solid otherwise
       });
 
     const nodeElements = g.append("g")
@@ -432,8 +429,6 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
       { label: "Hard", color: currentThemeColors.nodeFillAvailable('hard') },
       { label: "Completed", color: currentThemeColors.nodeFillCompleted },
       { label: "Unavailable", color: currentThemeColors.nodeFillUnavailable },
-      { label: "Selected Path", color: "#1E90FF" },
-      { label: "Current Module", color: "#FFD700" },
     ];
 
     const legendRectSize = 12;
