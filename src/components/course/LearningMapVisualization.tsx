@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, useImperativeHandle, forwardRef } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import * as d3 from 'd3';
 import { ModuleDetailsOverlay } from './ModuleDetailsOverlay';
 
@@ -16,7 +16,7 @@ export interface LinkData {
   target: string;
 }
 
-export interface LearningPath {
+interface LearningPath {
   id: string;
   name: string;
   modules: string[]; // Ordered array of module IDs in the path
@@ -30,9 +30,7 @@ interface LearningMapVisualizationProps {
   currentModuleInPath: ModuleData | null;
 }
 
-export const LearningMapVisualization = forwardRef<{
-  centerMapOnModule: (moduleId: string) => void;
-}, LearningMapVisualizationProps>(({ data, links, theme, selectedPath, currentModuleInPath }, ref) => {
+export function LearningMapVisualization({ data, links, theme, selectedPath, currentModuleInPath }: LearningMapVisualizationProps) {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null); // Ref for the parent container
   const [currentTransform, setCurrentTransform] = useState<d3.ZoomTransform>(d3.zoomIdentity); // State for zoom transform
@@ -324,24 +322,7 @@ export const LearningMapVisualization = forwardRef<{
       });
     svg.call(zoom);
 
-    // Function to center map on a specific module ID
-    const centerMapOnModule = (moduleId: string) => {
-      const moduleToCenter = data.find(m => m.id === moduleId);
-      if (moduleToCenter) {
-        const currentZoomTransform = d3.zoomTransform(svg.node() as SVGSVGElement);
-        const newX = -((moduleToCenter as d3.SimulationNodeDatum).x! * currentZoomTransform.k) + width / 2;
-        const newY = -((moduleToCenter as d3.SimulationNodeDatum).y! * currentZoomTransform.k) + height / 2;
-        svg.transition().duration(500).call(zoom.transform as any, d3.zoomIdentity.translate(newX, newY).scale(currentZoomTransform.k));
-      }
-    };
-
-    // Expose centerMapOnModule to parent component via ref
-    useImperativeHandle(ref, () => ({
-      centerMapOnModule,
-    }));
-
     // Initial positioning based on currentModuleInPath (GPS-like indicator)
-    // This will only run once on component mount or when currentModuleInPath changes
     if (currentModuleInPath) {
       const currentModuleDatum = currentModuleInPath as d3.SimulationNodeDatum;
       const initialX = -(currentModuleDatum.x! * currentTransform.k) + width / 2;
@@ -524,4 +505,4 @@ export const LearningMapVisualization = forwardRef<{
       )}
     </div>
   );
-}); 
+} 
