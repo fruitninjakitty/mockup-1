@@ -340,7 +340,7 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
     const graphWidth = xMax - xMin;
     const graphHeight = yMax - yMin;
 
-    const minimapScale = Math.min(minimapWidth / (graphWidth + 20), minimapHeight / (graphHeight + 20));
+    const minimapScale = Math.min(minimapWidth / graphWidth, minimapHeight / graphHeight); // Removed extra padding from scale calculation
 
     const minimap = svg.append("g")
       .attr("transform", `translate(${width - minimapWidth - 10}, ${height - minimapHeight - 10})`);
@@ -426,10 +426,6 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
     updateMinimapViewbox(currentTransform);
 
     // Legend setup
-    const legend = svg.append("g")
-      .attr("class", "legend")
-      .attr("transform", `translate(10, ${height - 100})`);
-
     const legendData = [
       { label: "Easy", color: currentThemeColors.nodeFillAvailable('easy') },
       { label: "Medium", color: currentThemeColors.nodeFillAvailable('medium') },
@@ -442,6 +438,10 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
 
     const legendRectSize = 12;
     const legendSpacing = 4;
+
+    const legend = svg.append("g")
+      .attr("class", "legend")
+      .attr("transform", `translate(10, ${height - (legendData.length * (legendRectSize + legendSpacing) + 20)})`); // Dynamic positioning to prevent cutoff
 
     const legendItems = legend.selectAll(".legend-item")
       .data(legendData)
@@ -500,10 +500,10 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
   return (
     <div ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
       <svg ref={svgRef} style={{ width: '100%', height: '100%' }}></svg>
-      <div style={{
+      <div style={{ // Zoom buttons container
         position: 'absolute',
-        bottom: '20px',
-        left: '20px',
+        top: '20px',
+        right: '20px',
         backgroundColor: 'rgba(255,255,255,0.7)',
         padding: '10px',
         borderRadius: '5px',
