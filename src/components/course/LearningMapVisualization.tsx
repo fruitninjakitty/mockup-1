@@ -34,6 +34,31 @@ interface LearningMapVisualizationProps {
   currentModuleInPath: ModuleData | null;
 }
 
+type NodeFillAvailableFunction = (difficulty: 'easy' | 'medium' | 'hard') => string;
+
+interface ThemeProperties {
+  background: string;
+  nodeFillAvailable: NodeFillAvailableFunction;
+  nodeFillCompleted: string;
+  nodeFillUnavailable: string;
+  nodeStroke: string;
+  nodeStrokeUnavailable: string;
+  linkStroke: string;
+  labelFill: string;
+  lockIconFill: string;
+  checkmarkFill: string;
+  minimapBackground: string;
+  minimapStroke: string;
+  minimapViewboxStroke: string;
+  legendText: string;
+}
+
+interface ThemeColors {
+  light: ThemeProperties;
+  dark: ThemeProperties;
+  contrast: ThemeProperties;
+}
+
 export function LearningMapVisualization({ data, links, theme, selectedPath, currentModuleInPath }: LearningMapVisualizationProps) {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null); // Ref for the parent container
@@ -43,20 +68,15 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
   const zoomRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null); // Ref for D3 zoom behavior
 
   // Define theme colors
-  const themeColors = {
+  const themeColors: ThemeColors = {
     light: {
-      background: '#f8f9fa',
-      nodeFillAvailable: (difficulty: 'easy' | 'medium' | 'hard') => {
-        const colorScale = d3.scaleOrdinal<string, string>()
-          .domain(["easy", "medium", "hard"])
-          .range(["#a5d6a7", "#ffcc80", "#ef9a9a"]); // Green, Orange, Red shades
-        return colorScale(difficulty);
-      },
-      nodeFillCompleted: '#4CAF50',
-      nodeFillUnavailable: '#cccccc',
-      nodeStroke: '#fff',
+      background: '#f5f0e1', // Light beige/tan for map background
+      nodeFillAvailable: (difficulty: 'easy' | 'medium' | 'hard') => 'white', // Always return white for light theme available nodes
+      nodeFillCompleted: 'white', // White fill for completed nodes
+      nodeFillUnavailable: '#cccccc', // Gray for unavailable
+      nodeStroke: '#fff', // Default white stroke (might change based on path/current)
       nodeStrokeUnavailable: '#999',
-      linkStroke: '#999',
+      linkStroke: '#D3D3D3', // Light gray for non-path links
       labelFill: 'black',
       lockIconFill: '#333333',
       checkmarkFill: 'white',
@@ -77,7 +97,7 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
       nodeFillUnavailable: '#6c757d',
       nodeStroke: '#212529',
       nodeStrokeUnavailable: '#adb5bd',
-      linkStroke: '#adb5bd',
+      linkStroke: '#6c757d', // Darker gray for non-path links in dark theme
       labelFill: 'white',
       lockIconFill: '#e9ecef',
       checkmarkFill: 'black',
@@ -101,7 +121,7 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
       linkStroke: '#ffffff',
       labelFill: '#ffffff',
       lockIconFill: '#ffffff',
-      checkmarkFill: '#000000',
+      checkmarkFill: '000000',
       minimapBackground: 'rgba(0,0,0,0.9)',
       minimapStroke: '#ffffff',
       minimapViewboxStroke: 'magenta',
@@ -158,6 +178,21 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
     // Append a group for zoom and pan
     const g = svg.append("g");
 
+    // Add subtle background lines to mimic a map
+    const mapBackground = svg.append("g")
+      .attr("class", "map-background")
+      .attr("stroke", "#E0E0E0") // Very light gray
+      .attr("stroke-width", 1)
+      .attr("stroke-dasharray", "1 2");
+
+    // Example map lines (can be made more complex/dynamic)
+    mapBackground.append("line").attr("x1", 0).attr("y1", height / 4).attr("x2", width).attr("y2", height / 4);
+    mapBackground.append("line").attr("x1", 0).attr("y1", height / 2).attr("x2", width).attr("y2", height / 2);
+    mapBackground.append("line").attr("x1", 0).attr("y1", height * 3 / 4).attr("x2", width).attr("y2", height * 3 / 4);
+    mapBackground.append("line").attr("x1", width / 4).attr("y1", 0).attr("x2", width / 4).attr("y2", height);
+    mapBackground.append("line").attr("x1", width / 2).attr("y1", 0).attr("x2", width / 2).attr("y2", height);
+    mapBackground.append("line").attr("x1", width * 3 / 4).attr("y1", 0).attr("x2", width * 3 / 4).attr("y2", height);
+
     // TODO: Implement clustering logic here. Nodes should be clustered based on similarity.
     // For now, a simple grid layout is used to provide initial fixed positions.
     const nodes = data.map(d => ({ ...d })); // Create a mutable copy of nodes
@@ -183,44 +218,54 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
       .selectAll("line")
       .data(links)
       .join("line")
-      .attr("stroke-width", 1)
-      .attr("stroke", d => {
-        const isPathLink = selectedPath &&
-                           selectedPath.modules.includes((d.source as any).id) &&
-                           selectedPath.modules.includes((d.target as any).id) &&
-                           selectedPath.modules.indexOf((d.source as any).id) < selectedPath.modules.indexOf((d.target as any).id);
-        return isPathLink ? "#1E90FF" : currentThemeColors.linkStroke; // DodgerBlue for path links
-      })
       .attr("stroke-width", d => {
         const isPathLink = selectedPath &&
                            selectedPath.modules.includes((d.source as any).id) &&
                            selectedPath.modules.includes((d.target as any).id) &&
                            selectedPath.modules.indexOf((d.source as any).id) < selectedPath.modules.indexOf((d.target as any).id);
-        return isPathLink ? 3 : 1; // Thicker for path links
+        return isPathLink ? 3 : 1; // Thicker for path links, thinner for others
+      })
+      .attr("stroke", d => {
+        const isPathLink = selectedPath &&
+                           selectedPath.modules.includes((d.source as any).id) &&
+                           selectedPath.modules.includes((d.target as any).id) &&
+                           selectedPath.modules.indexOf((d.source as any).id) < selectedPath.modules.indexOf((d.target as any).id);
+        return isPathLink ? "#1E90FF" : currentThemeColors.linkStroke; // DodgerBlue for path links, theme-dependent for others
       })
       .attr("stroke-dasharray", d => {
-        // d.source and d.target are node objects after forceLink processes them
-        if (!(d.source as ModuleData).available || !(d.target as ModuleData).available) {
-          return "2 2"; // Dotted if either connected node is unavailable
+        const isPathLink = selectedPath &&
+                           selectedPath.modules.includes((d.source as any).id) &&
+                           selectedPath.modules.includes((d.target as any).id) &&
+                           selectedPath.modules.indexOf((d.source as any).id) < selectedPath.modules.indexOf((d.target as any).id);
+        // Dotted if either connected node is unavailable, or if it's not a path link
+        if (isPathLink) {
+          // If it's a path link, check for unavailability for dotted style
+          return (!(d.source as ModuleData).available || !(d.target as ModuleData).available) ? "2 2" : "0";
+        } else {
+          // If it's not a path link, always make it dashed
+          return "4 4"; // Dashed style for non-path links
         }
-        return "0"; // Solid otherwise
       });
 
     const nodeElements = g.append("g")
       .attr("stroke-width", 1.5)
       .selectAll("circle")
-      .data(nodes) // Changed from 'data' to 'nodes'
+      .data(nodes)
       .join("circle")
       .attr("r", 8)
       .attr("fill", d => {
-        if (d.completed) return currentThemeColors.nodeFillCompleted;
-        if (!d.available) return currentThemeColors.nodeFillUnavailable;
-        return difficultyColor(d.difficulty);
+        if (!d.available) return currentThemeColors.nodeFillUnavailable; // Unavailable nodes are gray
+        if (currentModuleInPath && d.id === currentModuleInPath.id) return "#1E90FF"; // Blue for current module
+        // Specific node fills based on name as seen in the example image
+        if (d.name === 'Mastering AI & Big Data') return '#ffa726'; // Orange fill
+        if (d.name === 'AI & Data Science Expert') return '#1E90FF'; // Blue fill (assuming this is the 'AI & Data Science Expert' node)
+        // Default fill for other available nodes
+        return currentThemeColors.nodeFillAvailable(d.difficulty);
       })
       .attr("stroke", d => {
-        if (currentModuleInPath && d.id === currentModuleInPath.id) return "#FFD700"; // Gold for current module
-        if (selectedPath && selectedPath.modules.includes(d.id)) return "#1E90FF"; // DodgerBlue for path nodes
-        return d.available ? currentThemeColors.nodeStroke : currentThemeColors.nodeStrokeUnavailable;
+        if (currentModuleInPath && d.id === currentModuleInPath.id) return "#1E90FF"; // Blue stroke for current module
+        if (selectedPath && selectedPath.modules.includes(d.id)) return "#4CAF50"; // Green stroke for path nodes
+        return currentThemeColors.nodeStroke; // Default stroke
       })
       .attr("stroke-width", d => {
         if (currentModuleInPath && d.id === currentModuleInPath.id) return 4; // Thicker stroke for current module
@@ -268,29 +313,72 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
 
     const lockIcons = g.append("g")
       .selectAll("text")
-      .data(nodes.filter(d => !d.available)) // Filter for unavailable nodes
+      .data(nodes.filter(d => !d.available))
       .join("text")
-      .attr("font-family", "FontAwesome, sans-serif") // Requires FontAwesome to be available
+      .attr("font-family", "FontAwesome, sans-serif")
       .attr("font-size", 12)
       .attr("fill", currentThemeColors.lockIconFill)
       .attr("text-anchor", "middle") // Center the icon horizontally
       .attr("dominant-baseline", "central") // Center the icon vertically
-      .attr("dx", -10) // Offset to position icon to the top-left of the node
-      .attr("dy", -10) // Offset to position icon to the top-left of the node
+      .attr("dx", 0) // Removed offset
+      .attr("dy", 0) // Removed offset
       .text("\uf023"); // FontAwesome lock icon
 
     const checkmarkIcons = g.append("g")
       .selectAll("text")
-      .data(nodes.filter(d => d.completed)) // Filter for completed nodes (regardless of availability)
+      .data(nodes.filter(d => d.completed))
       .join("text")
-      .attr("font-family", "FontAwesome, sans-serif") // Requires FontAwesome to be available
+      .attr("font-family", "FontAwesome, sans-serif")
       .attr("font-size", 12)
       .attr("fill", currentThemeColors.checkmarkFill)
       .attr("text-anchor", "middle") // Center the icon horizontally
       .attr("dominant-baseline", "central") // Center the icon vertically
-      .attr("dx", 10) // Offset to position icon to the top-right of the node
-      .attr("dy", -10) // Offset to position icon to the top-right of the node
+      .attr("dx", 0) // Removed offset
+      .attr("dy", 0) // Removed offset
       .text("\uf00c"); // FontAwesome checkmark icon
+
+    // Add specific icons for special nodes as seen in the example image
+    // You Are Here (Current Module) - Green Arrow
+    const currentLocationIcon = g.append("g")
+      .selectAll("text")
+      .data(nodes.filter(d => currentModuleInPath && d.id === currentModuleInPath.id))
+      .join("text")
+      .attr("font-family", "FontAwesome, sans-serif")
+      .attr("font-size", 12)
+      .attr("fill", "#4CAF50") // Green color for the arrow
+      .attr("text-anchor", "middle")
+      .attr("dominant-baseline", "central")
+      .attr("dx", 0)
+      .attr("dy", 0)
+      .text("\uf061"); // FontAwesome arrow-right icon
+
+    // Question Mark Node (Mastering AI & Big Data) - White Question Mark
+    const questionMarkIcon = g.append("g")
+      .selectAll("text")
+      .data(nodes.filter(d => d.name === 'Mastering AI & Big Data'))
+      .join("text")
+      .attr("font-family", "FontAwesome, sans-serif")
+      .attr("font-size", 12)
+      .attr("fill", "white") // White question mark on orange background
+      .attr("text-anchor", "middle")
+      .attr("dominant-baseline", "central")
+      .attr("dx", 0)
+      .attr("dy", 0)
+      .text("\uf059"); // FontAwesome question-circle icon
+
+    // Pin Icon Node (AI & Data Science Expert) - Red Pin
+    const pinIcon = g.append("g")
+      .selectAll("text")
+      .data(nodes.filter(d => d.name === 'AI & Data Science Expert'))
+      .join("text")
+      .attr("font-family", "FontAwesome, sans-serif")
+      .attr("font-size", 12)
+      .attr("fill", "red") // Red color for the pin icon
+      .attr("text-anchor", "middle")
+      .attr("dominant-baseline", "central")
+      .attr("dx", 0)
+      .attr("dy", 0)
+      .text("\uf041"); // FontAwesome map-pin icon
 
     simulation.on("tick", () => {
       linkElements
@@ -308,10 +396,19 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
         .attr("y", d => (d as d3.SimulationNodeDatum).y!);
       lockIcons
         .attr("x", d => (d as d3.SimulationNodeDatum).x!)
-        .attr("y", d => (d as d3.SimulationNodeDatum).y!); // Center the lock icon on the node
+        .attr("y", d => (d as d3.SimulationNodeDatum).y!);
       checkmarkIcons
         .attr("x", d => (d as d3.SimulationNodeDatum).x!)
-        .attr("y", d => (d as d3.SimulationNodeDatum).y!); // Center the checkmark on the node
+        .attr("y", d => (d as d3.SimulationNodeDatum).y!);
+      currentLocationIcon
+        .attr("x", d => (d as d3.SimulationNodeDatum).x!)
+        .attr("y", d => (d as d3.SimulationNodeDatum).y!);
+      questionMarkIcon
+        .attr("x", d => (d as d3.SimulationNodeDatum).x!)
+        .attr("y", d => (d as d3.SimulationNodeDatum).y!);
+      pinIcon
+        .attr("x", d => (d as d3.SimulationNodeDatum).x!)
+        .attr("y", d => (d as d3.SimulationNodeDatum).y!);
     });
 
     // Zoom behavior
@@ -395,11 +492,19 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
       .data(nodes) // Changed from 'data' to 'nodes'
       .join("circle")
       .attr("r", 3)
-      .attr("fill", d => d.available ? currentThemeColors.nodeFillAvailable(d.difficulty) : currentThemeColors.nodeFillUnavailable)
+      .attr("fill", d => {
+        if (!d.available) return currentThemeColors.nodeFillUnavailable; // Unavailable nodes are gray
+        if (currentModuleInPath && d.id === currentModuleInPath.id) return "#1E90FF"; // Blue for current module
+        // Specific node fills based on name as seen in the example image
+        if (d.name === 'Mastering AI & Big Data') return '#ffa726'; // Orange fill
+        if (d.name === 'AI & Data Science Expert') return '#1E90FF'; // Blue fill (assuming this is the 'AI & Data Science Expert' node)
+        // Default fill for other available nodes
+        return currentThemeColors.nodeFillAvailable(d.difficulty);
+      })
       .attr("stroke", d => {
-        if (currentModuleInPath && d.id === currentModuleInPath.id) return "#FFD700"; // Gold for current module
-        if (selectedPath && selectedPath.modules.includes(d.id)) return "#1E90FF"; // DodgerBlue for path nodes
-        return d.available ? currentThemeColors.nodeStroke : currentThemeColors.nodeStrokeUnavailable;
+        if (currentModuleInPath && d.id === currentModuleInPath.id) return "#1E90FF"; // Blue stroke for current module
+        if (selectedPath && selectedPath.modules.includes(d.id)) return "#4CAF50"; // Green stroke for path nodes
+        return currentThemeColors.nodeStroke; // Default stroke
       })
       .attr("stroke-width", 0.5)
       .attr("cx", d => (d.x - xMin) * minimapScale)
