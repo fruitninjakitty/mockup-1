@@ -36,6 +36,7 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
   const [currentTransform, setCurrentTransform] = useState<d3.ZoomTransform>(d3.zoomIdentity); // State for zoom transform
   const [selectedModule, setSelectedModule] = useState<ModuleData | null>(null); // State for selected module
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  const zoomRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null); // Ref for D3 zoom behavior
 
   // Define theme colors
   const themeColors = {
@@ -316,13 +317,14 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
         setCurrentTransform(event.transform);
         updateMinimapViewbox(event.transform);
       });
-    svg.call(zoom);
+    zoomRef.current = zoom; // Store zoom behavior in ref
 
     // Initial positioning based on currentModuleInPath (GPS-like indicator)
     if (currentModuleInPath) {
       const currentModuleDatum = currentModuleInPath as d3.SimulationNodeDatum;
       const initialX = -(currentModuleDatum.x! * currentTransform.k) + width / 2;
       const initialY = -(currentModuleDatum.y! * currentTransform.k) + height / 2;
+      // Apply zoom directly using the zoom behavior, not by dispatching a WheelEvent
       svg.transition().duration(750).call(zoom.transform as any, d3.zoomIdentity.translate(initialX, initialY).scale(currentTransform.k));
     }
 
@@ -479,9 +481,39 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
 
   }, [data, links, dimensions.width, dimensions.height, theme, selectedPath, currentModuleInPath, currentTransform]);
 
+  const handleZoomIn = () => {
+    if (svgRef.current && zoomRef.current) {
+      d3.select(svgRef.current)
+        .transition().duration(250)
+        .call(zoomRef.current.scaleBy as any, 1.2);
+    }
+  };
+
+  const handleZoomOut = () => {
+    if (svgRef.current && zoomRef.current) {
+      d3.select(svgRef.current)
+        .transition().duration(250)
+        .call(zoomRef.current.scaleBy as any, 0.8);
+    }
+  };
+
   return (
     <div ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
       <svg ref={svgRef} style={{ width: '100%', height: '100%' }}></svg>
+      <div style={{
+        position: 'absolute',
+        bottom: '20px',
+        left: '20px',
+        backgroundColor: 'rgba(255,255,255,0.7)',
+        padding: '10px',
+        borderRadius: '5px',
+        display: 'flex',
+        gap: '10px',
+        zIndex: 1000,
+      }}>
+        <button onClick={handleZoomIn} style={{ padding: '5px 10px', cursor: 'pointer' }}>+</button>
+        <button onClick={handleZoomOut} style={{ padding: '5px 10px', cursor: 'pointer' }}>-</button>
+      </div>
       {selectedModule && (
         <ModuleDetailsOverlay
           module={selectedModule}
