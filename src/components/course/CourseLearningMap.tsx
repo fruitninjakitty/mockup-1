@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
-import { LearningMapVisualization, ModuleData, LinkData } from "./LearningMapVisualization";
-import React, { useState } from "react";
+import { LearningMapVisualization, ModuleData, LinkData, LearningPath } from "./LearningMapVisualization";
+import React, { useState, useCallback, useRef } from "react";
 import { useTheme } from "@/context/ThemeContext"; // Import useTheme hook
+import { LearningPathBreadcrumbs } from "./LearningPathBreadcrumbs"; // Import Breadcrumbs component
 
 interface CourseLearningMapProps {
   selectedView: string;
@@ -94,6 +95,9 @@ export function CourseLearningMap({ selectedView, onViewChange }: CourseLearning
   const [selectedPathId, setSelectedPathId] = useState<string | null>(null);
   const [currentModuleIndex, setCurrentModuleIndex] = useState<number>(0);
 
+  // Ref to directly control the LearningMapVisualization for centering
+  const learningMapRef = useRef<{ centerMapOnModule: (moduleId: string) => void }>(null);
+
   const selectedPath = selectedPathId
     ? predefinedPaths.find((p) => p.id === selectedPathId)
     : null;
@@ -106,19 +110,48 @@ export function CourseLearningMap({ selectedView, onViewChange }: CourseLearning
     setSelectedPathId(pathId);
     setNavigationMode('guided');
     setCurrentModuleIndex(0);
+    // Center on the first module of the path if a path is selected
+    const firstModuleInPath = dummyModules.find(m => m.id === predefinedPaths.find(p => p.id === pathId)?.modules[0]);
+    if (learningMapRef.current && firstModuleInPath) {
+      learningMapRef.current.centerMapOnModule(firstModuleInPath.id);
+    }
   };
 
   const handleNextModule = () => {
     if (selectedPath && currentModuleIndex < selectedPath.modules.length - 1) {
-      setCurrentModuleIndex(prevIndex => prevIndex + 1);
+      const newIndex = currentModuleIndex + 1;
+      setCurrentModuleIndex(newIndex);
+      const nextModuleId = selectedPath.modules[newIndex];
+      if (learningMapRef.current) {
+        learningMapRef.current.centerMapOnModule(nextModuleId);
+      }
     }
   };
 
   const handlePrevModule = () => {
     if (selectedPath && currentModuleIndex > 0) {
-      setCurrentModuleIndex(prevIndex => prevIndex - 1);
+      const newIndex = currentModuleIndex - 1;
+      setCurrentModuleIndex(newIndex);
+      const prevModuleId = selectedPath.modules[newIndex];
+      if (learningMapRef.current) {
+        learningMapRef.current.centerMapOnModule(prevModuleId);
+      }
     }
   };
+
+  // Function to be passed to breadcrumbs for click-to-navigate
+  const handleBreadcrumbModuleClick = useCallback((moduleId: string) => {
+    if (learningMapRef.current) {
+      learningMapRef.current.centerMapOnModule(moduleId);
+      // If in guided mode, update the currentModuleIndex to match the clicked module
+      if (navigationMode === 'guided' && selectedPath) {
+        const clickedIndex = selectedPath.modules.indexOf(moduleId);
+        if (clickedIndex !== -1) {
+          setCurrentModuleIndex(clickedIndex);
+        }
+      }
+    }
+  }, [navigationMode, selectedPath]);
 
   return (
     <div className="lg:col-span-2 bg-white rounded-lg p-6 shadow-sm">
@@ -159,22 +192,31 @@ export function CourseLearningMap({ selectedView, onViewChange }: CourseLearning
           ))}
         </select>
         {navigationMode === 'guided' && selectedPath && (
-          <div className="mt-2 flex items-center">
-            <Button onClick={handlePrevModule} disabled={currentModuleIndex === 0} className="mr-2">
-              Previous Module
-            </Button>
-            <Button onClick={handleNextModule} disabled={currentModuleIndex === selectedPath.modules.length - 1}>
-              Next Module
-            </Button>
-            <span className="ml-4 text-sm">
-              Current: {currentModuleInPath?.name || 'N/A'} ({currentModuleIndex + 1} of {selectedPath.modules.length})
-            </span>
+          <div className="mt-2">
+            <div className="flex items-center mb-2">
+              <Button onClick={handlePrevModule} disabled={currentModuleIndex === 0} className="mr-2">
+                Previous Module
+              </Button>
+              <Button onClick={handleNextModule} disabled={currentModuleIndex === selectedPath.modules.length - 1}>
+                Next Module
+              </Button>
+              <span className="ml-4 text-sm">
+                Current: {currentModuleInPath?.name || 'N/A'} ({currentModuleIndex + 1} of {selectedPath.modules.length})
+              </span>
+            </div>
+            <LearningPathBreadcrumbs
+              selectedPath={selectedPath}
+              currentModuleInPath={currentModuleInPath}
+              allModules={dummyModules}
+              onModuleClick={handleBreadcrumbModuleClick}
+            />
           </div>
         )}
       </div>
 
       <div className="aspect-square bg-gray-50 rounded-lg border relative">
         <LearningMapVisualization
+          ref={learningMapRef}
           data={dummyModules}
           links={dummyLinks}
           theme={theme}
