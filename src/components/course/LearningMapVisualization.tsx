@@ -203,15 +203,15 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
       .on("mouseover", function(event, d) {
         // Only highlight if not the current module in a guided path
         if (!(currentModuleInPath && d.id === currentModuleInPath.id)) {
-          d3.select(this).attr("stroke", "#FFD700").attr("stroke-width", 3); // Highlight on hover
+          d3.select(this).attr("stroke", "#FFD700").attr("stroke-width", 5); // Highlight on hover, increased from 3 to 5
           labelElements.filter(p => p.id === d.id).attr("font-weight", "bold");
         }
       })
       .on("mouseout", function(event, d) {
         if (!(currentModuleInPath && d.id === currentModuleInPath.id)) {
           d3.select(this).attr("stroke", d.available ? currentThemeColors.nodeStroke : currentThemeColors.nodeStrokeUnavailable).attr("stroke-width", d => {
-            if (selectedPath && selectedPath.modules.includes(d.id)) return 2.5; // Path node stroke
-            return 1.5; // Default stroke
+            if (selectedPath && selectedPath.modules.includes(d.id)) return 3.5; // Path node stroke, increased from 2.5 to 3.5
+            return 2; // Default stroke, previously 1.5
           });
           labelElements.filter(p => p.id === d.id).attr("font-weight", "normal");
         }
@@ -296,7 +296,7 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
       nodeElements
         .attr("cx", d => (d as d3.SimulationNodeDatum).x!)
         .attr("cy", d => (d as d3.SimulationNodeDatum).y!)
-        .attr("r", (d) => currentTransform.k * 12 > 5 ? 12 : (currentTransform.k * 12 < 3 ? 3 : currentTransform.k * 12)); // Adjusted radius scaling
+        .attr("r", (d) => currentTransform.k * 15 > 8 ? 15 : (currentTransform.k * 15 < 5 ? 5 : currentTransform.k * 15)); // Adjusted radius scaling, increased from 12 to 15
       labelElements
         .attr("x", d => (d as d3.SimulationNodeDatum).x!)
         .attr("y", d => (d as d3.SimulationNodeDatum).y!);
