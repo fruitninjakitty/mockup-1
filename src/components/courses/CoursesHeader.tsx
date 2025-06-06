@@ -3,8 +3,7 @@ import React from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { useAuth } from '@/context/AuthContext';
-import { useTheme } from '@/context/ThemeContext';
-import { LogOut, PlusCircle, XCircle, Moon, Sun } from 'lucide-react';
+import { LogOut, PlusCircle, XCircle } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { DisplayRole } from '@/types/roles';
 import { 
@@ -39,7 +38,6 @@ export function CoursesHeader({
   onRemoveRole
 }: CoursesHeaderProps) {
   const { signOut } = useAuth();
-  const { theme, toggleTheme } = useTheme();
   
   // Ensure we have at least a default role
   const displayRoles = roles.length > 0 ? roles : [("Learner" as DisplayRole)];
@@ -54,19 +52,6 @@ export function CoursesHeader({
   const primaryRole = displayRoles[0];
   // Secondary roles are all others
   const secondaryRoles = displayRoles.slice(1);
-  
-  const getThemeIcon = () => {
-    switch (theme) {
-      case 'light':
-        return <Sun size={18} />;
-      case 'dark':
-        return <Moon size={18} />;
-      case 'contrast':
-        return <Moon size={18} />;
-      default:
-        return <Sun size={18} />;
-    }
-  };
   
   return (
     <header className="header-glass sticky top-0 z-30">
@@ -117,18 +102,6 @@ export function CoursesHeader({
               </div>
             ))}
           </div>
-          
-          {/* Theme toggle button */}
-          <Button 
-            variant="outline" 
-            size="icon"
-            onClick={toggleTheme} 
-            className="rounded-full"
-            title={`Switch to ${theme === 'light' ? 'dark' : theme === 'dark' ? 'contrast' : 'light'} mode`}
-          >
-            {getThemeIcon()}
-            <span className="sr-only">Toggle theme</span>
-          </Button>
           
           {/* Role management dropdown - only show if there are roles to add */}
           {onAddRole && addableRoles.length > 0 && (

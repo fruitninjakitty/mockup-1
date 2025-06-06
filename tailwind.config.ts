@@ -41,35 +41,32 @@ export default {
         '4xl': ['2.25rem', { lineHeight: '2.5rem' }],
       },
       colors: {
-        background: "var(--background)",
-        card: "var(--card)",
-        cardAccent: "var(--card-accent)",
-        foreground: "var(--foreground)",
+        // Minimalist/classy grays and accents with consistent color scheme
+        background: "#F8F7FA",
+        card: "#FFFFFF",
+        cardAccent: "#EEEEF7",
+        foreground: "#403E43",
         primary: {
-          DEFAULT: "var(--primary)",
-          foreground: "var(--primary-foreground)",
+          DEFAULT: "#518CCA", // blue
+          light: "#E2F0FA",
+          dark: "#396078",
+          foreground: "#FFFFFF",
         },
         secondary: {
-          DEFAULT: "var(--secondary)",
-          foreground: "var(--secondary-foreground)",
+          DEFAULT: "#43BC88", // green accent
+          light: "#E6FAF0",
+          dark: "#328A64",
+          foreground: "#FFFFFF",
         },
-        muted: { 
-          DEFAULT: "var(--muted)", 
-          foreground: "#8E9196" 
-        },
-        accent: { 
-          DEFAULT: "var(--accent)", 
-          foreground: "#396078" 
-        },
-        border: "var(--border)",
-        input: "var(--border)",
-        ring: "var(--primary)",
+        muted: { DEFAULT: "#F1F0FB", foreground: "#8E9196" },
+        accent: { DEFAULT: "#E2F0FA", foreground: "#396078" },
+        softgray: "#F4F4F6",
+        border: "#E7E6EB",
         destructive: {
           DEFAULT: "#ff6363",
           foreground: "#fff",
         },
-        popover: "var(--card)",
-        "popover-foreground": "var(--foreground)",
+        popover: "#fff",
       },
       borderRadius: {
         lg: "1.25rem",

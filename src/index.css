@@ -18,34 +18,6 @@
     --radius: 1.25rem;
     --card-accent: #EEEEF7;
   }
-
-  [data-theme="dark"] {
-    --background: #1a1a1a;
-    --foreground: #e5e5e5;
-    --card: #2a2a2a;
-    --primary: #518CCA;
-    --primary-foreground: #fff;
-    --secondary: #43BC88;
-    --secondary-foreground: #fff;
-    --accent: #2d3748;
-    --muted: #374151;
-    --border: #4a5568;
-    --card-accent: #374151;
-  }
-
-  [data-theme="contrast"] {
-    --background: #000000;
-    --foreground: #ffffff;
-    --card: #111111;
-    --primary: #ffffff;
-    --primary-foreground: #000000;
-    --secondary: #ffffff;
-    --secondary-foreground: #000000;
-    --accent: #333333;
-    --muted: #222222;
-    --border: #555555;
-    --card-accent: #222222;
-  }
   
   html {
     font-size: 16px;
@@ -55,7 +27,6 @@
   
   body {
     @apply bg-background text-foreground antialiased font-sans;
-    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
   h1 {
@@ -80,14 +51,6 @@
   
   .glass {
     @apply backdrop-blur-md bg-white/60 border border-white/40 rounded-2xl;
-  }
-
-  [data-theme="dark"] .glass {
-    @apply bg-card/60 border border-border/40;
-  }
-
-  [data-theme="contrast"] .glass {
-    @apply bg-card/80 border border-border/60;
   }
   
   .card-gradient {
