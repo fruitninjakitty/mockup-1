@@ -121,7 +121,7 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
       linkStroke: '#ffffff',
       labelFill: '#ffffff',
       lockIconFill: '#ffffff',
-      checkmarkFill: '000000',
+      checkmarkFill: '#000000',
       minimapBackground: 'rgba(0,0,0,0.9)',
       minimapStroke: '#ffffff',
       minimapViewboxStroke: 'magenta',
@@ -198,8 +198,8 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
     const nodes = data.map(d => ({ ...d })); // Create a mutable copy of nodes
 
     const simulation = d3.forceSimulation(nodes as d3.SimulationNodeDatum[])
-      .force("link", d3.forceLink(links).id((d: any) => d.id).distance(50))
-      .force("charge", d3.forceManyBody().strength(-200)) // Re-added force to create network layout
+      .force("link", d3.forceLink(links).id((d: any) => d.id).distance(80)) // Increased link distance
+      .force("charge", d3.forceManyBody().strength(-50)) // Reduced charge strength
       .force("center", d3.forceCenter(width / 2, height / 2)); // Re-added force to center the layout
 
     // Fix nodes after simulation has settled to prevent continuous movement
@@ -431,8 +431,8 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
     }
 
     // Minimap setup
-    const minimapWidth = 200;
-    const minimapHeight = 200;
+    const minimapWidth = 150; // Reduced minimap width
+    const minimapHeight = 150; // Reduced minimap height
     const allNodes = nodes as d3.SimulationNodeDatum[]; // Changed from 'data' to 'nodes'
     const xMin = d3.min(allNodes, d => d.x || 0) || 0;
     const xMax = d3.max(allNodes, d => d.x || 0) || 0;
