@@ -268,20 +268,28 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
 
     const lockIcons = g.append("g")
       .selectAll("text")
-      .data(nodes.filter(d => !d.available)) // Changed from 'data' to 'nodes'
+      .data(nodes.filter(d => !d.available)) // Filter for unavailable nodes
       .join("text")
       .attr("font-family", "FontAwesome, sans-serif") // Requires FontAwesome to be available
       .attr("font-size", 12)
       .attr("fill", currentThemeColors.lockIconFill)
+      .attr("text-anchor", "middle") // Center the icon horizontally
+      .attr("dominant-baseline", "central") // Center the icon vertically
+      .attr("dx", -10) // Offset to position icon to the top-left of the node
+      .attr("dy", -10) // Offset to position icon to the top-left of the node
       .text("\uf023"); // FontAwesome lock icon
 
     const checkmarkIcons = g.append("g")
       .selectAll("text")
-      .data(nodes.filter(d => d.completed && d.available)) // Changed from 'data' to 'nodes'
+      .data(nodes.filter(d => d.completed)) // Filter for completed nodes (regardless of availability)
       .join("text")
       .attr("font-family", "FontAwesome, sans-serif") // Requires FontAwesome to be available
       .attr("font-size", 12)
       .attr("fill", currentThemeColors.checkmarkFill)
+      .attr("text-anchor", "middle") // Center the icon horizontally
+      .attr("dominant-baseline", "central") // Center the icon vertically
+      .attr("dx", 10) // Offset to position icon to the top-right of the node
+      .attr("dy", -10) // Offset to position icon to the top-right of the node
       .text("\uf00c"); // FontAwesome checkmark icon
 
     simulation.on("tick", () => {
