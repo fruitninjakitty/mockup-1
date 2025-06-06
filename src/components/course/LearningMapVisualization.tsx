@@ -179,7 +179,7 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
                            selectedPath.modules.includes((d.source as any).id) && 
                            selectedPath.modules.includes((d.target as any).id) &&
                            selectedPath.modules.indexOf((d.source as any).id) < selectedPath.modules.indexOf((d.target as any).id);
-        return isPathLink ? 3 : 1; // Thicker for path links
+        return isPathLink ? 4 : 2; // Increased from 3/1 to 4/2
       });
 
     const nodeElements = g.append("g")
@@ -187,7 +187,7 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
       .selectAll("circle")
       .data(data)
       .join("circle")
-      .attr("r", 8)
+      .attr("r", 12) // Increased from 8 to 12
       .attr("fill", d => {
         if (d.completed) return currentThemeColors.nodeFillCompleted;
         if (!d.available) return currentThemeColors.nodeFillUnavailable;
@@ -198,11 +198,7 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
         if (selectedPath && selectedPath.modules.includes(d.id)) return "#1E90FF"; // DodgerBlue for path nodes
         return d.available ? currentThemeColors.nodeStroke : currentThemeColors.nodeStrokeUnavailable;
       })
-      .attr("stroke-width", d => {
-        if (currentModuleInPath && d.id === currentModuleInPath.id) return 4; // Thicker stroke for current module
-        if (selectedPath && selectedPath.modules.includes(d.id)) return 2.5; // Thicker stroke for path nodes
-        return 1.5;
-      })
+      .attr("stroke-width", 2) // Increased from 1 to 2
       .attr("stroke-dasharray", d => d.available ? "0" : "2 2")
       .on("mouseover", function(event, d) {
         // Only highlight if not the current module in a guided path
@@ -236,7 +232,7 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
       .data(data)
       .join("text")
       .text(d => d.name)
-      .attr("font-size", (d) => currentTransform.k > 0.6 ? 10 : 0) // Adjust font size based on zoom, hide completely if too zoomed out
+      .attr("font-size", (d) => currentTransform.k > 0.6 ? 14 : 0) // Increased from 10 to 14
       .attr("fill", currentThemeColors.labelFill)
       .attr("dx", 10) // offset text from node
       .attr("dy", 3)
@@ -247,7 +243,7 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
       .data(data.filter(d => !d.available))
       .join("text")
       .attr("font-family", "FontAwesome, sans-serif") // Requires FontAwesome to be available
-      .attr("font-size", 12)
+      .attr("font-size", 14) // Increased from 12 to 14
       .attr("fill", currentThemeColors.lockIconFill)
       .attr("text-anchor", "middle")
       .attr("dominant-baseline", "central")
@@ -260,7 +256,7 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
       .data(data.filter(d => d.completed))
       .join("text")
       .attr("font-family", "FontAwesome, sans-serif") // Or a suitable icon font
-      .attr("font-size", 12)
+      .attr("font-size", 14) // Increased from 12 to 14
       .attr("fill", currentThemeColors.checkmarkFill)
       .attr("text-anchor", "middle")
       .attr("dominant-baseline", "central")
@@ -300,7 +296,7 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
       nodeElements
         .attr("cx", d => (d as d3.SimulationNodeDatum).x!)
         .attr("cy", d => (d as d3.SimulationNodeDatum).y!)
-        .attr("r", (d) => currentTransform.k * 8 > 5 ? 8 : (currentTransform.k * 8 < 3 ? 3 : currentTransform.k * 8)); // Adjust radius based on zoom
+        .attr("r", (d) => currentTransform.k * 12 > 5 ? 12 : (currentTransform.k * 12 < 3 ? 3 : currentTransform.k * 12)); // Adjusted radius scaling
       labelElements
         .attr("x", d => (d as d3.SimulationNodeDatum).x!)
         .attr("y", d => (d as d3.SimulationNodeDatum).y!);

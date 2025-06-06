@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { LearningMapVisualization, ModuleData, LinkData } from "./LearningMapVisualization";
 import React, { useState } from "react";
 import { useTheme } from "@/context/ThemeContext"; // Import useTheme hook
+import { Sun, Moon, CircleDot } from "lucide-react"; // Import icons
 
 interface CourseLearningMapProps {
   selectedView: string;
@@ -135,7 +136,21 @@ export function CourseLearningMap({ selectedView, onViewChange }: CourseLearning
             </Button>
           ))}
         </div>
-        <Button onClick={toggleTheme}>Toggle Theme: {theme.toUpperCase()}</Button>
+        <Button 
+          onClick={toggleTheme} 
+          variant="ghost" 
+          size="icon"
+          className="h-10 w-10"
+          title={`Current theme: ${theme}`}
+        >
+          {theme === 'light' ? (
+            <Sun className="h-5 w-5" />
+          ) : theme === 'dark' ? (
+            <Moon className="h-5 w-5" />
+          ) : (
+            <CircleDot className="h-5 w-5" />
+          )}
+        </Button>
       </div>
 
       <div className="mb-4">
