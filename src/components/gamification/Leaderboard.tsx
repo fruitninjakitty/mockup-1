@@ -39,14 +39,15 @@ export function Leaderboard() {
       const typedData: LeaderboardEntry[] = (data || []).map(entry => {
         const profileData = entry.profile;
         
-        // Check if profileData exists and has the required structure
-        const hasValidProfile = profileData && 
+        // More explicit null checking
+        const hasValidProfile = profileData !== null && 
+                               profileData !== undefined && 
                                typeof profileData === 'object' && 
                                'full_name' in profileData;
         
         return {
           ...entry,
-          profile: hasValidProfile && profileData
+          profile: hasValidProfile 
             ? profileData as { full_name: string; avatar_url?: string }
             : null
         };
