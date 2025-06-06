@@ -1,11 +1,17 @@
 import { Button } from "@/components/ui/button";
 import { LearningMapVisualization, ModuleData, LinkData } from "./LearningMapVisualization";
-import React from "react";
+import React, { useState } from "react";
 import { useTheme } from "@/context/ThemeContext"; // Import useTheme hook
 
 interface CourseLearningMapProps {
   selectedView: string;
   onViewChange: (view: string) => void;
+}
+
+interface LearningPath {
+  id: string;
+  name: string;
+  modules: string[]; // Ordered array of module IDs in the path
 }
 
 // Define dummy module data for demonstration
@@ -58,9 +64,61 @@ const dummyLinks: LinkData[] = [
   { source: "mod18", target: "mod4" },
 ];
 
+const predefinedPaths: LearningPath[] = [
+  {
+    id: "path1",
+    name: "Foundational Programming",
+    modules: ["mod1", "mod2", "mod5", "mod6", "mod8"],
+  },
+  {
+    id: "path2",
+    name: "Web Development Journey",
+    modules: ["mod1", "mod3", "mod6", "mod7", "mod8", "mod13", "mod14"],
+  },
+  {
+    id: "path3",
+    name: "Data Science Explorer",
+    modules: ["mod1", "mod2", "mod10", "mod11", "mod17", "mod20"],
+  },
+  {
+    id: "path4",
+    name: "Cybersecurity Basics",
+    modules: ["mod1", "mod18", "mod12", "mod4"],
+  },
+];
+
 export function CourseLearningMap({ selectedView, onViewChange }: CourseLearningMapProps) {
   const views = ["Regions", "Modules", "Topics", "Resources"];
   const { theme, toggleTheme } = useTheme(); // Consume theme from context
+  const [navigationMode, setNavigationMode] = useState<'free' | 'guided'>('free');
+  const [selectedPathId, setSelectedPathId] = useState<string | null>(null);
+  const [currentModuleIndex, setCurrentModuleIndex] = useState<number>(0);
+
+  const selectedPath = selectedPathId
+    ? predefinedPaths.find((p) => p.id === selectedPathId)
+    : null;
+
+  const currentModuleInPath = selectedPath
+    ? dummyModules.find((m) => m.id === selectedPath.modules[currentModuleIndex])
+    : null;
+
+  const handlePathSelect = (pathId: string) => {
+    setSelectedPathId(pathId);
+    setNavigationMode('guided');
+    setCurrentModuleIndex(0);
+  };
+
+  const handleNextModule = () => {
+    if (selectedPath && currentModuleIndex < selectedPath.modules.length - 1) {
+      setCurrentModuleIndex(prevIndex => prevIndex + 1);
+    }
+  };
+
+  const handlePrevModule = () => {
+    if (selectedPath && currentModuleIndex > 0) {
+      setCurrentModuleIndex(prevIndex => prevIndex - 1);
+    }
+  };
 
   return (
     <div className="lg:col-span-2 bg-white rounded-lg p-6 shadow-sm">
@@ -80,8 +138,49 @@ export function CourseLearningMap({ selectedView, onViewChange }: CourseLearning
         <Button onClick={toggleTheme}>Toggle Theme: {theme.toUpperCase()}</Button>
       </div>
 
+      <div className="mb-4">
+        <Button
+          onClick={() => {
+            setNavigationMode('free');
+            setSelectedPathId(null);
+            setCurrentModuleIndex(0);
+          }}
+          variant={navigationMode === 'free' ? "default" : "outline"}
+          className="mr-2"
+        >
+          Free Exploration
+        </Button>
+        <select onChange={(e) => handlePathSelect(e.target.value)} value={selectedPathId || ''}>
+          <option value="">Select Guided Path</option>
+          {predefinedPaths.map((path) => (
+            <option key={path.id} value={path.id}>
+              {path.name}
+            </option>
+          ))}
+        </select>
+        {navigationMode === 'guided' && selectedPath && (
+          <div className="mt-2 flex items-center">
+            <Button onClick={handlePrevModule} disabled={currentModuleIndex === 0} className="mr-2">
+              Previous Module
+            </Button>
+            <Button onClick={handleNextModule} disabled={currentModuleIndex === selectedPath.modules.length - 1}>
+              Next Module
+            </Button>
+            <span className="ml-4 text-sm">
+              Current: {currentModuleInPath?.name || 'N/A'} ({currentModuleIndex + 1} of {selectedPath.modules.length})
+            </span>
+          </div>
+        )}
+      </div>
+
       <div className="aspect-square bg-gray-50 rounded-lg border relative">
-        <LearningMapVisualization data={dummyModules} links={dummyLinks} theme={theme} />
+        <LearningMapVisualization
+          data={dummyModules}
+          links={dummyLinks}
+          theme={theme}
+          selectedPath={selectedPath}
+          currentModuleInPath={currentModuleInPath}
+        />
       </div>
     </div>
   );

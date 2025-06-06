@@ -16,13 +16,21 @@ export interface LinkData {
   target: string;
 }
 
+interface LearningPath {
+  id: string;
+  name: string;
+  modules: string[]; // Ordered array of module IDs in the path
+}
+
 interface LearningMapVisualizationProps {
   data: ModuleData[];
   links: LinkData[];
   theme: 'light' | 'dark' | 'contrast';
+  selectedPath: LearningPath | null;
+  currentModuleInPath: ModuleData | null;
 }
 
-export function LearningMapVisualization({ data, links, theme }: LearningMapVisualizationProps) {
+export function LearningMapVisualization({ data, links, theme, selectedPath, currentModuleInPath }: LearningMapVisualizationProps) {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null); // Ref for the parent container
   const [currentTransform, setCurrentTransform] = useState<d3.ZoomTransform>(d3.zoomIdentity); // State for zoom transform
@@ -154,12 +162,25 @@ export function LearningMapVisualization({ data, links, theme }: LearningMapVisu
     const difficultyColor = currentThemeColors.nodeFillAvailable;
 
     const linkElements = g.append("g")
-      .attr("stroke", currentThemeColors.linkStroke)
       .attr("stroke-opacity", 0.6)
       .selectAll("line")
       .data(links)
       .join("line")
-      .attr("stroke-width", 1);
+      .attr("stroke-width", 1)
+      .attr("stroke", d => {
+        const isPathLink = selectedPath && 
+                           selectedPath.modules.includes((d.source as any).id) && 
+                           selectedPath.modules.includes((d.target as any).id) &&
+                           selectedPath.modules.indexOf((d.source as any).id) < selectedPath.modules.indexOf((d.target as any).id);
+        return isPathLink ? "#1E90FF" : currentThemeColors.linkStroke; // DodgerBlue for path links
+      })
+      .attr("stroke-width", d => {
+        const isPathLink = selectedPath && 
+                           selectedPath.modules.includes((d.source as any).id) && 
+                           selectedPath.modules.includes((d.target as any).id) &&
+                           selectedPath.modules.indexOf((d.source as any).id) < selectedPath.modules.indexOf((d.target as any).id);
+        return isPathLink ? 3 : 1; // Thicker for path links
+      });
 
     const nodeElements = g.append("g")
       .attr("stroke-width", 1.5)
@@ -172,15 +193,32 @@ export function LearningMapVisualization({ data, links, theme }: LearningMapVisu
         if (!d.available) return currentThemeColors.nodeFillUnavailable;
         return difficultyColor(d.difficulty);
       })
-      .attr("stroke", d => d.available ? currentThemeColors.nodeStroke : currentThemeColors.nodeStrokeUnavailable)
+      .attr("stroke", d => {
+        if (currentModuleInPath && d.id === currentModuleInPath.id) return "#FFD700"; // Gold for current module
+        if (selectedPath && selectedPath.modules.includes(d.id)) return "#1E90FF"; // DodgerBlue for path nodes
+        return d.available ? currentThemeColors.nodeStroke : currentThemeColors.nodeStrokeUnavailable;
+      })
+      .attr("stroke-width", d => {
+        if (currentModuleInPath && d.id === currentModuleInPath.id) return 4; // Thicker stroke for current module
+        if (selectedPath && selectedPath.modules.includes(d.id)) return 2.5; // Thicker stroke for path nodes
+        return 1.5;
+      })
       .attr("stroke-dasharray", d => d.available ? "0" : "2 2")
       .on("mouseover", function(event, d) {
-        d3.select(this).attr("stroke", "#FFD700").attr("stroke-width", 3); // Highlight on hover
-        labelElements.filter(p => p.id === d.id).attr("font-weight", "bold");
+        // Only highlight if not the current module in a guided path
+        if (!(currentModuleInPath && d.id === currentModuleInPath.id)) {
+          d3.select(this).attr("stroke", "#FFD700").attr("stroke-width", 3); // Highlight on hover
+          labelElements.filter(p => p.id === d.id).attr("font-weight", "bold");
+        }
       })
       .on("mouseout", function(event, d) {
-        d3.select(this).attr("stroke", d.available ? currentThemeColors.nodeStroke : currentThemeColors.nodeStrokeUnavailable).attr("stroke-width", 1.5); // Revert on mouseout
-        labelElements.filter(p => p.id === d.id).attr("font-weight", "normal");
+        if (!(currentModuleInPath && d.id === currentModuleInPath.id)) {
+          d3.select(this).attr("stroke", d.available ? currentThemeColors.nodeStroke : currentThemeColors.nodeStrokeUnavailable).attr("stroke-width", d => {
+            if (selectedPath && selectedPath.modules.includes(d.id)) return 2.5; // Path node stroke
+            return 1.5; // Default stroke
+          });
+          labelElements.filter(p => p.id === d.id).attr("font-weight", "normal");
+        }
       })
       .on("click", function(event, d) {
         // Center the clicked node
@@ -279,16 +317,22 @@ export function LearningMapVisualization({ data, links, theme }: LearningMapVisu
       .scaleExtent([0.3, 5]) // Adjusted scale extent for more range
       .on("zoom", (event) => {
         g.attr("transform", event.transform);
-        setCurrentTransform(event.transform); // Update state with current transform
-        // Update minimap viewbox indicator
+        setCurrentTransform(event.transform);
         updateMinimapViewbox(event.transform);
       });
     svg.call(zoom);
 
+    // Initial positioning based on currentModuleInPath (GPS-like indicator)
+    if (currentModuleInPath) {
+      const currentModuleDatum = currentModuleInPath as d3.SimulationNodeDatum;
+      const initialX = -(currentModuleDatum.x! * currentTransform.k) + width / 2;
+      const initialY = -(currentModuleDatum.y! * currentTransform.k) + height / 2;
+      svg.transition().duration(750).call(zoom.transform as any, d3.zoomIdentity.translate(initialX, initialY).scale(currentTransform.k));
+    }
+
     // Minimap setup
     const minimapWidth = 200;
     const minimapHeight = 200;
-    // Calculate the overall bounds of the graph for accurate minimap scaling
     const allNodes = data as d3.SimulationNodeDatum[];
     const xMin = d3.min(allNodes, d => d.x || 0) || 0;
     const xMax = d3.max(allNodes, d => d.x || 0) || 0;
@@ -298,11 +342,10 @@ export function LearningMapVisualization({ data, links, theme }: LearningMapVisu
     const graphWidth = xMax - xMin;
     const graphHeight = yMax - yMin;
 
-    // Adjust minimap scale based on actual graph content if it's larger than the view
-    const minimapScale = Math.min(minimapWidth / (graphWidth + 20), minimapHeight / (graphHeight + 20)); // Added padding
+    const minimapScale = Math.min(minimapWidth / (graphWidth + 20), minimapHeight / (graphHeight + 20));
 
     const minimap = svg.append("g")
-      .attr("transform", `translate(${width - minimapWidth - 10}, ${height - minimapHeight - 10})`); // Position at bottom-right
+      .attr("transform", `translate(${width - minimapWidth - 10}, ${height - minimapHeight - 10})`);
 
     // Minimap background
     minimap.append("rect")
@@ -312,30 +355,32 @@ export function LearningMapVisualization({ data, links, theme }: LearningMapVisu
       .attr("stroke", currentThemeColors.minimapStroke)
       .attr("stroke-width", 1)
       .on("click", function(event) {
-        // Calculate target coordinates in main map space
         const [minimapX, minimapY] = d3.pointer(event, this);
 
-        // Adjust for graph's offset within the minimap's coordinate system
         const targetX = (minimapX / minimapScale) + xMin;
         const targetY = (minimapY / minimapScale) + yMin;
 
-        // Center the main map on the clicked point
         const currentZoomTransform = d3.zoomTransform(svg.node() as SVGSVGElement);
         const newX = -targetX * currentZoomTransform.k + width / 2;
         const newY = -targetY * currentZoomTransform.k + height / 2;
         svg.transition().duration(500).call(zoom.transform as any, d3.zoomIdentity.translate(newX, newY).scale(currentZoomTransform.k));
-        // No module selection from minimap to avoid confusion
         setSelectedModule(null);
       });
 
     // Draw minimap links
     minimap.append("g")
-      .attr("stroke", currentThemeColors.linkStroke)
       .attr("stroke-opacity", 0.6)
       .selectAll("line")
       .data(links)
       .join("line")
       .attr("stroke-width", 0.5)
+      .attr("stroke", d => {
+        const isPathLink = selectedPath && 
+                           selectedPath.modules.includes((d.source as any).id) && 
+                           selectedPath.modules.includes((d.target as any).id) &&
+                           selectedPath.modules.indexOf((d.source as any).id) < selectedPath.modules.indexOf((d.target as any).id);
+        return isPathLink ? "#1E90FF" : currentThemeColors.linkStroke; // DodgerBlue for path links
+      })
       .attr("x1", (d: any) => (d.source.x - xMin) * minimapScale)
       .attr("y1", (d: any) => (d.source.y - yMin) * minimapScale)
       .attr("x2", (d: any) => (d.target.x - xMin) * minimapScale)
@@ -349,14 +394,24 @@ export function LearningMapVisualization({ data, links, theme }: LearningMapVisu
       .attr("r", 3)
       .attr("fill", d => d.available ? currentThemeColors.nodeFillAvailable(d.difficulty) : currentThemeColors.nodeFillUnavailable)
       .attr("cx", d => (d.x! - xMin) * minimapScale)
-      .attr("cy", d => (d.y! - yMin) * minimapScale);
+      .attr("cy", d => (d.y! - yMin) * minimapScale)
+      .attr("stroke", d => {
+        if (currentModuleInPath && d.id === currentModuleInPath.id) return "#FFD700"; // Gold for current module
+        if (selectedPath && selectedPath.modules.includes(d.id)) return "#1E90FF"; // DodgerBlue for path nodes
+        return "none"; // No stroke for other minimap nodes
+      })
+      .attr("stroke-width", d => {
+        if (currentModuleInPath && d.id === currentModuleInPath.id) return 1; // Thicker stroke for current module
+        if (selectedPath && selectedPath.modules.includes(d.id)) return 0.5; // Thicker stroke for path nodes
+        return 0;
+      });
 
     // Minimap viewbox indicator (the "GPS-like indicator")
     const minimapViewbox = minimap.append("rect")
       .attr("stroke", currentThemeColors.minimapViewboxStroke)
       .attr("stroke-width", 2)
       .attr("fill", "none")
-      .attr("pointer-events", "none"); // Make it non-interactive
+      .attr("pointer-events", "none");
 
     function updateMinimapViewbox(transform: d3.ZoomTransform) {
       minimapViewbox
@@ -366,8 +421,6 @@ export function LearningMapVisualization({ data, links, theme }: LearningMapVisu
         .attr("height", height * minimapScale / transform.k);
     }
 
-    // Initial update of the minimap viewbox
-    // It's crucial to run the simulation to get node positions before updating minimap
     simulation.on("end", () => {
       updateMinimapViewbox(d3.zoomTransform(svg.node() as SVGSVGElement));
     });
