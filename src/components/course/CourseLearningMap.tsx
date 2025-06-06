@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { LearningMapVisualization, ModuleData, LinkData } from "./LearningMapVisualization";
 import React from "react";
-import { useTheme } from "@/context/ThemeContext"; // Import useTheme hook
+import { useTheme } from "@/context/ThemeContext";
 
 interface CourseLearningMapProps {
   selectedView: string;
@@ -60,7 +60,7 @@ const dummyLinks: LinkData[] = [
 
 export function CourseLearningMap({ selectedView, onViewChange }: CourseLearningMapProps) {
   const views = ["Regions", "Modules", "Topics", "Resources"];
-  const { theme, toggleTheme } = useTheme(); // Consume theme from context
+  const { theme } = useTheme();
 
   return (
     <div className="lg:col-span-2 bg-white rounded-lg p-6 shadow-sm">
@@ -77,7 +77,6 @@ export function CourseLearningMap({ selectedView, onViewChange }: CourseLearning
             </Button>
           ))}
         </div>
-        <Button onClick={toggleTheme}>Toggle Theme: {theme.toUpperCase()}</Button>
       </div>
 
       <div className="aspect-square bg-gray-50 rounded-lg border relative">
