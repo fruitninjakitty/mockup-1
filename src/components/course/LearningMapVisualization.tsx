@@ -153,10 +153,36 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
     // Append a group for zoom and pan
     const g = svg.append("g");
 
-    const simulation = d3.forceSimulation(data as d3.SimulationNodeDatum[])
-      .force("link", d3.forceLink(links).id((d: any) => d.id).distance(50))
-      .force("charge", d3.forceManyBody().strength(-200))
-      .force("center", d3.forceCenter(width / 2, height / 2));
+    // TODO: Implement clustering logic here. Nodes should be clustered based on similarity.
+    // For now, a simple grid layout is used to provide initial fixed positions.
+    const nodes = data.map((d, i) => {
+      // These coordinates can be replaced by a more sophisticated clustering algorithm
+      // that assigns (x, y) based on similarity.
+      const col = i % Math.ceil(Math.sqrt(data.length));
+      const row = Math.floor(i / Math.ceil(Math.sqrt(data.length)));
+      const spacing = 100; // Increased spacing for better visibility
+      const numCols = Math.ceil(Math.sqrt(data.length));
+      const numRows = Math.ceil(data.length / numCols);
+
+      const gridWidth = numCols * spacing;
+      const gridHeight = numRows * spacing;
+
+      const offsetX = (width / 2) - (gridWidth / 2) + spacing / 2; // Center the grid
+      const offsetY = (height / 2) - (gridHeight / 2) + spacing / 2;
+
+      return {
+        ...d,
+        x: col * spacing + offsetX,
+        y: row * spacing + offsetY,
+        fx: col * spacing + offsetX, // Fix the nodes at these positions
+        fy: row * spacing + offsetY,
+      };
+    });
+
+    const simulation = d3.forceSimulation(nodes as d3.SimulationNodeDatum[])
+      .force("link", d3.forceLink(links).id((d: any) => d.id).distance(50));
+      // Removed 'charge' and 'center' forces to keep nodes fixed.
+      // The 'link' force will still run but won't cause movement due to fx/fy.
 
     // Define color scale for difficulty (now using theme-dependent function)
     const difficultyColor = currentThemeColors.nodeFillAvailable;
@@ -168,15 +194,15 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
       .join("line")
       .attr("stroke-width", 1)
       .attr("stroke", d => {
-        const isPathLink = selectedPath && 
-                           selectedPath.modules.includes((d.source as any).id) && 
+        const isPathLink = selectedPath &&
+                           selectedPath.modules.includes((d.source as any).id) &&
                            selectedPath.modules.includes((d.target as any).id) &&
                            selectedPath.modules.indexOf((d.source as any).id) < selectedPath.modules.indexOf((d.target as any).id);
         return isPathLink ? "#1E90FF" : currentThemeColors.linkStroke; // DodgerBlue for path links
       })
       .attr("stroke-width", d => {
-        const isPathLink = selectedPath && 
-                           selectedPath.modules.includes((d.source as any).id) && 
+        const isPathLink = selectedPath &&
+                           selectedPath.modules.includes((d.source as any).id) &&
                            selectedPath.modules.includes((d.target as any).id) &&
                            selectedPath.modules.indexOf((d.source as any).id) < selectedPath.modules.indexOf((d.target as any).id);
         return isPathLink ? 3 : 1; // Thicker for path links
@@ -185,7 +211,7 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
     const nodeElements = g.append("g")
       .attr("stroke-width", 1.5)
       .selectAll("circle")
-      .data(data)
+      .data(nodes) // Changed from 'data' to 'nodes'
       .join("circle")
       .attr("r", 8)
       .attr("fill", d => {
@@ -223,8 +249,8 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
       .on("click", function(event, d) {
         // Center the clicked node
         const currentZoomTransform = d3.zoomTransform(svg.node() as SVGSVGElement);
-        const newX = -((d as d3.SimulationNodeDatum).x! * currentZoomTransform.k) + width / 2;
-        const newY = -((d as d3.SimulationNodeDatum).y! * currentZoomTransform.k) + height / 2;
+        const newX = -(d.x! * currentZoomTransform.k) + width / 2; // Use d.x and d.y directly
+        const newY = -(d.y! * currentZoomTransform.k) + height / 2;
         svg.transition().duration(500).call(zoom.transform as any, d3.zoomIdentity.translate(newX, newY).scale(currentZoomTransform.k));
 
         // Select module for overlay
@@ -233,7 +259,7 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
 
     const labelElements = g.append("g")
       .selectAll("text")
-      .data(data)
+      .data(nodes) // Changed from 'data' to 'nodes'
       .join("text")
       .text(d => d.name)
       .attr("font-size", (d) => currentTransform.k > 0.6 ? 10 : 0) // Adjust font size based on zoom, hide completely if too zoomed out
@@ -244,51 +270,21 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
 
     const lockIcons = g.append("g")
       .selectAll("text")
-      .data(data.filter(d => !d.available))
+      .data(nodes.filter(d => !d.available)) // Changed from 'data' to 'nodes'
       .join("text")
       .attr("font-family", "FontAwesome, sans-serif") // Requires FontAwesome to be available
       .attr("font-size", 12)
       .attr("fill", currentThemeColors.lockIconFill)
-      .attr("text-anchor", "middle")
-      .attr("dominant-baseline", "central")
-      .text('\u{1F512}') // Unicode for lock icon
-      .style("display", (d) => currentTransform.k > 0.9 ? "block" : "none"); // Show only when zoomed in
+      .text("\uf023"); // FontAwesome lock icon
 
-    // Add checkmark for completed modules
-    const checkmarks = g.append("g")
+    const checkmarkIcons = g.append("g")
       .selectAll("text")
-      .data(data.filter(d => d.completed))
+      .data(nodes.filter(d => d.completed && d.available)) // Changed from 'data' to 'nodes'
       .join("text")
-      .attr("font-family", "FontAwesome, sans-serif") // Or a suitable icon font
+      .attr("font-family", "FontAwesome, sans-serif") // Requires FontAwesome to be available
       .attr("font-size", 12)
       .attr("fill", currentThemeColors.checkmarkFill)
-      .attr("text-anchor", "middle")
-      .attr("dominant-baseline", "central")
-      .text('\u{2713}'); // Unicode for checkmark
-
-    function dragstarted(event: any) {
-      if (!event.active) simulation.alphaTarget(0.3).restart();
-      event.subject.fx = event.subject.x;
-      event.subject.fy = event.subject.y;
-    }
-
-    function dragged(event: any) {
-      event.subject.fx = event.x;
-      event.subject.fy = event.y;
-    }
-
-    function dragended(event: any) {
-      if (!event.active) simulation.alphaTarget(0);
-      event.subject.fx = null;
-      event.subject.fy = null;
-    }
-
-    const drag = d3.drag()
-      .on("start", dragstarted)
-      .on("drag", dragged)
-      .on("end", dragended);
-
-    nodeElements.call(drag as any);
+      .text("\uf00c"); // FontAwesome checkmark icon
 
     simulation.on("tick", () => {
       linkElements
@@ -307,7 +303,7 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
       lockIcons
         .attr("x", d => (d as d3.SimulationNodeDatum).x!)
         .attr("y", d => (d as d3.SimulationNodeDatum).y!); // Center the lock icon on the node
-      checkmarks
+      checkmarkIcons
         .attr("x", d => (d as d3.SimulationNodeDatum).x!)
         .attr("y", d => (d as d3.SimulationNodeDatum).y!); // Center the checkmark on the node
     });
@@ -333,7 +329,7 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
     // Minimap setup
     const minimapWidth = 200;
     const minimapHeight = 200;
-    const allNodes = data as d3.SimulationNodeDatum[];
+    const allNodes = nodes as d3.SimulationNodeDatum[]; // Changed from 'data' to 'nodes'
     const xMin = d3.min(allNodes, d => d.x || 0) || 0;
     const xMax = d3.max(allNodes, d => d.x || 0) || 0;
     const yMin = d3.min(allNodes, d => d.y || 0) || 0;
@@ -389,119 +385,109 @@ export function LearningMapVisualization({ data, links, theme, selectedPath, cur
     // Draw minimap nodes
     minimap.append("g")
       .selectAll("circle")
-      .data(data)
+      .data(nodes) // Changed from 'data' to 'nodes'
       .join("circle")
       .attr("r", 3)
       .attr("fill", d => d.available ? currentThemeColors.nodeFillAvailable(d.difficulty) : currentThemeColors.nodeFillUnavailable)
-      .attr("cx", d => (d.x! - xMin) * minimapScale)
-      .attr("cy", d => (d.y! - yMin) * minimapScale)
       .attr("stroke", d => {
         if (currentModuleInPath && d.id === currentModuleInPath.id) return "#FFD700"; // Gold for current module
         if (selectedPath && selectedPath.modules.includes(d.id)) return "#1E90FF"; // DodgerBlue for path nodes
-        return "none"; // No stroke for other minimap nodes
+        return d.available ? currentThemeColors.nodeStroke : currentThemeColors.nodeStrokeUnavailable;
       })
-      .attr("stroke-width", d => {
-        if (currentModuleInPath && d.id === currentModuleInPath.id) return 1; // Thicker stroke for current module
-        if (selectedPath && selectedPath.modules.includes(d.id)) return 0.5; // Thicker stroke for path nodes
-        return 0;
-      });
+      .attr("stroke-width", 0.5)
+      .attr("cx", d => (d.x - xMin) * minimapScale)
+      .attr("cy", d => (d.y - yMin) * minimapScale);
 
-    // Minimap viewbox indicator (the "GPS-like indicator")
+    // Minimap viewbox (represents the current zoom/pan area)
     const minimapViewbox = minimap.append("rect")
+      .attr("class", "minimap-viewbox")
       .attr("stroke", currentThemeColors.minimapViewboxStroke)
       .attr("stroke-width", 2)
       .attr("fill", "none")
-      .attr("pointer-events", "none");
+      .style("pointer-events", "none"); // Prevent interaction
 
+    // Function to update minimap viewbox
     function updateMinimapViewbox(transform: d3.ZoomTransform) {
+      const viewboxX = (-transform.x / transform.k - xMin) * minimapScale;
+      const viewboxY = (-transform.y / transform.k - yMin) * minimapScale;
+      const viewboxWidth = (width / transform.k) * minimapScale;
+      const viewboxHeight = (height / transform.k) * minimapScale;
+
       minimapViewbox
-        .attr("x", -transform.x * minimapScale / transform.k)
-        .attr("y", -transform.y * minimapScale / transform.k)
-        .attr("width", width * minimapScale / transform.k)
-        .attr("height", height * minimapScale / transform.k);
+        .attr("x", viewboxX)
+        .attr("y", viewboxY)
+        .attr("width", viewboxWidth)
+        .attr("height", viewboxHeight);
     }
 
-    simulation.on("end", () => {
-      updateMinimapViewbox(d3.zoomTransform(svg.node() as SVGSVGElement));
-    });
+    // Initial update of minimap viewbox
+    updateMinimapViewbox(currentTransform);
 
-    // Add color legend
+    // Legend setup
     const legend = svg.append("g")
-      .attr("transform", `translate(${width - 120}, 20)`); // Position at top-right
+      .attr("class", "legend")
+      .attr("transform", `translate(10, ${height - 100})`);
 
-    legend.append("text")
-      .attr("x", 0)
-      .attr("y", 0)
-      .attr("font-size", 12)
-      .attr("font-weight", "bold")
-      .attr("fill", currentThemeColors.legendText)
-      .text("Difficulty");
-
-    const legendItems = ["easy", "medium", "hard"];
-
-    legendItems.forEach((difficulty, i) => {
-      const item = legend.append("g")
-        .attr("transform", `translate(0, ${20 + i * 20})`);
-
-      item.append("rect")
-        .attr("width", 15)
-        .attr("height", 15)
-        .attr("fill", currentThemeColors.nodeFillAvailable(difficulty as 'easy' | 'medium' | 'hard') as string);
-
-      item.append("text")
-        .attr("x", 20)
-        .attr("y", 8)
-        .attr("dy", "0.35em")
-        .attr("font-size", 10)
-        .attr("fill", currentThemeColors.legendText)
-        .text(difficulty.charAt(0).toUpperCase() + difficulty.slice(1));
-    });
-
-    // Add legend for availability
-    const availabilityLegend = svg.append("g")
-      .attr("transform", `translate(${width - 120}, ${20 + legendItems.length * 20 + 30})`);
-
-    availabilityLegend.append("text")
-      .attr("x", 0)
-      .attr("y", 0)
-      .attr("font-size", 12)
-      .attr("font-weight", "bold")
-      .attr("fill", currentThemeColors.legendText)
-      .text("Availability");
-
-    const availabilityItems = [
-      { label: "Available (Not Started)", fill: currentThemeColors.nodeFillAvailable('easy'), stroke: currentThemeColors.nodeStroke, dasharray: "0" },
-      { label: "Completed", fill: currentThemeColors.nodeFillCompleted, stroke: currentThemeColors.nodeStroke, dasharray: "0" },
-      { label: "Unavailable", fill: currentThemeColors.nodeFillUnavailable, stroke: currentThemeColors.nodeStrokeUnavailable, dasharray: "2 2" }
+    const legendData = [
+      { label: "Easy", color: currentThemeColors.nodeFillAvailable('easy') },
+      { label: "Medium", color: currentThemeColors.nodeFillAvailable('medium') },
+      { label: "Hard", color: currentThemeColors.nodeFillAvailable('hard') },
+      { label: "Completed", color: currentThemeColors.nodeFillCompleted },
+      { label: "Unavailable", color: currentThemeColors.nodeFillUnavailable },
+      { label: "Selected Path", color: "#1E90FF" },
+      { label: "Current Module", color: "#FFD700" },
     ];
 
-    availabilityItems.forEach((item, i) => {
-      const availItem = availabilityLegend.append("g")
-        .attr("transform", `translate(0, ${20 + i * 20})`);
+    const legendRectSize = 12;
+    const legendSpacing = 4;
 
-      availItem.append("rect")
-        .attr("width", 15)
-        .attr("height", 15)
-        .attr("fill", item.fill)
-        .attr("stroke", item.stroke)
-        .attr("stroke-dasharray", item.dasharray);
+    const legendItems = legend.selectAll(".legend-item")
+      .data(legendData)
+      .enter()
+      .append("g")
+      .attr("class", "legend-item")
+      .attr("transform", (d, i) => `translate(0, ${i * (legendRectSize + legendSpacing)})`);
 
-      availItem.append("text")
-        .attr("x", 20)
-        .attr("y", 8)
-        .attr("dy", "0.35em")
-        .attr("font-size", 10)
-        .attr("fill", currentThemeColors.legendText)
-        .text(item.label);
-    });
+    legendItems.append("rect")
+      .attr("width", legendRectSize)
+      .attr("height", legendRectSize)
+      .attr("fill", d => d.color);
 
-  }, [data, links, currentTransform, dimensions, theme]); // Redraw when data, links, transform, dimensions or theme changes
+    legendItems.append("text")
+      .attr("x", legendRectSize + legendSpacing)
+      .attr("y", legendRectSize / 2)
+      .attr("dy", "0.35em")
+      .style("font-size", "10px")
+      .attr("fill", currentThemeColors.legendText)
+      .text(d => d.label);
+
+    // Event listeners to handle window resize for responsive SVG
+    const handleResize = () => {
+      if (containerRef.current) {
+        setDimensions({
+          width: containerRef.current.clientWidth,
+          height: containerRef.current.clientHeight,
+        });
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      simulation.stop();
+    };
+
+  }, [data, links, dimensions.width, dimensions.height, theme, selectedPath, currentModuleInPath, currentTransform]);
 
   return (
-    <div ref={containerRef} style={{ position: 'relative', width: '100%', height: '100%' }}>
-      <svg ref={svgRef} className="w-full h-full"></svg>
+    <div ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
+      <svg ref={svgRef} style={{ width: '100%', height: '100%' }}></svg>
       {selectedModule && (
-        <ModuleDetailsOverlay module={selectedModule} onClose={() => setSelectedModule(null)} theme={theme} />
+        <ModuleDetailsOverlay
+          module={selectedModule}
+          onClose={() => setSelectedModule(null)}
+          theme={theme}
+        />
       )}
     </div>
   );
